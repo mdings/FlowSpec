@@ -8,16 +8,39 @@ It is a behavioral specification — not a programming language, not an executab
 
 **FlowSpec models the logic. Gherkin or other testing tools can verify concrete examples of that logic.**
 
+FlowSpec uses Title Case for all directives to keep the language visually consistent and human-readable. Hierarchy is expressed through indentation, whitespace, and syntax highlighting rather than uppercase keywords.
+
 ## v1 directive set
+
+Supported directives (exact casing):
+
+```text
+Flow
+Screen
+Action
+Id
+Receives
+Rules
+Steps
+Shows
+Outcome
+When
+Once
+If
+Otherwise
+At the same time
+If ... fails
+Go to
+```
 
 ### Structural directives
 
 | Directive | Description | Example |
 | --------- | ----------- | ------- |
-| `FLOW` | Names a complete user journey or business flow. | `FLOW: Answer a user message` |
-| `SCREEN` | Defines the screen, page, modal, or UI context. | `SCREEN: Conversation` |
-| `ACTION` | Defines something the user or the system does. | `ACTION: Create quick replies` |
-| `ID` | Optional stable machine-readable reference for a `FLOW`, `SCREEN`, or `ACTION`. | `ID: conversation.create-quick-replies` |
+| `Flow` | Names a complete user journey or business flow. | `Flow: Answer a user message` |
+| `Screen` | Defines the screen, page, modal, or UI context. | `Screen: Conversation` |
+| `Action` | Defines something the user or the system does. | `Action: Create quick replies` |
+| `Id` | Optional stable machine-readable reference for a `Flow`, `Screen`, or `Action`. | `Id: conversation.create-quick-replies` |
 
 ### Action sections
 
@@ -41,11 +64,13 @@ It is a behavioral specification — not a programming language, not an executab
 | `If … fails` | Fallback when something cannot complete successfully. | `If product search fails` |
 | `Go to` | Navigate to another screen or flow. | `Go to: Verify login code` |
 
-Colons after directives are optional; prefer the colon form in documentation (`FLOW:`, `ID:`).
+Colons after directives are optional; prefer the colon form in documentation (`Flow:`, `Id:`).
 
-## `ACTION` vs `Steps`
+The older uppercase forms `FLOW`, `SCREEN`, `ACTION`, and `ID` still parse for backwards compatibility but are **deprecated** and produce validation warnings. Prefer Title Case in all new files. Directives are not fully case-insensitive: forms such as `flow` or `receives` are rejected with a suggestion.
 
-- **`ACTION`** names a unit of behavior (what the user or system does) within a flow and screen.
+## `Action` vs `Steps`
+
+- **`Action`** names a unit of behavior (what the user or system does) within a flow and screen.
 - **`Steps`** lists the **required functional work that must happen inside that action**, without prescribing technical implementation or describing executable test steps.
 
 Internally, parsers may represent this section as `steps`. The visible directive remains `Steps`.
@@ -78,9 +103,9 @@ Steps
 
 FlowSpec documents the convention only; it does not attempt to detect “too technical” wording automatically.
 
-## Stable IDs
+## Stable Ids
 
-`ID` is optional on `FLOW`, `SCREEN`, and `ACTION`. IDs:
+`Id` is optional on `Flow`, `Screen`, and `Action`. Ids:
 
 - are unique within a FlowSpec file;
 - stay independent from the display name;
@@ -96,14 +121,14 @@ Recommended format:
 Example:
 
 ```flowspec
-FLOW: Answer a user message
-ID: conversation.answer-message
+Flow: Answer a user message
+Id: conversation.answer-message
 
-SCREEN: Conversation
-ID: conversation.screen
+Screen: Conversation
+Id: conversation.screen
 
-ACTION: Create quick replies
-ID: conversation.create-quick-replies
+Action: Create quick replies
+Id: conversation.create-quick-replies
 ```
 
 ## Standard action structure
@@ -111,8 +136,8 @@ ID: conversation.create-quick-replies
 Recommended order when multiple sections are present:
 
 ```flowspec
-ACTION: [Action name]
-ID: [stable identifier]
+Action: [Action name]
+Id: [stable identifier]
 
 Receives
   [Required input]
@@ -150,18 +175,18 @@ Gherkin or other test frameworks verify concrete examples of that model.
 ## Canonical example
 
 ```flowspec
-FLOW: Answer a user message
-ID: conversation.answer-message
+Flow: Answer a user message
+Id: conversation.answer-message
 
-SCREEN: Conversation
-ID: conversation.screen
+Screen: Conversation
+Id: conversation.screen
 
 When the user sends a message
 
   At the same time
 
-    ACTION: Find relevant products
-    ID: conversation.find-products
+    Action: Find relevant products
+    Id: conversation.find-products
 
       Receives
         User message
@@ -173,8 +198,8 @@ When the user sends a message
       Outcome
         Product results are available
 
-    ACTION: Create assistant response
-    ID: conversation.create-response
+    Action: Create assistant response
+    Id: conversation.create-response
 
       Receives
         User message
@@ -188,8 +213,8 @@ When the user sends a message
 
   Once assistant response is available
 
-    ACTION: Show assistant response
-    ID: conversation.show-response
+    Action: Show assistant response
+    Id: conversation.show-response
 
       Receives
         Assistant response
@@ -202,8 +227,8 @@ When the user sends a message
 
   Once product results are available
 
-    ACTION: Create quick replies
-    ID: conversation.create-quick-replies
+    Action: Create quick replies
+    Id: conversation.create-quick-replies
 
       Receives
         User message
@@ -227,8 +252,8 @@ When the user sends a message
 
   Once quick replies are available
 
-    ACTION: Show quick replies
-    ID: conversation.show-quick-replies
+    Action: Show quick replies
+    Id: conversation.show-quick-replies
 
       Receives
         Quick replies
@@ -241,8 +266,8 @@ When the user sends a message
 
   If product search fails
 
-    ACTION: Continue without quick replies
-    ID: conversation.continue-without-quick-replies
+    Action: Continue without quick replies
+    Id: conversation.continue-without-quick-replies
 
       Shows
         Assistant response without quick replies
@@ -268,7 +293,7 @@ Outcome   → What is true or available afterwards?
 | Path | Contents |
 | ---- | -------- |
 | [`examples/`](examples/) | Canonical FlowSpec samples |
-| [`lib/`](lib/) | Small reusable parse + validate helpers (IDs, section order) |
+| [`lib/`](lib/) | Small reusable parse + validate helpers (Ids, section order, casing) |
 | [`test/`](test/) | Parser and validation tests |
 | [`vscode-extension/`](vscode-extension/) | VS Code syntax-highlighting extension |
 
@@ -278,7 +303,7 @@ Outcome   → What is true or available afterwards?
 - No language server, formatter, or IDE diagnostics beyond optional use of `lib/`.
 - No automatic generation of Gherkin, unit tests, or executable suites.
 - No automatic detection of behavioral drift or of “too technical” steps.
-- Validation covers ID format/uniqueness/attachment and recommended section-order **warnings** only.
+- Validation covers Id format/uniqueness/attachment, recommended section-order warnings, and directive-casing checks only.
 
 ## FAQ
 

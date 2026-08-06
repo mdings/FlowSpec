@@ -44,7 +44,7 @@
     },
     "top-level-directives": {
       "name": "meta.directive.structural.flowspec",
-      "begin": "^(\\s*)(FLOW|SCREEN|ACTION)\\b\\s*:?",
+      "begin": "^(\\s*)(Flow|FLOW|Screen|SCREEN|Action|ACTION)\\b\\s*:?",
       "beginCaptures": {
         "2": {
           "name": "keyword.control.directive.flowspec"
@@ -69,7 +69,7 @@
     },
     "id-directive": {
       "name": "meta.directive.id.flowspec",
-      "begin": "^(\\s*)(ID)\\b\\s*:?",
+      "begin": "^(\\s*)(Id|ID)\\b\\s*:?",
       "beginCaptures": {
         "2": {
           "name": "keyword.other.metadata.flowspec"
@@ -147,7 +147,7 @@
         {
           "name": "string.quoted.double.flowspec",
           "begin": "\"",
-          "end": "\"",
+          "end": "\"|(?=$)",
           "patterns": [
             {
               "name": "constant.character.escape.flowspec",
@@ -157,8 +157,8 @@
         },
         {
           "name": "string.quoted.single.flowspec",
-          "begin": "'",
-          "end": "'",
+          "begin": "(?<![\\w])'",
+          "end": "'|(?=$)",
           "patterns": [
             {
               "name": "constant.character.escape.flowspec",

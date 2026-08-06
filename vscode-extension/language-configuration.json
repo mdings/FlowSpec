@@ -22,8 +22,8 @@
     { "open": "'", "close": "'" }
   ],
   "indentationRules": {
-    "increaseIndentPattern": "^\\s*(FLOW|SCREEN|ACTION|ID|Receives|Rules|Steps|Shows|Outcome|When|Once|If|At the same time|Go to)\\b.*$",
-    "decreaseIndentPattern": "^\\s*(Otherwise|FLOW|SCREEN)\\b.*"
+    "increaseIndentPattern": "^\\s*(Flow|FLOW|Screen|SCREEN|Action|ACTION|Id|ID|Receives|Rules|Steps|Shows|Outcome|When|Once|If|At the same time|Go to)\\b.*$",
+    "decreaseIndentPattern": "^\\s*(Otherwise|Flow|FLOW|Screen|SCREEN)\\b.*"
   },
   "folding": {
     "offSide": true

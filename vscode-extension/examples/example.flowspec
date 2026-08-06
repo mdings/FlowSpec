@@ -1,15 +1,15 @@
-FLOW: Answer a user message
-ID: conversation.answer-message
+Flow: Answer a user message
+Id: conversation.answer-message
 
-SCREEN: Conversation
-ID: conversation.screen
+Screen: Conversation
+Id: conversation.screen
 
 When the user sends a message
 
   At the same time
 
-    ACTION: Find relevant products
-    ID: conversation.find-products
+    Action: Find relevant products
+    Id: conversation.find-products
 
       Receives
         User message
@@ -21,8 +21,8 @@ When the user sends a message
       Outcome
         Product results are available
 
-    ACTION: Create assistant response
-    ID: conversation.create-response
+    Action: Create assistant response
+    Id: conversation.create-response
 
       Receives
         User message
@@ -36,8 +36,8 @@ When the user sends a message
 
   Once assistant response is available
 
-    ACTION: Show assistant response
-    ID: conversation.show-response
+    Action: Show assistant response
+    Id: conversation.show-response
 
       Receives
         Assistant response
@@ -50,8 +50,8 @@ When the user sends a message
 
   Once product results are available
 
-    ACTION: Create quick replies
-    ID: conversation.create-quick-replies
+    Action: Create quick replies
+    Id: conversation.create-quick-replies
 
       Receives
         User message
@@ -75,8 +75,8 @@ When the user sends a message
 
   Once quick replies are available
 
-    ACTION: Show quick replies
-    ID: conversation.show-quick-replies
+    Action: Show quick replies
+    Id: conversation.show-quick-replies
 
       Receives
         Quick replies
@@ -89,8 +89,8 @@ When the user sends a message
 
   If product search fails
 
-    ACTION: Continue without quick replies
-    ID: conversation.continue-without-quick-replies
+    Action: Continue without quick replies
+    Id: conversation.continue-without-quick-replies
 
       Shows
         Assistant response without quick replies
@@ -101,31 +101,37 @@ When the user sends a message
 # --- Additional highlighting samples ---
 
 # Optional colons omitted
-FLOW Answer a user message
-ID conversation.answer-message-alt
-SCREEN Conversation
-ID conversation.screen-alt
-ACTION Create quick replies
-ID conversation.create-quick-replies-alt
+Flow Answer a user message
+Id conversation.answer-message-alt
+Screen Conversation
+Id conversation.screen-alt
+Action Create quick replies
+Id conversation.create-quick-replies-alt
+
+# Deprecated uppercase (still highlighted; prefer Title Case)
+FLOW Deprecated sample flow
+ID samples.deprecated-flow
 
 # Numbers and durations
-ACTION: Timing sample
-ID: samples.timing
+Action: Timing sample
+Id: samples.timing
 Rules
   Wait no longer than 10 minutes
   Retry after 5 seconds
   Cache for 1 hour
   Show no more than 3 quick replies
 
-# Quoted strings
-ACTION: Send welcome email
-ID: samples.send-welcome
+# Quoted strings (apostrophes in prose must not open strings)
+Action: Send welcome email
+Id: samples.send-welcome
 Shows
   Greeting with "welcome" and 'user name'
+  Store the user's name when provided
+  Store the user's email address when provided
 
 # Directive-like words in normal text should NOT highlight
-ACTION: Prose sample
-ID: samples.prose
+Action: Prose sample
+Id: samples.prose
 Rules
   Only show this when product results are available
   Do not run if the user is anonymous

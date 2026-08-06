@@ -10,18 +10,40 @@ This extension provides TextMate-based highlighting for `.flowspec` files. It do
 - File extension: `.flowspec`
 - Language name: **FlowSpec**
 - Line comments with `#`
-- Highlighting for structural directives, `ID`, sections, flow-control phrases, titles, identifiers, numbers, durations, and quoted strings
+- Highlighting for Title Case structural directives, `Id`, sections, flow-control phrases, titles, identifiers, numbers, durations, and quoted strings
+- Deprecated uppercase `FLOW` / `SCREEN` / `ACTION` / `ID` still highlight for older files
 
 ## Supported directives (v1)
+
+Exact Title Case forms:
+
+```text
+Flow
+Screen
+Action
+Id
+Receives
+Rules
+Steps
+Shows
+Outcome
+When
+Once
+If
+Otherwise
+At the same time
+If ... fails
+Go to
+```
 
 ### Structural
 
 | Directive | Example |
 | --------- | ------- |
-| `FLOW` | `FLOW: Answer a user message` |
-| `SCREEN` | `SCREEN: Conversation` |
-| `ACTION` | `ACTION: Create quick replies` |
-| `ID` | `ID: conversation.create-quick-replies` |
+| `Flow` | `Flow: Answer a user message` |
+| `Screen` | `Screen: Conversation` |
+| `Action` | `Action: Create quick replies` |
+| `Id` | `Id: conversation.create-quick-replies` |
 
 ### Sections
 
@@ -50,18 +72,18 @@ Directives are highlighted only at the beginning of a line (after optional inden
 ## Syntax example
 
 ```flowspec
-FLOW: Answer a user message
-ID: conversation.answer-message
+Flow: Answer a user message
+Id: conversation.answer-message
 
-SCREEN: Conversation
-ID: conversation.screen
+Screen: Conversation
+Id: conversation.screen
 
 When the user sends a message
 
   At the same time
 
-    ACTION: Find relevant products
-    ID: conversation.find-products
+    Action: Find relevant products
+    Id: conversation.find-products
 
       Receives
         User message
@@ -75,8 +97,8 @@ When the user sends a message
 
   Once product results are available
 
-    ACTION: Create quick replies
-    ID: conversation.create-quick-replies
+    Action: Create quick replies
+    Id: conversation.create-quick-replies
 
       Rules
         Show no more than 3 quick replies
@@ -96,7 +118,7 @@ When the user sends a message
 1. Open this `vscode-extension` folder in VS Code or Cursor.
 2. `npm install` (needed for packaging).
 3. Press **F5** (configuration **Extension**).
-4. Confirm highlighting on `examples/example.flowspec`, including `ID` values and mid-line prose that must not highlight.
+4. Confirm highlighting on `examples/example.flowspec`, including `Id` values and mid-line prose that must not highlight.
 
 ## Package as a `.vsix`
 
@@ -116,11 +138,11 @@ code --install-extension flowspec-0.1.0.vsix
 | Kind | TextMate scope |
 | ---- | -------------- |
 | Structural directives | `keyword.control.directive.flowspec` |
-| `ID` | `keyword.other.metadata.flowspec` |
-| ID values | `entity.name.identifier.flowspec` |
+| `Id` | `keyword.other.metadata.flowspec` |
+| Id values | `entity.name.identifier.flowspec` |
 | Section directives | `keyword.control.section.flowspec` |
 | Flow-control phrases | `keyword.control.flow.flowspec` |
-| Titles after `FLOW` / `SCREEN` / `ACTION` / `Go to` | `entity.name.flowspec` |
+| Titles after `Flow` / `Screen` / `Action` / `Go to` | `entity.name.flowspec` |
 | Numbers | `constant.numeric.flowspec` |
 | Durations | `constant.numeric.duration.flowspec` |
 | Quoted strings | `string.quoted.*.flowspec` |

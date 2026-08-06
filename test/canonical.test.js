@@ -12,20 +12,21 @@ const canonicalPath = path.join(
 );
 
 describe("canonical example", () => {
-  it("parses and validates without errors", () => {
+  it("parses and validates Title Case without errors or deprecation warnings", () => {
     const source = fs.readFileSync(canonicalPath, "utf8");
     const { document, diagnostics } = validate(source);
-    const errors = diagnostics.filter((d) => d.severity === "error");
-    assert.equal(errors.length, 0, JSON.stringify(errors, null, 2));
+    assert.equal(diagnostics.length, 0, JSON.stringify(diagnostics, null, 2));
 
     const flows = document.elements.filter((e) => e.type === "flow");
     const screens = document.elements.filter((e) => e.type === "screen");
     const actions = document.elements.filter((e) => e.type === "action");
     assert.equal(flows.length, 1);
+    assert.equal(flows[0].kind, "Flow");
     assert.equal(flows[0].id, "conversation.answer-message");
     assert.equal(screens.length, 1);
-    assert.equal(screens[0].id, "conversation.screen");
+    assert.equal(screens[0].kind, "Screen");
     assert.equal(actions.length, 6);
+    assert.ok(actions.every((a) => a.kind === "Action"));
 
     const ids = actions.map((a) => a.id).sort();
     assert.deepEqual(ids, [

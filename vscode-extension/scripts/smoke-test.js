@@ -37,52 +37,71 @@ const idValue = compilePattern(
   grammar.repository["id-directive"].patterns.find((p) => p.match).match
 );
 
+assert("grammar includes Title Case Flow|Screen|Action", /Flow\|FLOW/.test(grammar.repository["top-level-directives"].begin));
+assert("grammar includes Title Case Id", /\(Id\|ID\)/.test(grammar.repository["id-directive"].begin));
+
 const topMatches = sample.match(topLevel) || [];
-assert("matches FLOW/SCREEN/ACTION at line start", topMatches.length >= 8);
+assert("matches Flow/Screen/Action at line start", topMatches.length >= 8);
+assert("matches Title Case Flow lines", topMatches.some((m) => /\bFlow\b/.test(m)));
 
 const idMatches = sample.match(idDirective) || [];
-assert("matches ID directives", idMatches.length >= 6);
+assert("matches Id directives", idMatches.length >= 6);
+assert("matches Title Case Id lines", idMatches.some((m) => /\bId\b/.test(m)));
 
 assert(
-  "matches ID identifier values",
+  "matches Id identifier values",
   (sample.match(idValue) || []).some((m) => m.includes("conversation."))
 );
 
-const sectionMatches = sample.match(section) || [];
-assert("matches section directives", sectionMatches.length >= 10);
-
-assert(
-  "matches If … fails",
-  (sample.match(ifFails) || []).some((m) => /fails/.test(m))
-);
-
-assert(
-  "matches At the same time",
-  (sample.match(atSameTime) || []).length >= 1
-);
-
-assert(
-  "matches When/Once/If/Otherwise",
-  (sample.match(flowControl) || []).length >= 4
-);
-
+assert("matches section directives", (sample.match(section) || []).length >= 10);
+assert("matches If … fails", (sample.match(ifFails) || []).some((m) => /fails/.test(m)));
+assert("matches At the same time", (sample.match(atSameTime) || []).length >= 1);
+assert("matches When/Once/If/Otherwise", (sample.match(flowControl) || []).length >= 4);
 assert("matches comments", (sample.match(comment) || []).length >= 1);
 assert("matches durations", (sample.match(duration) || []).length >= 3);
 assert("matches numbers", (sample.match(number) || []).length >= 1);
 
-const ruleLine = "  Only show this when product results are available";
-assert("does not match mid-line 'when'", !compilePattern(grammar.repository["flow-control"].match).test(ruleLine));
-
-const ifLine = "  Do not run if the user is anonymous";
-assert("does not match mid-line 'if'", !compilePattern(grammar.repository["flow-control"].match).test(ifLine));
-
-const rulesInText = "  Follow the rules in the brand guide";
-assert("does not match mid-line 'rules'", !compilePattern(grammar.repository["section-directives"].match).test(rulesInText));
-
-const midId = "  reference the ID conversation.find-products later";
-assert("does not match mid-line 'ID'", !compilePattern(grammar.repository["id-directive"].begin).test(midId));
-
+assert(
+  "does not match mid-line 'when'",
+  !compilePattern(grammar.repository["flow-control"].match).test(
+    "  Only show this when product results are available"
+  )
+);
+assert(
+  "does not match mid-line 'if'",
+  !compilePattern(grammar.repository["flow-control"].match).test(
+    "  Do not run if the user is anonymous"
+  )
+);
+assert(
+  "does not match mid-line 'rules'",
+  !compilePattern(grammar.repository["section-directives"].match).test(
+    "  Follow the rules in the brand guide"
+  )
+);
+assert(
+  "does not match mid-line 'Id'",
+  !compilePattern(grammar.repository["id-directive"].begin).test(
+    "  reference the Id conversation.find-products later"
+  )
+);
 assert("Go to begin pattern is line-anchored", goTo.source.startsWith("^"));
+
+const singleQuoteBegin = grammar.repository.strings.patterns.find(
+  (p) => p.name === "string.quoted.single.flowspec"
+).begin;
+assert(
+  "single-quote strings ignore mid-word apostrophes",
+  singleQuoteBegin.includes("?<!")
+);
+assert(
+  "possessive user's does not open a single-quoted string",
+  !new RegExp(singleQuoteBegin).test("user's")
+);
+assert(
+  "standalone 'quoted' still opens a single-quoted string",
+  new RegExp(singleQuoteBegin).test("use 'quoted' text")
+);
 
 const failed = checks.filter((c) => !c.ok);
 for (const c of checks) {

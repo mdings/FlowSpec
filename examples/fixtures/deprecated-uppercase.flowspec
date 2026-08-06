@@ -1,0 +1,18 @@
+# Deprecated uppercase structural directives (still parse; emit warnings).
+FLOW: Answer a user message
+ID: conversation.answer-message
+
+SCREEN: Conversation
+ID: conversation.screen
+
+ACTION: Create quick replies
+ID: conversation.create-quick-replies
+
+  Receives
+    User message
+
+  Steps
+    Create relevant quick replies
+
+  Outcome
+    Quick replies are available

@@ -1,15 +1,15 @@
-FLOW: Answer a user message
-ID: conversation.answer-message
+Flow: Answer a user message
+Id: conversation.answer-message
 
-SCREEN: Conversation
-ID: conversation.screen
+Screen: Conversation
+Id: conversation.screen
 
 When the user sends a message
 
   At the same time
 
-    ACTION: Find relevant products
-    ID: conversation.find-products
+    Action: Find relevant products
+    Id: conversation.find-products
 
       Receives
         User message
@@ -21,8 +21,8 @@ When the user sends a message
       Outcome
         Product results are available
 
-    ACTION: Create assistant response
-    ID: conversation.create-response
+    Action: Create assistant response
+    Id: conversation.create-response
 
       Receives
         User message
@@ -36,8 +36,8 @@ When the user sends a message
 
   Once assistant response is available
 
-    ACTION: Show assistant response
-    ID: conversation.show-response
+    Action: Show assistant response
+    Id: conversation.show-response
 
       Receives
         Assistant response
@@ -50,8 +50,8 @@ When the user sends a message
 
   Once product results are available
 
-    ACTION: Create quick replies
-    ID: conversation.create-quick-replies
+    Action: Create quick replies
+    Id: conversation.create-quick-replies
 
       Receives
         User message
@@ -75,8 +75,8 @@ When the user sends a message
 
   Once quick replies are available
 
-    ACTION: Show quick replies
-    ID: conversation.show-quick-replies
+    Action: Show quick replies
+    Id: conversation.show-quick-replies
 
       Receives
         Quick replies
@@ -89,8 +89,8 @@ When the user sends a message
 
   If product search fails
 
-    ACTION: Continue without quick replies
-    ID: conversation.continue-without-quick-replies
+    Action: Continue without quick replies
+    Id: conversation.continue-without-quick-replies
 
       Shows
         Assistant response without quick replies
