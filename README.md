@@ -1,4 +1,4 @@
-# Flowspec
+# FlowSpec
 
 ## What is FlowSpec?
 
