@@ -1,0 +1,180 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "FlowSpec",
+  "scopeName": "source.flowspec",
+  "patterns": [
+    {
+      "include": "#comments"
+    },
+    {
+      "include": "#top-level-directives"
+    },
+    {
+      "include": "#id-directive"
+    },
+    {
+      "include": "#if-fails"
+    },
+    {
+      "include": "#at-the-same-time"
+    },
+    {
+      "include": "#go-to"
+    },
+    {
+      "include": "#section-directives"
+    },
+    {
+      "include": "#flow-control"
+    },
+    {
+      "include": "#strings"
+    },
+    {
+      "include": "#durations"
+    },
+    {
+      "include": "#numbers"
+    }
+  ],
+  "repository": {
+    "comments": {
+      "name": "comment.line.number-sign.flowspec",
+      "match": "#.*$"
+    },
+    "top-level-directives": {
+      "name": "meta.directive.structural.flowspec",
+      "begin": "^(\\s*)(FLOW|SCREEN|ACTION)\\b\\s*:?",
+      "beginCaptures": {
+        "2": {
+          "name": "keyword.control.directive.flowspec"
+        }
+      },
+      "end": "$",
+      "contentName": "entity.name.flowspec",
+      "patterns": [
+        {
+          "include": "#comments"
+        },
+        {
+          "include": "#strings"
+        },
+        {
+          "include": "#durations"
+        },
+        {
+          "include": "#numbers"
+        }
+      ]
+    },
+    "id-directive": {
+      "name": "meta.directive.id.flowspec",
+      "begin": "^(\\s*)(ID)\\b\\s*:?",
+      "beginCaptures": {
+        "2": {
+          "name": "keyword.other.metadata.flowspec"
+        }
+      },
+      "end": "$",
+      "contentName": "entity.name.identifier.flowspec",
+      "patterns": [
+        {
+          "name": "entity.name.identifier.flowspec",
+          "match": "[a-z0-9][a-z0-9._-]*"
+        },
+        {
+          "include": "#comments"
+        }
+      ]
+    },
+    "section-directives": {
+      "name": "meta.directive.section.flowspec",
+      "match": "^(\\s*)(Receives|Rules|Steps|Shows|Outcome)\\b\\s*:?",
+      "captures": {
+        "2": {
+          "name": "keyword.control.section.flowspec"
+        }
+      }
+    },
+    "if-fails": {
+      "name": "meta.flow-control.if-fails.flowspec",
+      "match": "^(\\s*)(If\\b.+?\\bfails)\\b\\s*:?",
+      "captures": {
+        "2": {
+          "name": "keyword.control.flow.flowspec"
+        }
+      }
+    },
+    "at-the-same-time": {
+      "name": "meta.flow-control.at-the-same-time.flowspec",
+      "match": "^(\\s*)(At the same time)\\b\\s*:?",
+      "captures": {
+        "2": {
+          "name": "keyword.control.flow.flowspec"
+        }
+      }
+    },
+    "go-to": {
+      "name": "meta.flow-control.go-to.flowspec",
+      "begin": "^(\\s*)(Go to)\\b\\s*:?",
+      "beginCaptures": {
+        "2": {
+          "name": "keyword.control.flow.flowspec"
+        }
+      },
+      "end": "$",
+      "contentName": "entity.name.flowspec",
+      "patterns": [
+        {
+          "include": "#comments"
+        },
+        {
+          "include": "#strings"
+        }
+      ]
+    },
+    "flow-control": {
+      "name": "meta.flow-control.flowspec",
+      "match": "^(\\s*)(When|Once|If|Otherwise)\\b\\s*:?",
+      "captures": {
+        "2": {
+          "name": "keyword.control.flow.flowspec"
+        }
+      }
+    },
+    "strings": {
+      "patterns": [
+        {
+          "name": "string.quoted.double.flowspec",
+          "begin": "\"",
+          "end": "\"",
+          "patterns": [
+            {
+              "name": "constant.character.escape.flowspec",
+              "match": "\\\\."
+            }
+          ]
+        },
+        {
+          "name": "string.quoted.single.flowspec",
+          "begin": "'",
+          "end": "'",
+          "patterns": [
+            {
+              "name": "constant.character.escape.flowspec",
+              "match": "\\\\."
+            }
+          ]
+        }
+      ]
+    },
+    "durations": {
+      "name": "constant.numeric.duration.flowspec",
+      "match": "\\b(\\d+(?:\\.\\d+)?)\\s+(seconds?|minutes?|hours?|days?)\\b"
+    },
+    "numbers": {
+      "name": "constant.numeric.flowspec",
+      "match": "\\b\\d+(?:\\.\\d+)?\\b"
+    }
+  }
+}

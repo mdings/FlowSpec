@@ -1,43 +1,118 @@
 # FlowSpec
 
-## What is FlowSpec?
+FlowSpec is a high-level, human-readable format for describing the intended business logic and behavioral structure of an application.
 
-FlowSpec is a human-readable framework for describing business logic to LLMs.
+**FlowSpec defines what an application must do while leaving developers and LLMs free to decide how it is implemented.**
 
-We already have wireframes for UX, mockups for visual design, and test-driven development for code. What is still missing is a simple, standardized way to define how an application should behave.
+It is a behavioral specification — not a programming language, not an executable test framework, and not a replacement for Gherkin or Cucumber.
 
-As vibe coding becomes more common, it becomes harder to maintain a clear mental model of an app’s logic. Business rules end up scattered across prompts, Markdown files, tests, and implementation details—or trapped inside the context of a single LLM session.
+**FlowSpec models the logic. Gherkin or other testing tools can verify concrete examples of that logic.**
 
-FlowSpec provides a single, structured source of truth for that behavior. It defines what the application must do, while leaving the LLM free to decide how to implement it.
+## v1 directive set
 
-Because the specification is structured, it can also be used to detect behavioral drift before deployment—for example when changing prompts, switching models, adding new tools, or modifying the underlying tech stack.
+### Structural directives
 
-**Let LLMs decide how to build. Keep control over what the product does.**
+| Directive | Description | Example |
+| --------- | ----------- | ------- |
+| `FLOW` | Names a complete user journey or business flow. | `FLOW: Answer a user message` |
+| `SCREEN` | Defines the screen, page, modal, or UI context. | `SCREEN: Conversation` |
+| `ACTION` | Defines something the user or the system does. | `ACTION: Create quick replies` |
+| `ID` | Optional stable machine-readable reference for a `FLOW`, `SCREEN`, or `ACTION`. | `ID: conversation.create-quick-replies` |
 
-| Directive          | Description                                                                                                            | Example                                                                               |
-| ------------------ | ---------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
-| `FLOW`             | Names a complete user journey or business flow. A flow usually contains one or more screens and actions.               | `FLOW: Answer a user message`                                                         |
-| `SCREEN`           | Defines the screen, page, modal, or UI context in which behavior takes place.                                          | `SCREEN: Conversation`                                                                |
-| `ACTION`           | Defines something the user or the system does. An action can contain inputs, rules, steps, UI effects, and an outcome. | `ACTION: Create quick replies`                                                        |
-| `Receives`         | Lists the information an action needs before it can run.                                                               | `Receives`<br>`  User message`<br>`  Product results`                                 |
-| `Rules`            | Defines business constraints that must always remain true. Rules describe boundaries, not implementation details.      | `Rules`<br>`  Show no more than 3 quick replies`                                      |
-| `Steps`            | Defines the required functional work and sequence within an action, without prescribing the technical implementation.  | `Steps`<br>`  Inspect the best search result`<br>`  Create relevant chips`            |
-| `Shows`            | Describes what becomes visible to the user as a result of an action.                                                   | `Shows`<br>`  Quick replies below the assistant response`                             |
-| `Outcome`          | Defines the observable or reusable result of an action. Other actions can wait for this outcome.                       | `Outcome`<br>`  Quick replies are available`                                          |
-| `Go to`            | Navigates the user to another screen or flow.                                                                          | `Go to: Verify login code`                                                            |
-| `When`             | Defines the event or trigger that starts behavior.                                                                     | `When the user sends a message`                                                       |
-| `At the same time` | Groups actions that may begin in parallel and do not need to wait for each other.                                      | `At the same time`<br>`  Find relevant products`<br>`  Create the assistant response` |
-| `Once`             | Starts behavior only after a specific outcome or dependency is available.                                              | `Once product results are available`<br>`  Create quick replies`                      |
-| `If`               | Defines behavior that only occurs when a condition is true.                                                            | `If the best result is a brand`<br>`  Create product chips from that brand`           |
-| `Otherwise`        | Defines the alternative path when the preceding `If` condition is not true.                                            | `Otherwise`<br>`  Create relevant category chips`                                     |
-| `If … fails`       | Defines the fallback or error path when an action cannot complete successfully.                                        | `If product search fails`<br>`  Show the assistant response without quick replies`    |
+### Action sections
+
+| Directive | Description | Example |
+| --------- | ----------- | ------- |
+| `Receives` | Information an action needs before it can run. | `Receives` / `  User message` |
+| `Rules` | Business constraints that must remain true. | `Rules` / `  Show no more than 3 quick replies` |
+| `Steps` | Required functional work inside an action, without technical or test details. | `Steps` / `  Find matching products` |
+| `Shows` | What becomes visible to the user. | `Shows` / `  Quick replies below the assistant response` |
+| `Outcome` | Observable or reusable result; other actions can wait for it. | `Outcome` / `  Quick replies are available` |
+
+### Flow-control directives
+
+| Directive | Description | Example |
+| --------- | ----------- | ------- |
+| `When` | Behavioral trigger that starts activity (not Gherkin’s executable `When`). | `When the user sends a message` |
+| `At the same time` | Actions that may begin in parallel. | `At the same time` |
+| `Once` | Start only after an outcome or dependency is available. | `Once product results are available` |
+| `If` | Conditional path. | `If the best result is a brand` |
+| `Otherwise` | Alternate path when the preceding `If` is not true. | `Otherwise` |
+| `If … fails` | Fallback when something cannot complete successfully. | `If product search fails` |
+| `Go to` | Navigate to another screen or flow. | `Go to: Verify login code` |
+
+Colons after directives are optional; prefer the colon form in documentation (`FLOW:`, `ID:`).
+
+## `ACTION` vs `Steps`
+
+- **`ACTION`** names a unit of behavior (what the user or system does) within a flow and screen.
+- **`Steps`** lists the **required functional work that must happen inside that action**, without prescribing technical implementation or describing executable test steps.
+
+Internally, parsers may represent this section as `steps`. The visible directive remains `Steps`.
+
+### Good `Steps`
+
+```flowspec
+Steps
+  Find matching products
+  Rank the product results
+  Create relevant quick replies
+```
+
+### Too technical
+
+```flowspec
+Steps
+  Query the Pinecone index
+  Parse the JSON response
+  Store the result in React state
+```
+
+### Too test-oriented
+
+```flowspec
+Steps
+  Click the submit button
+  Assert that the user is redirected
+```
+
+FlowSpec documents the convention only; it does not attempt to detect “too technical” wording automatically.
+
+## Stable IDs
+
+`ID` is optional on `FLOW`, `SCREEN`, and `ACTION`. IDs:
+
+- are unique within a FlowSpec file;
+- stay independent from the display name;
+- are stable machine-readable references (do not regenerate them when names change);
+- use lowercase letters, numbers, hyphens, underscores, and periods.
+
+Recommended format:
+
+```text
+^[a-z0-9][a-z0-9._-]*$
+```
+
+Example:
+
+```flowspec
+FLOW: Answer a user message
+ID: conversation.answer-message
+
+SCREEN: Conversation
+ID: conversation.screen
+
+ACTION: Create quick replies
+ID: conversation.create-quick-replies
+```
 
 ## Standard action structure
 
-Use the same section order wherever possible:
+Recommended order when multiple sections are present:
 
-```
+```flowspec
 ACTION: [Action name]
+ID: [stable identifier]
 
 Receives
   [Required input]
@@ -46,48 +121,67 @@ Rules
   [Business constraints]
 
 Steps
-  [Required functional steps]
+  [Required functional work]
 
 Shows
-  [Visible UI result]
+  [Visible user-facing effect]
 
 Outcome
   [Observable or reusable result]
 ```
 
-Not every action needs every section. Omit sections that do not apply, but keep the remaining sections in this order.
+Not every section is required. Missing sections are allowed. Incorrect order should produce a **warning**, not a hard parse failure.
 
-## Complete example
+## FlowSpec vs Gherkin
 
+| | FlowSpec | Gherkin / similar |
+| - | -------- | ----------------- |
+| Role | Behavioral model of the product | Concrete, often executable examples |
+| Style | Descriptive structure | Scenario / step definitions |
+| `When` | Behavioral trigger | Executable scenario step |
+
+**Not part of FlowSpec v1:** `Given`, `Then`, `Expect`, `Assert`, `Mock`, `Fixture`, `Scenario`, executable test data, test-runner integration, or step definitions.
+
+```text
+FlowSpec describes the behavioral model.
+Gherkin or other test frameworks verify concrete examples of that model.
 ```
+
+## Canonical example
+
+```flowspec
 FLOW: Answer a user message
+ID: conversation.answer-message
 
 SCREEN: Conversation
+ID: conversation.screen
 
 When the user sends a message
 
   At the same time
 
     ACTION: Find relevant products
+    ID: conversation.find-products
 
       Receives
         User message
 
       Steps
-        Search for products using the user message
+        Find products relevant to the user message
         Rank the matching products
 
       Outcome
         Product results are available
 
     ACTION: Create assistant response
+    ID: conversation.create-response
 
       Receives
         User message
 
       Steps
         Interpret the user’s request
-        Generate a relevant response
+        Create a relevant response
 
       Outcome
         Assistant response is available
@@ -95,6 +189,7 @@ When the user sends a message
   Once assistant response is available
 
     ACTION: Show assistant response
+    ID: conversation.show-response
 
       Receives
         Assistant response
@@ -108,6 +203,7 @@ When the user sends a message
   Once product results are available
 
     ACTION: Create quick replies
+    ID: conversation.create-quick-replies
 
       Receives
         User message
@@ -118,7 +214,7 @@ When the user sends a message
         Quick replies must use available product information
 
       Steps
-        Inspect the best search result
+        Inspect the best product-search result
 
         If the best result is a brand
           Create product chips from that brand
@@ -132,6 +228,7 @@ When the user sends a message
   Once quick replies are available
 
     ACTION: Show quick replies
+    ID: conversation.show-quick-replies
 
       Receives
         Quick replies
@@ -145,6 +242,7 @@ When the user sends a message
   If product search fails
 
     ACTION: Continue without quick replies
+    ID: conversation.continue-without-quick-replies
 
       Shows
         Assistant response without quick replies
@@ -153,70 +251,53 @@ When the user sends a message
         Conversation remains usable
 ```
 
+The same file lives at [`examples/answer-a-user-message.flowspec`](examples/answer-a-user-message.flowspec).
+
 ## Meaning of the core sections
 
-```
+```text
 Receives  → What does this action need?
 Rules     → What must always remain true?
-Steps     → What must functionally happen?
+Steps     → What required functional work must happen?
 Shows     → What does the user see?
 Outcome   → What is true or available afterwards?
 ```
 
-## Frequently asked questions
+## Repository layout
+
+| Path | Contents |
+| ---- | -------- |
+| [`examples/`](examples/) | Canonical FlowSpec samples |
+| [`lib/`](lib/) | Small reusable parse + validate helpers (IDs, section order) |
+| [`test/`](test/) | Parser and validation tests |
+| [`vscode-extension/`](vscode-extension/) | VS Code syntax-highlighting extension |
+
+## Current limitations
+
+- FlowSpec v1 is a **descriptive** specification format only.
+- No language server, formatter, or IDE diagnostics beyond optional use of `lib/`.
+- No automatic generation of Gherkin, unit tests, or executable suites.
+- No automatic detection of behavioral drift or of “too technical” steps.
+- Validation covers ID format/uniqueness/attachment and recommended section-order **warnings** only.
+
+## FAQ
 
 ### Is FlowSpec a programming language?
 
-No. FlowSpec describes **what an application must do**, not how it should be implemented. Developers and LLMs remain free to choose the architecture, frameworks, services, and implementation details.
+No. It describes **what** an application must do, not **how** to implement it.
 
 ### Is FlowSpec a replacement for tests?
 
-No. FlowSpec defines expected business behavior and can be used to generate or guide tests. Existing unit, integration, and end-to-end tests remain important for verifying the implementation.
+No. Use FlowSpec for the behavioral model; use Gherkin or other frameworks for concrete verification.
 
-### How is FlowSpec different from Gherkin or BDD?
+### Does FlowSpec prescribe architecture?
 
-Gherkin is primarily designed around executable test scenarios using `Given`, `When`, and `Then`. FlowSpec is intended to be a broader, more easily scannable source of truth for complete user journeys, business rules, dependencies, parallel behavior, and expected outcomes.
+No. It must not prescribe databases, frameworks, APIs, or infrastructure.
 
-### How is FlowSpec different from a product requirements document?
+### Where should `.flowspec` files live?
 
-A product requirements document often combines goals, context, design decisions, and requirements in prose. FlowSpec focuses specifically on application behavior and expresses it through a small, standardized vocabulary that both people and LLMs can interpret consistently.
-
-### Does FlowSpec prescribe the technical architecture?
-
-No. A specification might state that a login code must expire after ten minutes, but it does not prescribe which database, authentication provider, framework, or backend function should be used.
-
-### Why is standardization important for LLMs?
-
-Natural-language prompts leave room for interpretation. A standardized structure helps an LLM distinguish between inputs, mandatory rules, required steps, dependencies, visible effects, and expected outcomes. This reduces assumptions and produces more consistent implementations across prompts, tools, and models.
-
-### Can an LLM generate a FlowSpec?
-
-Yes, but the resulting specification should be reviewed and approved by a person. The purpose of FlowSpec is to keep product behavior under human control rather than allowing an LLM to silently invent business logic.
-
-### Can FlowSpec be used with existing applications?
-
-Yes. An existing user journey can be documented as a FlowSpec and then compared with the current implementation. This can also reveal undocumented behavior and rules that currently exist only in the codebase.
-
-### What is behavioral drift?
-
-Behavioral drift occurs when the implementation no longer matches the approved FlowSpec. This can include missing behavior, changed ordering, weakened rules, altered navigation, or new business logic that was never documented.
-
-### Can FlowSpec block a deployment?
-
-Potentially. A CI pipeline could compare code changes and executable tests against the relevant FlowSpecs. When critical drift is detected, the pipeline can report the difference and prevent deployment until it is resolved.
-
-### Does FlowSpec require a specific LLM or coding tool?
-
-No. It should work as a model-independent contract that can be used with tools such as Cursor, Codex, Claude Code, GitHub Copilot, or other current and future development agents.
-
-### Where should FlowSpec files live?
-
-The simplest approach is to keep them alongside the code in the repository. This makes them versionable, reviewable through pull requests, and available to both development tools and CI pipelines.
+Alongside the code in the repository so they stay versionable and reviewable.
 
 ### Who is FlowSpec for?
 
-FlowSpec is intended for founders, product managers, designers, developers, and AI-assisted teams that want the speed of vibe coding without losing control over product behavior.
-
-### What is the current scope?
-
-The first version focuses on describing flows, screens, actions, inputs, rules, steps, outcomes, navigation, conditions, dependencies, parallel behavior, and failure paths. It intentionally avoids defining technical implementation details.
+Founders, product managers, designers, developers, and AI-assisted teams that want clear behavioral control without turning the spec into an executable test DSL.

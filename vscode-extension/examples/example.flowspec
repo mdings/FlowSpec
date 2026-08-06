@@ -1,0 +1,132 @@
+FLOW: Answer a user message
+ID: conversation.answer-message
+
+SCREEN: Conversation
+ID: conversation.screen
+
+When the user sends a message
+
+  At the same time
+
+    ACTION: Find relevant products
+    ID: conversation.find-products
+
+      Receives
+        User message
+
+      Steps
+        Find products relevant to the user message
+        Rank the matching products
+
+      Outcome
+        Product results are available
+
+    ACTION: Create assistant response
+    ID: conversation.create-response
+
+      Receives
+        User message
+
+      Steps
+        Interpret the user’s request
+        Create a relevant response
+
+      Outcome
+        Assistant response is available
+
+  Once assistant response is available
+
+    ACTION: Show assistant response
+    ID: conversation.show-response
+
+      Receives
+        Assistant response
+
+      Shows
+        Assistant response in the conversation
+
+      Outcome
+        Assistant response is shown
+
+  Once product results are available
+
+    ACTION: Create quick replies
+    ID: conversation.create-quick-replies
+
+      Receives
+        User message
+        Product results
+
+      Rules
+        Show no more than 3 quick replies
+        Quick replies must use available product information
+
+      Steps
+        Inspect the best product-search result
+
+        If the best result is a brand
+          Create product chips from that brand
+
+        Otherwise
+          Create relevant category chips
+
+      Outcome
+        Quick replies are available
+
+  Once quick replies are available
+
+    ACTION: Show quick replies
+    ID: conversation.show-quick-replies
+
+      Receives
+        Quick replies
+
+      Shows
+        Quick replies below the assistant response
+
+      Outcome
+        Quick replies are shown
+
+  If product search fails
+
+    ACTION: Continue without quick replies
+    ID: conversation.continue-without-quick-replies
+
+      Shows
+        Assistant response without quick replies
+
+      Outcome
+        Conversation remains usable
+
+# --- Additional highlighting samples ---
+
+# Optional colons omitted
+FLOW Answer a user message
+ID conversation.answer-message-alt
+SCREEN Conversation
+ID conversation.screen-alt
+ACTION Create quick replies
+ID conversation.create-quick-replies-alt
+
+# Numbers and durations
+ACTION: Timing sample
+ID: samples.timing
+Rules
+  Wait no longer than 10 minutes
+  Retry after 5 seconds
+  Cache for 1 hour
+  Show no more than 3 quick replies
+
+# Quoted strings
+ACTION: Send welcome email
+ID: samples.send-welcome
+Shows
+  Greeting with "welcome" and 'user name'
+
+# Directive-like words in normal text should NOT highlight
+ACTION: Prose sample
+ID: samples.prose
+Rules
+  Only show this when product results are available
+  Do not run if the user is anonymous
+  Follow the rules in the brand guide

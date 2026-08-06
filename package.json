@@ -1,0 +1,14 @@
+{
+  "name": "flowspec",
+  "version": "0.1.0",
+  "private": true,
+  "description": "FlowSpec language documentation, parser, and VS Code extension.",
+  "scripts": {
+    "test": "node --test test/*.test.js && npm --prefix vscode-extension test",
+    "test:lib": "node --test test/*.test.js",
+    "test:extension": "npm --prefix vscode-extension test"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
