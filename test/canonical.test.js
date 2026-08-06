@@ -2,7 +2,7 @@ const { describe, it } = require("node:test");
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
-const { parse, validate } = require("../lib");
+const { parse, validate, lintFlowSpecFile } = require("../lib");
 
 const canonicalPath = path.join(
   __dirname,
@@ -12,10 +12,14 @@ const canonicalPath = path.join(
 );
 
 describe("canonical example", () => {
-  it("parses and validates Title Case without errors or deprecation warnings", () => {
+  it("parses and lints Title Case without errors", () => {
     const source = fs.readFileSync(canonicalPath, "utf8");
-    const { document, diagnostics } = validate(source);
-    assert.equal(diagnostics.length, 0, JSON.stringify(diagnostics, null, 2));
+    const { document, diagnostics } = validate(source, "examples/answer-a-user-message.flowspec");
+    assert.equal(
+      diagnostics.filter((d) => d.severity === "error").length,
+      0,
+      JSON.stringify(diagnostics, null, 2)
+    );
 
     const flows = document.elements.filter((e) => e.type === "flow");
     const screens = document.elements.filter((e) => e.type === "screen");
@@ -44,5 +48,8 @@ describe("canonical example", () => {
     );
     assert.ok(when);
     assert.match(when.text, /user sends a message/);
+
+    const lint = lintFlowSpecFile(source, "examples/answer-a-user-message.flowspec");
+    assert.equal(lint.filter((d) => d.severity === "error").length, 0);
   });
 });

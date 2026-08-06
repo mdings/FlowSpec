@@ -6,33 +6,31 @@ Id: conversation.screen
 
 When the user sends a message
 
-  At the same time
+  Action: Find relevant products
+  Id: conversation.find-products
 
-    Action: Find relevant products
-    Id: conversation.find-products
+    Receives
+      User message
 
-      Receives
-        User message
+    Steps
+      Find products relevant to the user message
+      Rank the matching products
 
-      Steps
-        Find products relevant to the user message
-        Rank the matching products
+    Outcome
+      Product results are available
 
-      Outcome
-        Product results are available
+  Action: Create assistant response
+  Id: conversation.create-response
 
-    Action: Create assistant response
-    Id: conversation.create-response
+    Receives
+      User message
 
-      Receives
-        User message
+    Steps
+      Interpret the user’s request
+      Create a relevant response
 
-      Steps
-        Interpret the user’s request
-        Create a relevant response
-
-      Outcome
-        Assistant response is available
+    Outcome
+      Assistant response is available
 
   Once assistant response is available
 

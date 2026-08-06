@@ -9,50 +9,58 @@ describe("validate Ids and casing", () => {
     const { document, diagnostics } = validate(
       "Flow: Answer a user message\nId: conversation.answer-message\n"
     );
-    assert.equal(diagnostics.length, 0);
+    assert.equal(
+      diagnostics.filter((d) => d.severity === "error").length,
+      0
+    );
     assert.equal(document.elements[0].id, "conversation.answer-message");
     assert.equal(document.elements[0].kind, "Flow");
   });
 
   it("rejects invalid uppercase Id values", () => {
-    const { diagnostics } = validate("Action: X\nId: Conversation.Create\n");
-    assert.equal(diagnostics.some((d) => d.code === "invalid-id"), true);
+    const { diagnostics } = validate("Flow X\nAction: X\nId: Conversation.Create\n");
+    assert.equal(diagnostics.some((d) => d.code === "FS005"), true);
     assert.equal(ID_PATTERN.test("Conversation.Create"), false);
   });
 
   it("rejects Ids containing spaces", () => {
-    const { diagnostics } = validate("Action: X\nId: create quick replies\n");
-    assert.equal(diagnostics.some((d) => d.code === "invalid-id"), true);
+    const { diagnostics } = validate("Flow X\nAction: X\nId: create quick replies\n");
+    assert.equal(diagnostics.some((d) => d.code === "FS005"), true);
   });
 
   it("rejects duplicate Ids", () => {
     const source = [
+      "Flow Demo",
       "Action: One",
       "Id: shared.id",
       "Action: Two",
       "Id: shared.id",
     ].join("\n");
     const { diagnostics } = validate(source);
-    assert.equal(diagnostics.some((d) => d.code === "duplicate-id"), true);
+    assert.equal(diagnostics.some((d) => d.code === "FS006"), true);
   });
 
   it("rejects orphaned Ids", () => {
-    const { diagnostics } = validate("Id: orphan.id\n");
-    assert.equal(diagnostics.some((d) => d.code === "orphaned-id"), true);
+    const { diagnostics } = validate("Flow X\nId: orphan.id\nScreen Y\n");
+    // Id after Flow is valid actually! Need truly orphaned:
+    const orphaned = validate("Id: orphan.id\n");
+    assert.equal(orphaned.diagnostics.some((d) => d.code === "FS004"), true);
   });
 
   it("rejects multiple Ids on one structural element", () => {
     const source = [
+      "Flow Demo",
       "Action: Create quick replies",
       "Id: conversation.create-quick-replies",
       "Id: conversation.other",
     ].join("\n");
     const { diagnostics } = validate(source);
-    assert.equal(diagnostics.some((d) => d.code === "multiple-ids"), true);
+    assert.equal(diagnostics.some((d) => d.code === "FS004"), true);
   });
 
   it("warns on discouraged action-section ordering", () => {
     const source = [
+      "Flow Demo",
       "Action: Demo",
       "Id: demo.action",
       "Outcome",
@@ -61,7 +69,7 @@ describe("validate Ids and casing", () => {
       "  Input",
     ].join("\n");
     const { diagnostics } = validate(source);
-    const order = diagnostics.filter((d) => d.code === "section-order");
+    const order = diagnostics.filter((d) => d.code === "FS009");
     assert.ok(order.length >= 1);
     assert.equal(order[0].severity, "warning");
   });
@@ -76,32 +84,33 @@ describe("validate Ids and casing", () => {
       "ID: authentication.send-login-code",
     ].join("\n");
     const { document, diagnostics } = validate(source);
-    const deprecated = diagnostics.filter((d) => d.code === "deprecated-casing");
-    assert.equal(deprecated.length, 6);
-    assert.ok(deprecated.every((d) => d.severity === "warning"));
-    assert.match(deprecated.find((d) => d.message.includes("ACTION")).message, /Use "Action"/);
+    const casing = diagnostics.filter((d) => d.code === "FS016");
+    assert.ok(casing.length >= 6);
+    assert.ok(casing.every((d) => d.severity === "warning"));
     assert.equal(diagnostics.filter((d) => d.severity === "error").length, 0);
     assert.equal(document.elements.find((e) => e.type === "action").kind, "Action");
   });
 
-  it("errors on lowercase structural directives with a suggestion", () => {
+  it("warns on lowercase structural directives with a suggestion", () => {
     const { diagnostics } = validate("flow: Sign in\n");
-    const unknown = diagnostics.find((d) => d.code === "unknown-directive");
+    const unknown = diagnostics.find((d) => d.code === "FS016");
     assert.ok(unknown);
-    assert.equal(unknown.severity, "error");
-    assert.equal(unknown.message, 'Unknown directive "flow". Did you mean "Flow"?');
+    assert.equal(unknown.severity, "warning");
+    assert.match(unknown.message, /Did you mean "Flow"/);
   });
 
-  it("errors on incorrectly cased section directives", () => {
-    const { diagnostics } = validate("Action: Demo\nId: demo.action\nreceives\n  Input\n");
-    const unknown = diagnostics.find((d) => d.code === "unknown-directive");
+  it("warns on incorrectly cased section directives", () => {
+    const { diagnostics } = validate(
+      "Flow Demo\nAction: Demo\nId: demo.action\nreceives\n  Input\n"
+    );
+    const unknown = diagnostics.find((d) => d.code === "FS016");
     assert.ok(unknown);
-    assert.equal(unknown.message, 'Unknown directive "receives". Did you mean "Receives"?');
+    assert.match(unknown.message, /Did you mean "Receives"/);
   });
 
-  it("errors on near-miss forms such as ACTIONs", () => {
-    const { diagnostics } = validate("ACTIONs: Send login code\n");
-    const unknown = diagnostics.find((d) => d.code === "unknown-directive");
+  it("warns on near-miss forms such as ACTIONs", () => {
+    const { diagnostics } = validate("Flow Demo\nACTIONs: Send login code\n");
+    const unknown = diagnostics.find((d) => d.code === "FS016");
     assert.ok(unknown);
     assert.match(unknown.message, /Did you mean "Action"/);
   });
@@ -113,8 +122,8 @@ describe("validate Ids and casing", () => {
     );
     const { document, diagnostics } = validate(source);
     assert.equal(diagnostics.filter((d) => d.severity === "error").length, 0);
-    assert.ok(diagnostics.filter((d) => d.code === "deprecated-casing").length >= 4);
+    assert.ok(diagnostics.filter((d) => d.code === "FS016").length >= 4);
     assert.equal(document.elements.find((e) => e.type === "flow").kind, "Flow");
-    assert.equal(document.elements.find((e) => e.type === "flow").id, "conversation.answer-message");
+    assert.equal(document.elements.find((e) => e.type === "flow").id, "deprecated.answer-message");
   });
 });

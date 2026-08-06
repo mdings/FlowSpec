@@ -2,11 +2,17 @@
   "name": "flowspec",
   "version": "0.1.0",
   "private": true,
-  "description": "FlowSpec language documentation, parser, and VS Code extension.",
+  "description": "FlowSpec language documentation, parser, linter, and VS Code extension.",
+  "bin": {
+    "flowspec": "./bin/flowspec.js"
+  },
+  "main": "./lib/index.js",
   "scripts": {
     "test": "node --test test/*.test.js && npm --prefix vscode-extension test",
     "test:lib": "node --test test/*.test.js",
-    "test:extension": "npm --prefix vscode-extension test"
+    "test:extension": "npm --prefix vscode-extension test",
+    "lint:flowspec": "node bin/flowspec.js lint \"examples/**/*.flowspec\"",
+    "flowspec": "node bin/flowspec.js"
   },
   "engines": {
     "node": ">=18"

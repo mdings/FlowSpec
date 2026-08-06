@@ -1,17 +1,24 @@
 # FlowSpec for Visual Studio Code
 
-Syntax highlighting for [FlowSpec](../README.md) — a human-readable behavioral specification format.
+Syntax highlighting and lint diagnostics for [FlowSpec](../README.md) — a human-readable behavioral specification format.
 
-This extension provides TextMate-based highlighting for `.flowspec` files. It does **not** include a language server, autocomplete, formatting, or IDE diagnostics. A small reusable parser/validator lives in the repo root [`lib/`](../lib/) for tooling and tests.
+This extension provides TextMate-based highlighting for `.flowspec` files and publishes diagnostics from the shared FlowSpec v1 linter. It does **not** include a language server, autocomplete, or formatting.
 
 ## Features
 
 - Language ID: `flowspec`
 - File extension: `.flowspec`
-- Language name: **FlowSpec**
 - Line comments with `#`
-- Highlighting for Title Case structural directives, `Id`, sections, flow-control phrases, titles, identifiers, numbers, durations, and quoted strings
+- Highlighting for Title Case directives, `Id`, sections, flow-control phrases, numbers, durations, and quoted strings
+- Lint on open and change (debounced)
+- Project-wide duplicate `Id` / `Go to` checks on save
 - Deprecated uppercase `FLOW` / `SCREEN` / `ACTION` / `ID` still highlight for older files
+
+## Linting
+
+Diagnostics use the shared core in [`../lib`](../lib) (rules FS001–FS016). See the root [README](../README.md#linter) for the full restriction table and CLI usage.
+
+On package, `npm run sync-lib` copies the core into `vendor/flowspec` so the VSIX is self-contained.
 
 ## Supported directives (v1)
 

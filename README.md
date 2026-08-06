@@ -57,23 +57,146 @@ Go to
 | Directive | Description | Example |
 | --------- | ----------- | ------- |
 | `When` | Behavioral trigger that starts activity (not Gherkin’s executable `When`). | `When the user sends a message` |
-| `At the same time` | Actions that may begin in parallel. | `At the same time` |
+| `At the same time` | Parallel work inside `Steps`. | `At the same time` |
 | `Once` | Start only after an outcome or dependency is available. | `Once product results are available` |
 | `If` | Conditional path. | `If the best result is a brand` |
 | `Otherwise` | Alternate path when the preceding `If` is not true. | `Otherwise` |
 | `If … fails` | Fallback when something cannot complete successfully. | `If product search fails` |
-| `Go to` | Navigate to another screen or flow. | `Go to: Verify login code` |
+| `Go to` | Navigate to another screen, flow, or action. | `Go to: Verify login code` |
 
 Colons after directives are optional; prefer the colon form in documentation (`Flow:`, `Id:`).
 
-The older uppercase forms `FLOW`, `SCREEN`, `ACTION`, and `ID` still parse for backwards compatibility but are **deprecated** and produce validation warnings. Prefer Title Case in all new files. Directives are not fully case-insensitive: forms such as `flow` or `receives` are rejected with a suggestion.
+```flowspec
+Flow Sign in
+Flow: Sign in
+```
+
+Both forms parse identically.
+
+The older uppercase forms `FLOW`, `SCREEN`, `ACTION`, and `ID` still parse for backwards compatibility but produce **FS016** warnings. Prefer Title Case in all new files. Directives are not fully case-insensitive: forms such as `flow` or `receives` are rejected with a suggestion.
+
+Directives are recognized only at the beginning of a line after optional indentation. Directive-like words inside ordinary prose are not treated as directives.
+
+## Linter
+
+FlowSpec v1 includes a structural linter reusable from the CLI, tests, the VS Code extension, and CI.
+
+### Run the linter
+
+```bash
+npm run flowspec -- lint "examples/**/*.flowspec"
+# or
+node bin/flowspec.js lint "examples/**/*.flowspec"
+# or, after npm link / install
+flowspec lint "flowspec/**/*.flowspec"
+```
+
+Explicit files:
+
+```bash
+flowspec lint examples/answer-a-user-message.flowspec examples/fixtures/enter-jack-hunt.flowspec
+```
+
+### CLI options
+
+| Flag | Behavior |
+| ---- | -------- |
+| `--format json` | Machine-readable JSON for CI |
+| `--warnings-as-errors` | Exit `1` when warnings are present |
+
+Exit codes:
+
+- `1` when one or more **errors** exist (or when `--warnings-as-errors` and warnings exist)
+- `0` when there are only warnings or no diagnostics
+
+Human-readable output:
+
+```text
+flowspec/authentication.flowspec:18:3 warning FS014
+Unresolved Go to target "Conversation".
+Expected a Flow, Screen, or Action with this name or Id.
+
+1 error, 2 warnings
+```
+
+JSON output:
+
+```json
+{
+  "errors": 1,
+  "warnings": 2,
+  "diagnostics": []
+}
+```
+
+### Restriction table
+
+| Code | Severity | Rule |
+| ---- | -------- | ---- |
+| FS001 | error | File must start with `Flow` (blank lines and `#` comments allowed before it) |
+| FS002 | error | One top-level `Flow` per file; nested `Flow` is invalid |
+| FS003 | error | Indentation must form a valid tree; mixed tabs/spaces are rejected |
+| FS004 | error | `Id` may only belong to the directly preceding `Flow`, `Screen`, or `Action` |
+| FS005 | error | `Id` must match `^[a-z0-9][a-z0-9._-]*$` |
+| FS006 | error | `Id` must be unique across all loaded FlowSpec files |
+| FS007 | error | `Receives` / `Rules` / `Steps` / `Shows` / `Outcome` only inside an `Action` |
+| FS008 | error | Each action section at most once per `Action` |
+| FS009 | warning | Recommended section order: Receives → Rules → Steps → Shows → Outcome |
+| FS010 | warning | `Action` should not be empty (`Id` alone does not count) |
+| FS011 | error | `At the same time` only inside `Steps` |
+| FS012 | error | `Once` / `If` / `Otherwise` / `If … fails` only in `Steps`, or directly under `Screen` / `Flow` |
+| FS013 | error | `Otherwise` must match a preceding `If` at the same indent in the same parent |
+| FS014 | warning | `Go to` target should resolve to a `Flow`, `Screen`, or `Action` name or `Id` |
+| FS015 | warning | `Go to` target should not match more than one name/Id |
+| FS016 | warning | Unknown or incorrectly cased directive (with suggestion when possible) |
+
+v1 does **not** support suppression comments or configuration files.
+
+### Optional colons and Ids
+
+Colons are always optional on directives. `Id` is optional on `Flow`, `Screen`, and `Action`. When present, place it immediately after the structural directive:
+
+```flowspec
+Action Send login code
+Id authentication.send-login-code
+```
+
+### Go to resolution
+
+`Go to` may reference a display name or an `Id`:
+
+```flowspec
+Go to Conversation
+Go to conversation.bootstrap
+```
+
+Project-level linting (`lintFlowSpecProject` / CLI with multiple files) resolves targets across files, detects duplicates (FS006), unresolved references (FS014), and ambiguous names (FS015). Use an `Id` when display names collide.
+
+### CI example
+
+```yaml
+- name: Lint FlowSpec
+  run: npm run flowspec -- lint "examples/**/*.flowspec"
+```
+
+Adapt the glob to your repository (for example `flowspec/**/*.flowspec`).
+
+### Programmatic API
+
+```js
+const {
+  lintFlowSpecFile,
+  lintFlowSpecProject,
+} = require("flowspec"); // or ./lib
+
+lintFlowSpecFile(source, filePath);
+lintFlowSpecProject([{ source, filePath }]);
+```
 
 ## `Action` vs `Steps`
 
 - **`Action`** names a unit of behavior (what the user or system does) within a flow and screen.
 - **`Steps`** lists the **required functional work that must happen inside that action**, without prescribing technical implementation or describing executable test steps.
-
-Internally, parsers may represent this section as `steps`. The visible directive remains `Steps`.
 
 ### Good `Steps`
 
@@ -107,7 +230,7 @@ FlowSpec documents the convention only; it does not attempt to detect “too tec
 
 `Id` is optional on `Flow`, `Screen`, and `Action`. Ids:
 
-- are unique within a FlowSpec file;
+- are unique across the loaded FlowSpec project;
 - stay independent from the display name;
 - are stable machine-readable references (do not regenerate them when names change);
 - use lowercase letters, numbers, hyphens, underscores, and periods.
@@ -118,22 +241,9 @@ Recommended format:
 ^[a-z0-9][a-z0-9._-]*$
 ```
 
-Example:
-
-```flowspec
-Flow: Answer a user message
-Id: conversation.answer-message
-
-Screen: Conversation
-Id: conversation.screen
-
-Action: Create quick replies
-Id: conversation.create-quick-replies
-```
-
 ## Standard action structure
 
-Recommended order when multiple sections are present:
+Recommended order when multiple action sections are present:
 
 ```flowspec
 Action: [Action name]
@@ -155,7 +265,7 @@ Outcome
   [Observable or reusable result]
 ```
 
-Not every section is required. Missing sections are allowed. Incorrect order should produce a **warning**, not a hard parse failure.
+Not every section is required. Missing sections are allowed. Incorrect order produces **FS009** (warning), not a hard parse failure.
 
 ## FlowSpec vs Gherkin
 
@@ -165,7 +275,7 @@ Not every section is required. Missing sections are allowed. Incorrect order sho
 | Style | Descriptive structure | Scenario / step definitions |
 | `When` | Behavioral trigger | Executable scenario step |
 
-**Not part of FlowSpec v1:** `Given`, `Then`, `Expect`, `Assert`, `Mock`, `Fixture`, `Scenario`, executable test data, test-runner integration, or step definitions.
+**Not part of FlowSpec v1:** `Given`, `Then`, `Expect`, `Assert`, `Mock`, `Fixture`, `Scenario`, executable test data, test-runner integration, step definitions, rule suppression, or configurable rule sets.
 
 ```text
 FlowSpec describes the behavioral model.
@@ -174,109 +284,7 @@ Gherkin or other test frameworks verify concrete examples of that model.
 
 ## Canonical example
 
-```flowspec
-Flow: Answer a user message
-Id: conversation.answer-message
-
-Screen: Conversation
-Id: conversation.screen
-
-When the user sends a message
-
-  At the same time
-
-    Action: Find relevant products
-    Id: conversation.find-products
-
-      Receives
-        User message
-
-      Steps
-        Find products relevant to the user message
-        Rank the matching products
-
-      Outcome
-        Product results are available
-
-    Action: Create assistant response
-    Id: conversation.create-response
-
-      Receives
-        User message
-
-      Steps
-        Interpret the user’s request
-        Create a relevant response
-
-      Outcome
-        Assistant response is available
-
-  Once assistant response is available
-
-    Action: Show assistant response
-    Id: conversation.show-response
-
-      Receives
-        Assistant response
-
-      Shows
-        Assistant response in the conversation
-
-      Outcome
-        Assistant response is shown
-
-  Once product results are available
-
-    Action: Create quick replies
-    Id: conversation.create-quick-replies
-
-      Receives
-        User message
-        Product results
-
-      Rules
-        Show no more than 3 quick replies
-        Quick replies must use available product information
-
-      Steps
-        Inspect the best product-search result
-
-        If the best result is a brand
-          Create product chips from that brand
-
-        Otherwise
-          Create relevant category chips
-
-      Outcome
-        Quick replies are available
-
-  Once quick replies are available
-
-    Action: Show quick replies
-    Id: conversation.show-quick-replies
-
-      Receives
-        Quick replies
-
-      Shows
-        Quick replies below the assistant response
-
-      Outcome
-        Quick replies are shown
-
-  If product search fails
-
-    Action: Continue without quick replies
-    Id: conversation.continue-without-quick-replies
-
-      Shows
-        Assistant response without quick replies
-
-      Outcome
-        Conversation remains usable
-```
-
-The same file lives at [`examples/answer-a-user-message.flowspec`](examples/answer-a-user-message.flowspec).
+See [`examples/answer-a-user-message.flowspec`](examples/answer-a-user-message.flowspec) and the lint-clean entry fixture [`examples/fixtures/enter-jack-hunt.flowspec`](examples/fixtures/enter-jack-hunt.flowspec).
 
 ## Meaning of the core sections
 
@@ -293,17 +301,19 @@ Outcome   → What is true or available afterwards?
 | Path | Contents |
 | ---- | -------- |
 | [`examples/`](examples/) | Canonical FlowSpec samples |
-| [`lib/`](lib/) | Small reusable parse + validate helpers (Ids, section order, casing) |
-| [`test/`](test/) | Parser and validation tests |
-| [`vscode-extension/`](vscode-extension/) | VS Code syntax-highlighting extension |
+| [`lib/`](lib/) | Parser, linter (FS001–FS016), and CLI |
+| [`bin/flowspec.js`](bin/flowspec.js) | `flowspec` CLI entry |
+| [`test/`](test/) | Parser, linter, and CLI tests |
+| [`vscode-extension/`](vscode-extension/) | Syntax highlighting + diagnostic integration |
 
 ## Current limitations
 
 - FlowSpec v1 is a **descriptive** specification format only.
-- No language server, formatter, or IDE diagnostics beyond optional use of `lib/`.
+- No language server, formatter, autocomplete, or auto-fix.
 - No automatic generation of Gherkin, unit tests, or executable suites.
 - No automatic detection of behavioral drift or of “too technical” steps.
-- Validation covers Id format/uniqueness/attachment, recommended section-order warnings, and directive-casing checks only.
+- No rule suppression comments or configurable rule sets in v1.
+- The VS Code extension debounces per-document lint on edit; project-wide ID/`Go to` checks run on save.
 
 ## FAQ
 

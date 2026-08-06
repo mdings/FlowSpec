@@ -1,12 +1,12 @@
 # Deprecated uppercase structural directives (still parse; emit warnings).
 FLOW: Answer a user message
-ID: conversation.answer-message
+ID: deprecated.answer-message
 
-SCREEN: Conversation
-ID: conversation.screen
+SCREEN: Deprecated conversation
+ID: deprecated.conversation
 
 ACTION: Create quick replies
-ID: conversation.create-quick-replies
+ID: deprecated.create-quick-replies
 
   Receives
     User message

@@ -1,25 +1,31 @@
 {
   "name": "flowspec",
   "displayName": "FlowSpec",
-  "description": "Syntax highlighting for FlowSpec — a human-readable format for describing business logic.",
+  "description": "Syntax highlighting and lint diagnostics for FlowSpec — a human-readable format for describing business logic.",
   "version": "0.1.0",
   "publisher": "flowspec",
   "engines": {
     "vscode": "^1.74.0"
   },
   "categories": [
-    "Programming Languages"
+    "Programming Languages",
+    "Linters"
   ],
   "keywords": [
     "flowspec",
     "syntax highlighting",
+    "linter",
     "business logic"
   ],
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/flowspec/flowspec"
+    "url": "https://github.com/mdings/FlowSpec"
   },
+  "main": "./extension.js",
+  "activationEvents": [
+    "onLanguage:flowspec"
+  ],
   "contributes": {
     "languages": [
       {
@@ -44,6 +50,8 @@
   },
   "scripts": {
     "test": "node scripts/smoke-test.js",
+    "sync-lib": "node scripts/sync-lib.js",
+    "prepackage": "npm run sync-lib",
     "package": "vsce package --no-dependencies",
     "vsix": "npm run package"
   },
