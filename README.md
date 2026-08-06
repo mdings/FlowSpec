@@ -1,5 +1,19 @@
 # Flowspec
 
+## What is FlowSpec?
+
+FlowSpec is a human-readable framework for describing business logic to LLMs.
+
+We already have wireframes for UX, mockups for visual design, and test-driven development for code. What is still missing is a simple, standardized way to define how an application should behave.
+
+As vibe coding becomes more common, it becomes harder to maintain a clear mental model of an app’s logic. Business rules end up scattered across prompts, Markdown files, tests, and implementation details—or trapped inside the context of a single LLM session.
+
+FlowSpec provides a single, structured source of truth for that behavior. It defines what the application must do, while leaving the LLM free to decide how to implement it.
+
+Because the specification is structured, it can also be used to detect behavioral drift before deployment—for example when changing prompts, switching models, adding new tools, or modifying the underlying tech stack.
+
+**Let LLMs decide how to build. Keep control over what the product does.**
+
 | Directive          | Description                                                                                                            | Example                                                                               |
 | ------------------ | ---------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
 | `FLOW`             | Names a complete user journey or business flow. A flow usually contains one or more screens and actions.               | `FLOW: Answer a user message`                                                         |
