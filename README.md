@@ -163,3 +163,60 @@ Shows     → What does the user see?
 Outcome   → What is true or available afterwards?
 ```
 
+## Frequently asked questions
+
+### Is FlowSpec a programming language?
+
+No. FlowSpec describes **what an application must do**, not how it should be implemented. Developers and LLMs remain free to choose the architecture, frameworks, services, and implementation details.
+
+### Is FlowSpec a replacement for tests?
+
+No. FlowSpec defines expected business behavior and can be used to generate or guide tests. Existing unit, integration, and end-to-end tests remain important for verifying the implementation.
+
+### How is FlowSpec different from Gherkin or BDD?
+
+Gherkin is primarily designed around executable test scenarios using `Given`, `When`, and `Then`. FlowSpec is intended to be a broader, more easily scannable source of truth for complete user journeys, business rules, dependencies, parallel behavior, and expected outcomes.
+
+### How is FlowSpec different from a product requirements document?
+
+A product requirements document often combines goals, context, design decisions, and requirements in prose. FlowSpec focuses specifically on application behavior and expresses it through a small, standardized vocabulary that both people and LLMs can interpret consistently.
+
+### Does FlowSpec prescribe the technical architecture?
+
+No. A specification might state that a login code must expire after ten minutes, but it does not prescribe which database, authentication provider, framework, or backend function should be used.
+
+### Why is standardization important for LLMs?
+
+Natural-language prompts leave room for interpretation. A standardized structure helps an LLM distinguish between inputs, mandatory rules, required steps, dependencies, visible effects, and expected outcomes. This reduces assumptions and produces more consistent implementations across prompts, tools, and models.
+
+### Can an LLM generate a FlowSpec?
+
+Yes, but the resulting specification should be reviewed and approved by a person. The purpose of FlowSpec is to keep product behavior under human control rather than allowing an LLM to silently invent business logic.
+
+### Can FlowSpec be used with existing applications?
+
+Yes. An existing user journey can be documented as a FlowSpec and then compared with the current implementation. This can also reveal undocumented behavior and rules that currently exist only in the codebase.
+
+### What is behavioral drift?
+
+Behavioral drift occurs when the implementation no longer matches the approved FlowSpec. This can include missing behavior, changed ordering, weakened rules, altered navigation, or new business logic that was never documented.
+
+### Can FlowSpec block a deployment?
+
+Potentially. A CI pipeline could compare code changes and executable tests against the relevant FlowSpecs. When critical drift is detected, the pipeline can report the difference and prevent deployment until it is resolved.
+
+### Does FlowSpec require a specific LLM or coding tool?
+
+No. It should work as a model-independent contract that can be used with tools such as Cursor, Codex, Claude Code, GitHub Copilot, or other current and future development agents.
+
+### Where should FlowSpec files live?
+
+The simplest approach is to keep them alongside the code in the repository. This makes them versionable, reviewable through pull requests, and available to both development tools and CI pipelines.
+
+### Who is FlowSpec for?
+
+FlowSpec is intended for founders, product managers, designers, developers, and AI-assisted teams that want the speed of vibe coding without losing control over product behavior.
+
+### What is the current scope?
+
+The first version focuses on describing flows, screens, actions, inputs, rules, steps, outcomes, navigation, conditions, dependencies, parallel behavior, and failure paths. It intentionally avoids defining technical implementation details.
