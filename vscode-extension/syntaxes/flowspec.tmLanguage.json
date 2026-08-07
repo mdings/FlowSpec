@@ -89,7 +89,7 @@
     },
     "section-directives": {
       "name": "meta.directive.section.flowspec",
-      "match": "^(\\s*)(Receives|Rules|Steps|Shows|Outcome)\\b\\s*:?",
+      "match": "^(\\s*)(Receives|Rules|Uses|Steps|Shows|Outcome)\\b\\s*:?",
       "captures": {
         "2": {
           "name": "keyword.control.section.flowspec"

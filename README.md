@@ -21,6 +21,7 @@ Action
 Id
 Receives
 Rules
+Uses
 Steps
 Shows
 Outcome
@@ -48,8 +49,9 @@ Go to
 | --------- | ----------- | ------- |
 | `Receives` | Information an action needs before it can run. | `Receives` / `  User message` |
 | `Rules` | Business constraints that must remain true. | `Rules` / `  Show no more than 3 quick replies` |
+| `Uses` | Optional services, models, tools, or runtime configuration used by an Action. | `Uses` / `  Provider OpenAI` |
 | `Steps` | Required functional work inside an action, without technical or test details. | `Steps` / `  Find matching products` |
-| `Shows` | What becomes visible to the user. | `Shows` / `  Quick replies below the assistant response` |
+| `Shows` | What becomes visible to the user (allowed on `Screen` or `Action`). | `Shows` / `  Quick replies below the assistant response` |
 | `Outcome` | Observable or reusable result; other actions can wait for it. | `Outcome` / `  Quick replies are available` |
 
 ### Flow-control directives
@@ -63,6 +65,75 @@ Go to
 | `Otherwise` | Alternate path when the preceding `If` is not true. | `Otherwise` |
 | `If … fails` | Fallback when something cannot complete successfully. | `If product search fails` |
 | `Go to` | Navigate to another screen, flow, or action. | `Go to: Verify login code` |
+
+`Once`, `If`, `Otherwise`, and `If … fails` may appear directly inside a `Flow`, `Screen`, or `Action`, or inside `Steps`.
+
+When present, `Outcome` should be the final direct child of an `Action`, because it summarizes the resulting state after the action and its branches have been described.
+
+`Uses` documents optional execution dependencies, services, models, tools, or runtime configuration used to perform an Action. It is descriptive only — not infrastructure-as-code. Child lines stay human-readable; v1 does not prescribe a key/value schema.
+
+```flowspec
+Action Generate assistant response
+
+  Receives
+    User message
+    Conversation context
+
+  Rules
+    Use the combined dimension prompt as instruction context
+
+  Uses
+    Provider OpenAI
+    Model GPT-5
+    Reasoning effort high
+
+  Steps
+    Generate the assistant response
+
+  Outcome
+    Assistant response is available
+```
+
+`Uses` may appear only as a direct section inside an `Action` (not inside a `Flow`, `Screen`, or nested under another section).
+
+Sections must be indented beneath their owning Screen or Action. Adjacency does not imply ownership.
+
+```flowspec
+Screen Enter email
+
+  Shows
+    Email address input
+```
+
+Invalid (same-indent sibling — `Shows` is not owned by the Screen):
+
+```flowspec
+Screen Enter email
+Shows
+  Email address input
+```
+
+Recommended action shape with action-level failure handling:
+
+```flowspec
+Action Social login with Apple
+
+  Steps
+    Open native Apple sign-in
+    Authenticate the user
+
+    If authentication succeeds
+      Store the user's name when provided
+      Store the user's email address when provided
+      Go to Conversation
+
+  If authentication fails
+    Show a sign-in error
+    Go to Login options
+
+  Outcome
+    User is signed in
+```
 
 Colons after directives are optional; prefer the colon form in documentation (`Flow:`, `Id:`).
 
@@ -139,16 +210,17 @@ JSON output:
 | FS004 | error | `Id` may only belong to the directly preceding `Flow`, `Screen`, or `Action` |
 | FS005 | error | `Id` must match `^[a-z0-9][a-z0-9._-]*$` |
 | FS006 | error | `Id` must be unique across all loaded FlowSpec files |
-| FS007 | error | `Receives` / `Rules` / `Steps` / `Shows` / `Outcome` only inside an `Action` |
-| FS008 | error | Each action section at most once per `Action` |
-| FS009 | warning | Recommended section order: Receives → Rules → Steps → Shows → Outcome |
+| FS007 | error | `Receives` / `Rules` / `Uses` / `Steps` / `Outcome` only as direct children of an `Action`; `Shows` only inside a `Screen` or an `Action` (indent-based ownership — adjacency does not count) |
+| FS008 | error | Each section at most once per `Action` (or once per `Screen` for `Shows`) |
+| FS009 | warning | Recommended section order: Receives → Rules → Uses → Steps → control-flow → Shows → Outcome |
 | FS010 | warning | `Action` should not be empty (`Id` alone does not count) |
 | FS011 | error | `At the same time` only inside `Steps` |
-| FS012 | error | `Once` / `If` / `Otherwise` / `If … fails` only in `Steps`, or directly under `Screen` / `Flow` |
+| FS012 | error | `Once` / `If` / `Otherwise` / `If … fails` may appear directly inside a `Flow`, `Screen`, or `Action`, or inside `Steps` — not inside `Receives`, `Rules`, `Uses`, `Shows`, or `Outcome` |
 | FS013 | error | `Otherwise` must match a preceding `If` at the same indent in the same parent |
-| FS014 | warning | `Go to` target should resolve to a `Flow`, `Screen`, or `Action` name or `Id` |
-| FS015 | warning | `Go to` target should not match more than one name/Id |
+| FS014 | warning | `Go to` target should resolve to a `Flow`, `Screen`, or `Action` name or `Id` in any loaded file |
+| FS015 | warning | `Go to` target should not match more than one name/Id (including across files) |
 | FS016 | warning | Unknown or incorrectly cased directive (with suggestion when possible) |
+| FS017 | warning | When present, `Outcome` should be the final direct child of an `Action` |
 
 v1 does **not** support suppression comments or configuration files.
 
@@ -163,14 +235,33 @@ Id authentication.send-login-code
 
 ### Go to resolution
 
-`Go to` may reference a display name or an `Id`:
+`Go to` may reference a display name or an `Id` of a `Flow`, `Screen`, or `Action`.
+
+The target may be defined in the **same file or any other loaded `.flowspec` file**:
 
 ```flowspec
-Go to Conversation
-Go to conversation.bootstrap
+# sign-in.flowspec
+Flow Sign in
+
+Action Continue
+  Steps
+    Go to Conversation
+    Go to conversation.bootstrap
 ```
 
-Project-level linting (`lintFlowSpecProject` / CLI with multiple files) resolves targets across files, detects duplicates (FS006), unresolved references (FS014), and ambiguous names (FS015). Use an `Id` when display names collide.
+```flowspec
+# conversation.flowspec
+Flow Chat
+
+Screen Conversation
+
+Action Bootstrap conversation
+Id conversation.bootstrap
+  Steps
+    Prepare the conversation
+```
+
+Project-level linting (`lintFlowSpecProject`, the CLI with a multi-file glob, and the VS Code extension in a workspace) resolves targets across files, detects duplicate Ids (FS006), unresolved references (FS014), and ambiguous names (FS015). Use an `Id` when display names collide across files.
 
 ### CI example
 
@@ -243,7 +334,7 @@ Recommended format:
 
 ## Standard action structure
 
-Recommended order when multiple action sections are present:
+Recommended order when multiple sections and action-level control-flow are present:
 
 ```flowspec
 Action: [Action name]
@@ -255,8 +346,14 @@ Receives
 Rules
   [Business constraints]
 
+Uses
+  [Services, models, tools, or runtime configuration]
+
 Steps
   [Required functional work]
+
+If [action-level branch]
+  [Branch work]
 
 Shows
   [Visible user-facing effect]
@@ -265,7 +362,7 @@ Outcome
   [Observable or reusable result]
 ```
 
-Not every section is required. Missing sections are allowed. Incorrect order produces **FS009** (warning), not a hard parse failure.
+Not every section is required. Missing sections are allowed. Incorrect section order produces **FS009** (warning). When `Outcome` is present but is not the final direct child, **FS017** warns. `Outcome` itself is never required.
 
 ## FlowSpec vs Gherkin
 
@@ -284,14 +381,15 @@ Gherkin or other test frameworks verify concrete examples of that model.
 
 ## Canonical example
 
-See [`examples/answer-a-user-message.flowspec`](examples/answer-a-user-message.flowspec) and the lint-clean entry fixture [`examples/fixtures/enter-jack-hunt.flowspec`](examples/fixtures/enter-jack-hunt.flowspec).
+See [`examples/answer-a-user-message.flowspec`](examples/answer-a-user-message.flowspec), the lint-clean entry fixture [`examples/fixtures/enter-jack-hunt.flowspec`](examples/fixtures/enter-jack-hunt.flowspec), and the AI `Uses` example [`examples/fixtures/bootstrap-conversation.flowspec`](examples/fixtures/bootstrap-conversation.flowspec).
 
 ## Meaning of the core sections
 
 ```text
 Receives  → What does this action need?
-Rules     → What must always remain true?
-Steps     → What required functional work must happen?
+Rules     → What must remain true?
+Uses      → What capability or runtime dependency is used?
+Steps     → What functionally happens?
 Shows     → What does the user see?
 Outcome   → What is true or available afterwards?
 ```
@@ -313,7 +411,7 @@ Outcome   → What is true or available afterwards?
 - No automatic generation of Gherkin, unit tests, or executable suites.
 - No automatic detection of behavioral drift or of “too technical” steps.
 - No rule suppression comments or configurable rule sets in v1.
-- The VS Code extension debounces per-document lint on edit; project-wide ID/`Go to` checks run on save.
+- The VS Code extension debounces project-wide lint (all workspace `.flowspec` files) so `Go to` and `Id` checks resolve across files while editing.
 
 ## FAQ
 

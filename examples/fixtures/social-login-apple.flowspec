@@ -1,0 +1,22 @@
+Flow Sign in
+
+Action Social login with Apple
+
+  Steps
+    Open native Apple sign-in
+    Authenticate the user
+
+    If authentication succeeds
+      Store the user's name when provided
+      Store the user's email address when provided
+      Go to Conversation
+
+  If authentication fails
+    Show a sign-in error
+    Go to Login options
+
+  Outcome
+    User is signed in
+
+Screen Conversation
+Screen Login options

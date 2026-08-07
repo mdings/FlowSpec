@@ -63,10 +63,10 @@ describe("validate Ids and casing", () => {
       "Flow Demo",
       "Action: Demo",
       "Id: demo.action",
-      "Outcome",
-      "  Done",
-      "Receives",
-      "  Input",
+      "  Outcome",
+      "    Done",
+      "  Receives",
+      "    Input",
     ].join("\n");
     const { diagnostics } = validate(source);
     const order = diagnostics.filter((d) => d.code === "FS009");

@@ -80,6 +80,23 @@ assert(
   )
 );
 assert(
+  "matches Uses section directive",
+  /Uses/.test(grammar.repository["section-directives"].match) &&
+    compilePattern(grammar.repository["section-directives"].match).test("  Uses")
+);
+assert(
+  "does not match mid-line prose 'uses'",
+  !compilePattern(grammar.repository["section-directives"].match).test(
+    "  The response uses available product context"
+  )
+);
+assert(
+  "does not match mid-line 'Uses' in content",
+  !compilePattern(grammar.repository["section-directives"].match).test(
+    "  Document what Uses means in prose"
+  )
+);
+assert(
   "does not match mid-line 'Id'",
   !compilePattern(grammar.repository["id-directive"].begin).test(
     "  reference the Id conversation.find-products later"

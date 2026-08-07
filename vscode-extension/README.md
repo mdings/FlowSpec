@@ -11,7 +11,7 @@ This extension provides TextMate-based highlighting for `.flowspec` files and pu
 - Line comments with `#`
 - Highlighting for Title Case directives, `Id`, sections, flow-control phrases, numbers, durations, and quoted strings
 - Lint on open and change (debounced)
-- Project-wide duplicate `Id` / `Go to` checks on save
+- Project-wide duplicate `Id` / `Go to` checks across all workspace `.flowspec` files while editing
 - Deprecated uppercase `FLOW` / `SCREEN` / `ACTION` / `ID` still highlight for older files
 
 ## Linting
@@ -31,6 +31,7 @@ Action
 Id
 Receives
 Rules
+Uses
 Steps
 Shows
 Outcome
@@ -58,6 +59,7 @@ Go to
 | --------- | ---- |
 | `Receives` | Inputs an action needs |
 | `Rules` | Business constraints |
+| `Uses` | Optional services, models, tools, or runtime configuration used by an Action |
 | `Steps` | Required functional work (not technical or test steps) |
 | `Shows` | What becomes visible |
 | `Outcome` | Observable result of an action |
@@ -134,11 +136,15 @@ npm install
 npm run package
 ```
 
+This produces `flowspec-0.1.2.vsix` (version comes from `package.json`).
+
 Install via **Install from VSIX…** or:
 
 ```bash
-code --install-extension flowspec-0.1.0.vsix
+code --install-extension flowspec-0.1.2.vsix
 ```
+
+Then run **Developer: Reload Window**. Reinstalling the same version often leaves the previous build loaded — bump `version` in `package.json` when packaging updates.
 
 ## Highlighting scopes
 
