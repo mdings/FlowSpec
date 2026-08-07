@@ -1,0 +1,14 @@
+Action Bootstrap conversation
+Id conversation.bootstrap
+
+  Steps
+    Prepare the initial conversation
+
+  Outcome
+    Conversation is ready
+
+Action Get or create shopping session
+Id shopping.get-or-create-session
+
+  Steps
+    Create a shopping session when needed
