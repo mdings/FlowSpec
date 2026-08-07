@@ -19,27 +19,31 @@ function clearModuleCache(dir) {
 }
 
 /**
- * Resolve the shared FlowSpec linter.
+ * Resolve the shared FlowSpec library.
  * Prefer the repo `lib/` during Extension Development Host; use vendored copy in VSIX.
  */
-function loadLinter() {
+function loadLib() {
   const candidates = [
-    path.join(__dirname, "..", "lib", "lint.js"),
-    path.join(__dirname, "vendor", "flowspec", "lint.js"),
+    path.join(__dirname, "..", "lib", "index.js"),
+    path.join(__dirname, "vendor", "flowspec", "index.js"),
   ];
   for (const candidate of candidates) {
     if (!fs.existsSync(candidate)) continue;
     clearModuleCache(path.dirname(candidate));
     return require(candidate);
   }
-  throw new Error("FlowSpec linter module not found");
+  throw new Error("FlowSpec library module not found");
 }
 
 /**
  * @param {vscode.ExtensionContext} context
  */
 function activate(context) {
-  const { lintFlowSpecFile, lintFlowSpecProject } = loadLinter();
+  const {
+    lintFlowSpecFile,
+    lintFlowSpecProject,
+    resolveGoToDefinitions,
+  } = loadLib();
   const collection = vscode.languages.createDiagnosticCollection("flowspec");
   context.subscriptions.push(collection);
 
@@ -82,12 +86,105 @@ function activate(context) {
       const existing = timers.get(key);
       if (existing) clearTimeout(existing);
       timers.delete(key);
-    })
+    }),
+    vscode.languages.registerDefinitionProvider(
+      { language: "flowspec" },
+      {
+        provideDefinition(document, position) {
+          return provideGoToDefinition(document, position, resolveGoToDefinitions);
+        },
+      }
+    )
   );
 
   for (const doc of vscode.workspace.textDocuments) {
     scheduleLint(doc);
   }
+}
+
+/**
+ * @param {vscode.TextDocument} document
+ * @param {vscode.Position} position
+ * @param {typeof import("../lib/goto").resolveGoToDefinitions} resolveGoToDefinitions
+ * @returns {Promise<vscode.LocationLink[] | null>}
+ */
+async function provideGoToDefinition(document, position, resolveGoToDefinitions) {
+  const files = await collectWorkspaceFlowSpecFiles(document);
+  const result = resolveGoToDefinitions(files, {
+    filePath: document.uri.fsPath,
+    line: position.line + 1,
+    column: position.character + 1,
+  });
+
+  if (!result || result.definitions.length === 0) return null;
+
+  const originSelectionRange = new vscode.Range(
+    result.originRange.line - 1,
+    result.originRange.startColumn - 1,
+    result.originRange.line - 1,
+    result.originRange.endColumn - 1
+  );
+
+  return result.definitions.map((target) => {
+    const startLine = Math.max(0, (target.line || 1) - 1);
+    const startColumn = Math.max(0, (target.column || 1) - 1);
+    const endLine =
+      target.endLine != null ? Math.max(0, target.endLine - 1) : startLine;
+    const endColumn =
+      target.endColumn != null
+        ? Math.max(0, target.endColumn - 1)
+        : startColumn + 1;
+    const targetRange = new vscode.Range(
+      startLine,
+      startColumn,
+      endLine,
+      endColumn
+    );
+    return {
+      originSelectionRange,
+      targetUri: vscode.Uri.file(target.filePath),
+      targetRange,
+      targetSelectionRange: targetRange,
+    };
+  });
+}
+
+/**
+ * Collect all `.flowspec` sources in the workspace folder (or just the document).
+ * @param {vscode.TextDocument} document
+ * @returns {Promise<Array<{ source: string, filePath: string }>>}
+ */
+async function collectWorkspaceFlowSpecFiles(document) {
+  /** @type {Array<{ source: string, filePath: string }>} */
+  const files = [];
+  const folder = vscode.workspace.getWorkspaceFolder(document.uri);
+
+  if (folder) {
+    const pattern = new vscode.RelativePattern(folder, "**/*.flowspec");
+    const found = await vscode.workspace.findFiles(pattern, "**/node_modules/**");
+    /** @type {Map<string, string>} */
+    const byPath = new Map();
+    for (const uri of found) {
+      try {
+        const text = await vscode.workspace.openTextDocument(uri);
+        byPath.set(uri.fsPath, text.getText());
+      } catch {
+        // ignore unreadable files
+      }
+    }
+    // Prefer the in-memory buffer for the active document.
+    byPath.set(document.uri.fsPath, document.getText());
+    for (const [filePath, source] of byPath) {
+      files.push({ source, filePath });
+    }
+  } else {
+    files.push({
+      source: document.getText(),
+      filePath: document.uri.fsPath,
+    });
+  }
+
+  return files;
 }
 
 /**
