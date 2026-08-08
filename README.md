@@ -31,7 +31,7 @@ FlowSpec uses Title Case for all directives to keep the language visually consis
 - Directives are recognized only at the beginning of a line after optional indentation. Directive-like words inside ordinary prose are not directives.
 - Colons after directives are optional; both `Flow Sign in` and `Flow: Sign in` parse identically.
 - Sections must be indented beneath their owning `Screen` or `Action`. Adjacency does not imply ownership.
-- `Id` is optional on `Flow`, `Screen`, and `Action`. When present, place it immediately after the structural directive (for implicit Actions, indent `Id` under the interaction name).
+- `Id` is optional on `Flow`, `Screen`, and explicit `Action` only. `Section`, `Layout`, and implicit Actions cannot have an `Id`. When present, place it immediately after the structural directive.
 - `Receives`, `Rules`, `Uses`, `Steps`, and `Outcome` are optional. Missing sections are allowed.
 - `When` remains part of the language; it is not required for local Screen interactions.
 - Older uppercase forms `FLOW`, `SCREEN`, `ACTION`, and `ID` still parse for backwards compatibility but produce **FS016** warnings. Prefer Title Case.
@@ -46,6 +46,8 @@ Supported directives (exact casing):
 Flow
 Screen
 Action
+Section
+Layout
 Id
 Receives
 Rules
@@ -68,7 +70,9 @@ Go to
 | --------- | ----------- | ------- |
 | `Flow` | Names a complete user journey or business flow. | `Flow: Answer a user message` |
 | `Screen` | Defines the screen, page, modal, or UI context. | `Screen: Conversation` |
-| `Action` | Defines something the user or the system does. Under a `Screen`, the keyword may be omitted for a direct named interaction. | `Action: Create quick replies` |
+| `Action` | Defines something the user or the system does. Under a `Screen` or `Section`, the keyword may be omitted for a direct named interaction. | `Action: Create quick replies` |
+| `Section` | A meaningful region within a `Screen` (or nested `Section`). Not navigable; no `Id`; not a `Go to` target. | `Section: Sidebar` |
+| `Layout` | Describes spatial relationships between direct child `Section`s of a `Screen` or `Section`. | `Layout` / `  Sidebar \| Content` |
 | `Id` | Optional stable machine-readable reference for a `Flow`, `Screen`, or `Action`. | `Id: conversation.create-quick-replies` |
 
 ### Action sections
@@ -76,10 +80,10 @@ Go to
 | Directive | Description | Example |
 | --------- | ----------- | ------- |
 | `Receives` | Information an action needs before it can run. | `Receives` / `  User message` |
-| `Rules` | Business constraints that must remain true. | `Rules` / `  Show no more than 3 quick replies` |
+| `Rules` | Constraints that must remain true within the owning context (`Action` or `Layout`). | `Rules` / `  Sidebar can be collapsed` |
 | `Uses` | Optional services, models, tools, or runtime configuration used by an Action. | `Uses` / `  Provider OpenAI` |
 | `Steps` | Required functional work inside an action, without technical or test details. | `Steps` / `  Find matching products` |
-| `Shows` | What becomes visible to the user (allowed on `Screen` or `Action`). | `Shows` / `  Quick replies below the assistant response` |
+| `Shows` | What becomes visible to the user (allowed on `Screen`, `Section`, or `Action`). | `Shows` / `  Quick replies below the assistant response` |
 | `Outcome` | Observable or reusable result; other actions can wait for it. | `Outcome` / `  Quick replies are available` |
 
 ### Flow-control directives
@@ -119,7 +123,7 @@ Shows
 
 ### Screen interactions (implicit Actions)
 
-Inside a `Screen`, a direct named interaction line may omit the `Action` keyword. When that line has nested behavior (a section, control-flow, `Go to`, or `At the same time`), FlowSpec treats it as an Action and normalizes it to the same internal Action representation as an explicit `Action`.
+Inside a `Screen` or `Section`, a direct named interaction line may omit the `Action` keyword. When that line has nested behavior (a section, control-flow, `Go to`, or `At the same time`), FlowSpec treats it as an Action and normalizes it to the same internal Action representation as an explicit `Action`.
 
 ```flowspec
 Screen Choose voice
@@ -143,6 +147,83 @@ is equivalent to writing `Action Select voice` / `Action Hold voice` under that 
 - They are **not** inferred inside a `Flow`, `Action`, `Steps`, `Rules`, `Shows`, `Outcome`, `Uses`, or other sections.
 - Ordinary prose and section body lines are never promoted to Actions.
 - Optional `Id` for an implicit Action must be indented under the interaction name.
+
+
+### Section
+
+A `Section` is a meaningful region within a `Screen`. It may nest inside another `Section` with no depth limit.
+
+```flowspec
+Screen Today
+
+  Section Sidebar
+    Shows
+      Navigation
+
+  Section Content
+    Shows
+      Tasks
+```
+
+Nested:
+
+```flowspec
+Screen Today
+
+  Section Main
+
+    Section Task list
+      ...
+
+    Section Inspector
+      ...
+```
+
+**Rules**
+
+- Ownership: direct child of `Screen` or `Section` only.
+- May contain `Shows`, `Layout`, nested `Section`, implicit/explicit Actions, and supported Screen-level control-flow where already appropriate.
+- Behavior is optional — a Section with only `Shows`, nested Sections, or Layout is valid.
+- Implicit Actions inside a Section work the same as under a Screen.
+- **No `Id`.** **Not a `Go to` target.** If a region needs independent navigation, model it as a `Screen`.
+
+### Layout
+
+`Layout` describes the spatial relationship between **direct child Sections** of its owning `Screen` or `Section`. It is human-readable and implementation-neutral — not CSS, grid, or flexbox.
+
+```flowspec
+Screen Today
+
+  Layout
+    Sidebar | Content | Inspector
+
+  Section Sidebar
+  Section Content
+  Section Inspector
+```
+
+`|` communicates horizontal placement. Separate lines communicate rows / vertical stacking. Descriptive phrases such as `across top` are preserved as prose; they are not a formal grammar.
+
+**Ownership**
+
+- Direct child of `Screen` or `Section`.
+- Exception: a `Layout` may appear directly inside a `When` whose parent is a `Layout` (alternate layout for that condition).
+- At most one direct default `Layout` per Screen/Section (duplicate → **FS018**).
+- Not allowed under `Action`, or under a `When` that is not owned by a `Layout` (**FS020**).
+
+**Contents**
+
+- Plain layout statements (content lines).
+- `Rules` — layout constraints (`Sidebar can be collapsed`).
+- `When` — condition that switches to a nested alternate `Layout`.
+
+Blank lines never affect parsing. Nested Layout under a Layout-owned `When` is an **alternate layout state**, not a nested visual container.
+
+**Name resolution**
+
+Names in Layout statements resolve only against **direct child Sections** of the owning Screen/Section (longest prefix / exact match, including descriptive suffixes like `Header across top` → `Header`). Unresolved → **FS021** (warning). Ambiguous sibling Section names → **FS022** (warning). Nested descendant Sections are not searched.
+
+`Layout` cannot have an `Id` and is not a `Go to` target.
 
 ### Explicit Actions
 
@@ -367,6 +448,7 @@ Canonical samples:
 - Coordinated `When` / `Once` flow: [`examples/answer-a-user-message.flowspec`](examples/answer-a-user-message.flowspec)
 - Lifecycle `When` + explicit Actions: [`examples/fixtures/enter-jack-hunt.flowspec`](examples/fixtures/enter-jack-hunt.flowspec)
 - AI `Uses` example: [`examples/fixtures/bootstrap-conversation.flowspec`](examples/fixtures/bootstrap-conversation.flowspec)
+- Screen `Layout` / `Section`: [`examples/fixtures/today-layout.flowspec`](examples/fixtures/today-layout.flowspec)
 
 ---
 
@@ -422,8 +504,8 @@ Exit codes:
 | FS004 | error | `Id` may only belong to the directly preceding `Flow`, `Screen`, or `Action` |
 | FS005 | error | `Id` must match `^[a-z0-9][a-z0-9._-]*$` |
 | FS006 | error | `Id` must be unique across all loaded FlowSpec files |
-| FS007 | error | `Receives` / `Rules` / `Uses` / `Steps` / `Outcome` only as direct children of an `Action`; `Shows` only inside a `Screen` or an `Action` (indent-based ownership — adjacency does not count) |
-| FS008 | error | Each section at most once per `Action` (or once per `Screen` for `Shows`) |
+| FS007 | error | `Receives` / `Uses` / `Steps` / `Outcome` only as direct children of an `Action`; `Rules` inside an `Action` or a `Layout`; `Shows` inside a `Screen`, `Section`, or `Action` (indent-based ownership — adjacency does not count) |
+| FS008 | error | Each action-section at most once per `Action`; `Shows` at most once per `Screen` or `Section`; `Rules` at most once per `Layout` |
 | FS011 | error | `At the same time` only inside `Steps` |
 | FS012 | error | `Once` / `If` / `Otherwise` / `If … fails` may appear directly inside a `Flow`, `Screen`, or `Action`, or inside `Steps` — not inside `Receives`, `Rules`, `Uses`, `Shows`, or `Outcome` |
 | FS013 | error | `Otherwise` must match a preceding `If` at the same indent in the same parent |
@@ -438,6 +520,12 @@ Exit codes:
 | FS015 | warning | `Go to` target should not match more than one name/Id (including across files) |
 | FS016 | warning | Unknown or incorrectly cased directive (with suggestion when possible) |
 | FS017 | warning | When present, `Outcome` should be the final direct child of an `Action` |
+| FS018 | error | At most one direct default `Layout` under a `Screen` or `Section` |
+| FS019 | error | `Id` is not allowed on `Section`, `Layout`, or implicit Actions |
+| FS020 | error | `Layout` only inside a `Screen` or `Section`, or inside a `When` owned by a `Layout` |
+| FS021 | warning | Layout statement references a name with no matching direct child `Section` |
+| FS022 | warning | Layout statement references an ambiguous sibling `Section` name |
+| FS023 | error | `Section` only inside a `Screen` or another `Section` |
 
 #### Style warnings
 
@@ -459,7 +547,7 @@ v1 does **not** support suppression comments or configuration files.
 - a `Screen` that is a direct child of a `Flow`
 - an `Action` that is a direct child of a `Flow` or `Screen` (including implicit Actions under a Screen)
 
-Actions nested under `When`, `Once`, `If`, or other control-flow are **not** valid `Go to` destinations. Prefer lifting reusable destinations to Flow or Screen scope, or navigate to a Screen / top-level Action instead.
+Actions nested under `When`, `Once`, `If`, `Section`, or other containers are **not** valid `Go to` destinations. `Section` and `Layout` are never `Go to` destinations. Prefer lifting reusable destinations to Flow or Screen scope, or navigate to a Screen / top-level Action instead.
 
 The target may be defined in the **same file or any other loaded `.flowspec` file**. Project-level linting (`lintFlowSpecProject`, the CLI with a multi-file glob, and the VS Code extension in a workspace) resolves targets across files, detects duplicate Ids (FS006), unresolved references (FS014), and ambiguous names (FS015). Use an `Id` when display names collide across files.
 
@@ -556,6 +644,7 @@ Gherkin or other test frameworks verify concrete examples of that model.
 - No automatic detection of behavioral drift or of "too technical" steps.
 - No rule suppression comments or configurable rule sets in v1.
 - No automatic combining of Actions or moving of shared Rules.
+- `If` / `Otherwise` are not supported inside `Layout` in v1 (use `When` for alternate layouts).
 - The VS Code TextMate grammar highlights explicit directives reliably. **Implicit Actions** (bare named interaction lines under a `Screen`) are not given special scopes, because TextMate cannot reliably distinguish them from ordinary prose without brittle indent look-ahead. They still parse and lint as Actions.
 - The VS Code extension debounces project-wide lint (all workspace `.flowspec` files) so `Go to` and `Id` checks resolve across files while editing.
 

@@ -44,7 +44,7 @@
     },
     "top-level-directives": {
       "name": "meta.directive.structural.flowspec",
-      "begin": "^(\\s*)(Flow|FLOW|Screen|SCREEN|Action|ACTION)\\b\\s*:?",
+      "begin": "^(\\s*)(Flow|FLOW|Screen|SCREEN|Action|ACTION|Section|SECTION|Layout|LAYOUT)\\b\\s*:?",
       "beginCaptures": {
         "2": {
           "name": "keyword.control.directive.flowspec"
@@ -125,6 +125,10 @@
       "end": "$",
       "contentName": "entity.name.flowspec",
       "patterns": [
+        {
+          "name": "entity.name.identifier.flowspec",
+          "match": "[a-z0-9][a-z0-9._-]*"
+        },
         {
           "include": "#comments"
         },

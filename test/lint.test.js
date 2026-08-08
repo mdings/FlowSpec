@@ -154,7 +154,7 @@ describe("FS007 / FS008 / FS009 action sections", () => {
     const d = lintFlowSpecFile(source, "a.flowspec");
     const err = d.find((x) => x.code === "FS007" && /Shows/.test(x.message));
     assert.ok(err, JSON.stringify(d, null, 2));
-    assert.match(err.message, /must be nested inside a Screen or Action/);
+    assert.match(err.message, /must be nested inside a Screen, Section, or Action/);
     assert.match(err.suggestion || "", /Screen Enter email/);
   });
 
@@ -194,7 +194,7 @@ describe("FS007 / FS008 / FS009 action sections", () => {
     const d = lintFlowSpecFile(source, "a.flowspec");
     assert.ok(hasCode(d, "FS007"), JSON.stringify(d, null, 2));
     const err = d.find((x) => x.code === "FS007");
-    assert.match(err.message, /must be nested inside a Screen or Action/);
+    assert.match(err.message, /must be nested inside a Screen, Section, or Action/);
   });
 
   it("rejects unindented Rules after an Action", () => {
@@ -208,7 +208,7 @@ describe("FS007 / FS008 / FS009 action sections", () => {
     const d = lintFlowSpecFile(source, "a.flowspec");
     assert.ok(hasCode(d, "FS007"), JSON.stringify(d, null, 2));
     const err = d.find((x) => x.code === "FS007");
-    assert.match(err.message, /"Rules" must be nested inside an Action/);
+    assert.match(err.message, /"Rules" must be nested inside an Action or a Layout/);
     assert.match(err.suggestion || "", /Action Send login code/);
   });
 
@@ -244,7 +244,7 @@ describe("FS007 / FS008 / FS009 action sections", () => {
     assert.ok(hasCode(d, "FS007"));
     assert.match(
       d.find((x) => x.code === "FS007").message,
-      /must be nested inside a Screen or Action/
+      /must be nested inside a Screen, Section, or Action/
     );
   });
 

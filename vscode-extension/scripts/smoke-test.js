@@ -37,7 +37,7 @@ const idValue = compilePattern(
   grammar.repository["id-directive"].patterns.find((p) => p.match).match
 );
 
-assert("grammar includes Title Case Flow|Screen|Action", /Flow\|FLOW/.test(grammar.repository["top-level-directives"].begin));
+assert("grammar includes Title Case Flow|Screen|Action|Section|Layout", /Section\|SECTION\|Layout\|LAYOUT/.test(grammar.repository["top-level-directives"].begin));
 assert("grammar includes Title Case Id", /\(Id\|ID\)/.test(grammar.repository["id-directive"].begin));
 
 const topMatches = sample.match(topLevel) || [];
@@ -103,6 +103,21 @@ assert(
   )
 );
 assert("Go to begin pattern is line-anchored", goTo.source.startsWith("^"));
+
+const goToIdPattern = grammar.repository["go-to"].patterns.find(
+  (p) => p.name === "entity.name.identifier.flowspec"
+);
+assert("Go to highlights Id-shaped targets", Boolean(goToIdPattern));
+assert(
+  "Go to Id pattern matches namespaced Ids",
+  goToIdPattern &&
+    new RegExp(goToIdPattern.match).test("conversation.bootstrap") &&
+    new RegExp(goToIdPattern.match).test("jack-hunt.conversation")
+);
+assert(
+  "Go to Id pattern does not match Title Case display names",
+  goToIdPattern && !new RegExp(`^${goToIdPattern.match}$`).test("Conversation")
+);
 
 const singleQuoteBegin = grammar.repository.strings.patterns.find(
   (p) => p.name === "string.quoted.single.flowspec"

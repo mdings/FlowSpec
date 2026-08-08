@@ -314,15 +314,7 @@ describe("implicit Actions under Screen", () => {
     assert.equal(flow.children[1].type, "goTo");
   });
 
-  it("associates an indented Id with an implicit Action", () => {
-    const source = [
-      "Flow Voice",
-      "Screen Choose voice",
-      "  Select voice",
-      "  Id voice.select",
-      "    Outcome",
-      "      Voice is selected",
-    ].join("\n");
+  it("rejects Id on an implicit Action", () => {
     const withIndentedId = [
       "Flow Voice",
       "Screen Choose voice",
@@ -331,14 +323,12 @@ describe("implicit Actions under Screen", () => {
       "    Outcome",
       "      Voice is selected",
     ].join("\n");
+    const { root } = parseTree(withIndentedId);
     const action = screenOf(withIndentedId).children.find((c) => c.type === "action");
-    assert.equal(action.id, "voice.select");
-    assert.ok(action.idNode);
-    assert.equal(action.idNode.owner, action);
-    const sameIndent = screenOf(source);
-    assert.equal(
-      sameIndent.children.some((c) => c.type === "action" && c.id === "voice.select"),
-      false
-    );
+    assert.ok(action);
+    assert.equal(action.implicit, true);
+    assert.equal(action.id, undefined);
+    const d = require("../lib").lintFlowSpecFile(withIndentedId, "a.flowspec");
+    assert.ok(d.some((x) => x.code === "FS019"));
   });
 });

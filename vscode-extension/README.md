@@ -16,7 +16,7 @@ This extension provides TextMate-based highlighting for `.flowspec` files and pu
 
 ## Linting
 
-Diagnostics use the shared core in [`../lib`](../lib) (structural rules FS001–FS017 and style warnings FS101–FS105). See the root [README](../README.md#6-linting-behavior) for categories, the restriction table, and CLI usage.
+Diagnostics use the shared core in [`../lib`](../lib) (structural rules FS001–FS023 and style warnings FS101–FS105). See the root [README](../README.md#6-linting-behavior) for categories, the restriction table, and CLI usage.
 
 On package, `npm run sync-lib` copies the core into `vendor/flowspec` so the VSIX is self-contained.
 
@@ -28,6 +28,8 @@ Exact Title Case forms:
 Flow
 Screen
 Action
+Section
+Layout
 Id
 Receives
 Rules
@@ -50,7 +52,9 @@ Go to
 | --------- | ------- |
 | `Flow` | `Flow: Answer a user message` |
 | `Screen` | `Screen: Conversation` |
-| `Action` | `Action: Create quick replies` (under a `Screen`, the keyword may be omitted for local interactions) |
+| `Action` | `Action: Create quick replies` (under a `Screen` or `Section`, the keyword may be omitted for local interactions) |
+| `Section` | `Section: Sidebar` (region inside a Screen; not a Go to target) |
+| `Layout` | `Layout` / `  Sidebar \| Content` |
 | `Id` | `Id: conversation.create-quick-replies` |
 
 ### Sections
@@ -61,7 +65,7 @@ Go to
 | `Rules` | Business constraints |
 | `Uses` | Optional services, models, tools, or runtime configuration used by an Action |
 | `Steps` | Required functional work (not technical or test steps) |
-| `Shows` | What becomes visible |
+| `Shows` | What becomes visible (on `Screen`, `Section`, or `Action`) |
 | `Outcome` | Observable result of an action |
 
 ### Flow control
@@ -153,9 +157,10 @@ Then run **Developer: Reload Window**. Reinstalling the same version often leave
 | Structural directives | `keyword.control.directive.flowspec` |
 | `Id` | `keyword.other.metadata.flowspec` |
 | Id values | `entity.name.identifier.flowspec` |
+| Id-shaped `Go to` targets | `entity.name.identifier.flowspec` (e.g. `Go to conversation.bootstrap`) |
 | Section directives | `keyword.control.section.flowspec` |
 | Flow-control phrases | `keyword.control.flow.flowspec` |
-| Titles after `Flow` / `Screen` / `Action` / `Go to` | `entity.name.flowspec` |
+| Titles after `Flow` / `Screen` / `Action` / display-name `Go to` | `entity.name.flowspec` |
 | Numbers | `constant.numeric.flowspec` |
 | Durations | `constant.numeric.duration.flowspec` |
 | Quoted strings | `string.quoted.*.flowspec` |

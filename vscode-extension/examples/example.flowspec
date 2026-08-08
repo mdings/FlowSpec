@@ -118,6 +118,35 @@ Screen Choose voice
     Otherwise
       Store selected voice
 
+# Section + Layout (structural UI regions)
+Flow Today workspace
+Screen Today
+  Layout
+    Sidebar | Content | Inspector
+    Rules
+      Sidebar can be collapsed
+    When the user enters the mobile breakpoint
+      Layout
+        Sidebar
+        Content
+        Inspector
+  Section Sidebar
+    Shows
+      Areas
+  Section Content
+    Shows
+      Today's tasks
+  Section Inspector
+    Shows
+      Selected task details
+
+# Highlighting for Id definitions and Id-shaped Go to targets
+Action Bootstrap conversation
+Id conversation.bootstrap
+  Steps
+    Go to conversation.bootstrap
+    Go to Conversation
+
 # Optional colons omitted
 Flow Answer a user message
 Id conversation.answer-message-alt
