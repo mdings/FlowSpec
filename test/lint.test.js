@@ -1244,6 +1244,63 @@ describe("FS014 / FS015 Go to resolution", () => {
     assert.match(ambiguous.message, /a\.flowspec/);
     assert.match(ambiguous.message, /b\.flowspec/);
   });
+
+  it("does not resolve Go to an Action nested under When", () => {
+    const source = [
+      "Flow Demo",
+      "When the Premium paywall opens",
+      "  Action Load subscription offerings",
+      "  Id premium.load-offerings",
+      "    Steps",
+      "      Load offerings",
+      "Action Continue",
+      "  Steps",
+      "    Go to Load subscription offerings",
+      "    Go to premium.load-offerings",
+    ].join("\n");
+    const d = lintFlowSpecFile(source, "a.flowspec");
+    const unresolved = d.filter((x) => x.code === "FS014");
+    assert.equal(unresolved.length, 2, JSON.stringify(d, null, 2));
+    assert.ok(
+      unresolved.some((x) => /Load subscription offerings/.test(x.message))
+    );
+    assert.ok(unresolved.some((x) => /premium\.load-offerings/.test(x.message)));
+    assert.match(unresolved[0].message, /top-level Flow, Screen, or Action/);
+  });
+
+  it("still resolves Go to an Action that is a direct child of a Screen", () => {
+    const source = [
+      "Flow Demo",
+      "Screen Premium paywall",
+      "  Action Load subscription offerings",
+      "  Id premium.load-offerings",
+      "    Steps",
+      "      Load offerings",
+      "Action Continue",
+      "  Steps",
+      "    Go to Load subscription offerings",
+      "    Go to premium.load-offerings",
+    ].join("\n");
+    const d = lintFlowSpecFile(source, "a.flowspec");
+    assert.equal(hasCode(d, "FS014"), false, JSON.stringify(d, null, 2));
+  });
+
+  it("still indexes Ids on nested Actions for FS006 uniqueness", () => {
+    const source = [
+      "Flow Demo",
+      "When the Premium paywall opens",
+      "  Action Load subscription offerings",
+      "  Id premium.load-offerings",
+      "    Steps",
+      "      Load offerings",
+      "Action Other",
+      "Id premium.load-offerings",
+      "  Steps",
+      "    Continue",
+    ].join("\n");
+    const d = lintFlowSpecFile(source, "a.flowspec");
+    assert.ok(hasCode(d, "FS006"));
+  });
 });
 
 describe("FS016 directive casing and prose", () => {

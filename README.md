@@ -434,7 +434,7 @@ Exit codes:
 | ---- | -------- | ---- |
 | FS009 | warning | Recommended section order: Receives → Rules → Uses → Steps → control-flow → Shows → Outcome |
 | FS010 | warning | `Action` should not be empty (`Id` alone does not count) |
-| FS014 | warning | `Go to` target should resolve to a `Flow`, `Screen`, or `Action` name or `Id` in any loaded file |
+| FS014 | warning | `Go to` target should resolve to a **top-level** `Flow`, `Screen`, or `Action` name or `Id` in any loaded file (not Actions nested under `When` / control-flow) |
 | FS015 | warning | `Go to` target should not match more than one name/Id (including across files) |
 | FS016 | warning | Unknown or incorrectly cased directive (with suggestion when possible) |
 | FS017 | warning | When present, `Outcome` should be the final direct child of an `Action` |
@@ -453,7 +453,13 @@ v1 does **not** support suppression comments or configuration files.
 
 ### Go to resolution
 
-`Go to` may reference a display name or an `Id` of a `Flow`, `Screen`, or `Action` (including implicit Actions under a Screen).
+`Go to` may reference a display name or an `Id` of a **top-level** `Flow`, `Screen`, or `Action`:
+
+- the file’s `Flow`
+- a `Screen` that is a direct child of a `Flow`
+- an `Action` that is a direct child of a `Flow` or `Screen` (including implicit Actions under a Screen)
+
+Actions nested under `When`, `Once`, `If`, or other control-flow are **not** valid `Go to` destinations. Prefer lifting reusable destinations to Flow or Screen scope, or navigate to a Screen / top-level Action instead.
 
 The target may be defined in the **same file or any other loaded `.flowspec` file**. Project-level linting (`lintFlowSpecProject`, the CLI with a multi-file glob, and the VS Code extension in a workspace) resolves targets across files, detects duplicate Ids (FS006), unresolved references (FS014), and ambiguous names (FS015). Use an `Id` when display names collide across files.
 

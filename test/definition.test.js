@@ -185,6 +185,32 @@ describe("Go to definition resolution", () => {
     });
   });
 
+  it("does not resolve an Action nested under When", () => {
+    const source = [
+      "Flow Demo",
+      "When the Premium paywall opens",
+      "  Action Load subscription offerings",
+      "  Id premium.load-offerings",
+      "    Steps",
+      "      Load offerings",
+      "Action Continue",
+      "  Steps",
+      "    Go to Load subscription offerings",
+    ].join("\n");
+
+    const result = resolveGoToDefinitions(
+      [{ source, filePath: "demo.flowspec" }],
+      {
+        filePath: "demo.flowspec",
+        line: 9,
+        column: targetColumn(source, 9),
+      }
+    );
+
+    assert.ok(result);
+    assert.deepEqual(result.definitions, []);
+  });
+
   it("returns all matching targets when ambiguous", () => {
     const a = [
       "Flow A",
