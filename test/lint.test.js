@@ -830,6 +830,222 @@ describe("FS017 Outcome is final", () => {
   });
 });
 
+describe("FS101 Redundant Outcome", () => {
+  it("warns when Outcome restates the Action name", () => {
+    const source = [
+      "Flow Demo",
+      "Action Select focus",
+      "  Outcome",
+      "    Focus is selected",
+    ].join("\n");
+    const d = lintFlowSpecFile(source, "a.flowspec");
+    const warn = d.find((x) => x.code === "FS101");
+    assert.ok(warn);
+    assert.equal(warn.severity, "warning");
+    assert.match(warn.message, /Outcome may be redundant/);
+    assert.match(warn.message, /Select focus/);
+  });
+
+  it("does not warn for a non-redundant Outcome", () => {
+    const source = [
+      "Flow Demo",
+      "Action Social login with Apple",
+      "  Outcome",
+      "    User is signed in",
+    ].join("\n");
+    const d = lintFlowSpecFile(source, "a.flowspec");
+    assert.equal(hasCode(d, "FS101"), false, JSON.stringify(d, null, 2));
+  });
+});
+
+describe("FS102 Redundant Receives", () => {
+  it("warns when Receives repeats an input already in the When trigger", () => {
+    const source = [
+      "Flow Demo",
+      "When the user selects a voice",
+      "  Action Select voice",
+      "    Receives",
+      "      Voice",
+    ].join("\n");
+    const d = lintFlowSpecFile(source, "a.flowspec");
+    const warn = d.find((x) => x.code === "FS102");
+    assert.ok(warn);
+    assert.equal(warn.severity, "warning");
+    assert.match(warn.message, /Receives Voice/);
+    assert.match(warn.message, /already provides the voice/);
+  });
+
+  it("does not warn for unrelated Receives", () => {
+    const source = [
+      "Flow Demo",
+      "When the user becomes signed in",
+      "  Action Enter conversation",
+      "    Receives",
+      "      Signed-in user",
+    ].join("\n");
+    const d = lintFlowSpecFile(source, "a.flowspec");
+    assert.equal(hasCode(d, "FS102"), false, JSON.stringify(d, null, 2));
+  });
+});
+
+describe("FS103 Trigger repeats Action", () => {
+  it("warns when When and Action describe the same interaction", () => {
+    const source = [
+      "Flow Demo",
+      "When the user selects a focus",
+      "  Action Select focus",
+      "    Outcome",
+      "      Focus mode is active",
+    ].join("\n");
+    const d = lintFlowSpecFile(source, "a.flowspec");
+    const warn = d.find((x) => x.code === "FS103");
+    assert.ok(warn);
+    assert.equal(warn.severity, "warning");
+    assert.match(warn.message, /same interaction/);
+  });
+
+  it("does not warn for unrelated When and Action", () => {
+    const source = [
+      "Flow Demo",
+      "When the user sends a message",
+      "  Action Find relevant products",
+      "    Steps",
+      "      Search the catalog",
+    ].join("\n");
+    const d = lintFlowSpecFile(source, "a.flowspec");
+    assert.equal(hasCode(d, "FS103"), false, JSON.stringify(d, null, 2));
+  });
+});
+
+describe("FS104 Repeated Rules", () => {
+  it("warns when identical Rules appear across sibling Actions", () => {
+    const source = [
+      "Flow Demo",
+      "Action Start free meditation",
+      "  Rules",
+      "    User must be signed in",
+      "    Creation is rate limited",
+      "  Outcome",
+      "    Meditation started",
+      "Action Start Premium meditation",
+      "  Rules",
+      "    User must be signed in",
+      "    Creation is rate limited",
+      "  Outcome",
+      "    Meditation started",
+    ].join("\n");
+    const d = lintFlowSpecFile(source, "a.flowspec");
+    const warn = d.find((x) => x.code === "FS104");
+    assert.ok(warn);
+    assert.equal(warn.severity, "warning");
+    assert.match(warn.message, /Rules are repeated across sibling Actions/);
+  });
+
+  it("does not warn for similar but non-identical Rules", () => {
+    const source = [
+      "Flow Demo",
+      "Action Start free meditation",
+      "  Rules",
+      "    User must be signed in",
+      "    Creation is rate limited",
+      "  Outcome",
+      "    Meditation started",
+      "Action Start Premium meditation",
+      "  Rules",
+      "    User must be signed in",
+      "    Premium entitlement is required",
+      "  Outcome",
+      "    Meditation started",
+    ].join("\n");
+    const d = lintFlowSpecFile(source, "a.flowspec");
+    assert.equal(hasCode(d, "FS104"), false, JSON.stringify(d, null, 2));
+  });
+});
+
+describe("FS105 Single-step wrapper", () => {
+  it("warns when an Action only wraps a single Step", () => {
+    const source = [
+      "Flow Demo",
+      "Action Gate Premium voice",
+      "  Steps",
+      "    Go to Premium paywall",
+    ].join("\n");
+    const d = lintFlowSpecFile(source, "a.flowspec");
+    const warn = d.find((x) => x.code === "FS105");
+    assert.ok(warn);
+    assert.equal(warn.severity, "warning");
+    assert.match(warn.message, /only wraps a single Step/);
+  });
+
+  it("does not warn when an Action has one Step plus Outcome", () => {
+    const source = [
+      "Flow Demo",
+      "Action Bootstrap conversation",
+      "  Steps",
+      "    Prepare the initial conversation",
+      "  Outcome",
+      "    Conversation is ready",
+    ].join("\n");
+    const d = lintFlowSpecFile(source, "a.flowspec");
+    assert.equal(hasCode(d, "FS105"), false, JSON.stringify(d, null, 2));
+  });
+});
+
+describe("implicit Actions under Screen", () => {
+  it("allows Action sections under an implicit Screen interaction", () => {
+    const source = [
+      "Flow Voice",
+      "Screen Choose voice",
+      "  Select voice",
+      "    Receives",
+      "      Voice",
+      "    If the voice requires Premium",
+      "      Go to Premium paywall",
+      "    Outcome",
+      "      Voice is ready",
+    ].join("\n");
+    const d = lintFlowSpecFile(source, "a.flowspec");
+    assert.equal(
+      d.filter((x) => x.severity === "error").length,
+      0,
+      JSON.stringify(d, null, 2)
+    );
+    assert.equal(hasCode(d, "FS007"), false);
+  });
+
+  it("resolves Go to an implicit Action by name", () => {
+    const source = [
+      "Flow Voice",
+      "Screen Choose voice",
+      "  Select voice",
+      "    Outcome",
+      "      Voice is ready",
+      "Action Continue",
+      "  Steps",
+      "    Go to Select voice",
+    ].join("\n");
+    const d = lintFlowSpecFile(source, "a.flowspec");
+    assert.equal(hasCode(d, "FS014"), false, JSON.stringify(d, null, 2));
+    assert.equal(hasCode(d, "FS015"), false);
+  });
+
+  it("lints the concise choose-focus fixture without errors or style noise", () => {
+    const source = fs.readFileSync(
+      path.join(__dirname, "..", "examples", "fixtures", "choose-focus.flowspec"),
+      "utf8"
+    );
+    const d = lintFlowSpecFile(source, "examples/fixtures/choose-focus.flowspec");
+    assert.equal(
+      d.filter((x) => x.severity === "error").length,
+      0,
+      JSON.stringify(d, null, 2)
+    );
+    for (const code of ["FS101", "FS102", "FS103", "FS104", "FS105"]) {
+      assert.equal(hasCode(d, code), false, code);
+    }
+  });
+});
+
 describe("Apple social-login example", () => {
   it("lints the complete Apple social-login action without errors", () => {
     const source = [
@@ -1104,5 +1320,21 @@ describe("canonical multi-file fixture", () => {
     );
     assert.equal(hasCode(d, "FS009"), false);
     assert.equal(hasCode(d, "FS017"), false);
+  });
+
+  it("lints choose-focus concise Screen interactions without errors", () => {
+    const source = fs.readFileSync(
+      path.join(__dirname, "..", "examples", "fixtures", "choose-focus.flowspec"),
+      "utf8"
+    );
+    const d = lintFlowSpecFile(source, "examples/fixtures/choose-focus.flowspec");
+    assert.equal(
+      d.filter((x) => x.severity === "error").length,
+      0,
+      JSON.stringify(d, null, 2)
+    );
+    for (const code of ["FS101", "FS102", "FS103", "FS104", "FS105"]) {
+      assert.equal(hasCode(d, code), false, code);
+    }
   });
 });

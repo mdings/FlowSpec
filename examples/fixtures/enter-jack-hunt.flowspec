@@ -9,9 +9,6 @@ When the user becomes signed in
   Action Enter conversation
   Id conversation.enter
 
-    Receives
-      Signed-in user
-
     Steps
       Go to jack-hunt.conversation
       Hide the splash screen

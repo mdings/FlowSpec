@@ -9,9 +9,6 @@ When the user sends a message
   Action: Find relevant products
   Id: conversation.find-products
 
-    Receives
-      User message
-
     Steps
       Find products relevant to the user message
       Rank the matching products
@@ -21,9 +18,6 @@ When the user sends a message
 
   Action: Create assistant response
   Id: conversation.create-response
-
-    Receives
-      User message
 
     Steps
       Interpret the user’s request
@@ -37,14 +31,8 @@ When the user sends a message
     Action: Show assistant response
     Id: conversation.show-response
 
-      Receives
-        Assistant response
-
       Shows
         Assistant response in the conversation
-
-      Outcome
-        Assistant response is shown
 
   Once product results are available
 
@@ -76,14 +64,8 @@ When the user sends a message
     Action: Show quick replies
     Id: conversation.show-quick-replies
 
-      Receives
-        Quick replies
-
       Shows
         Quick replies below the assistant response
-
-      Outcome
-        Quick replies are shown
 
   If product search fails
 

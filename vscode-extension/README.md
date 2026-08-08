@@ -16,7 +16,7 @@ This extension provides TextMate-based highlighting for `.flowspec` files and pu
 
 ## Linting
 
-Diagnostics use the shared core in [`../lib`](../lib) (rules FS001–FS016). See the root [README](../README.md#linter) for the full restriction table and CLI usage.
+Diagnostics use the shared core in [`../lib`](../lib) (structural rules FS001–FS017 and style warnings FS101–FS105). See the root [README](../README.md#6-linting-behavior) for categories, the restriction table, and CLI usage.
 
 On package, `npm run sync-lib` copies the core into `vendor/flowspec` so the VSIX is self-contained.
 
@@ -50,7 +50,7 @@ Go to
 | --------- | ------- |
 | `Flow` | `Flow: Answer a user message` |
 | `Screen` | `Screen: Conversation` |
-| `Action` | `Action: Create quick replies` |
+| `Action` | `Action: Create quick replies` (under a `Screen`, the keyword may be omitted for local interactions) |
 | `Id` | `Id: conversation.create-quick-replies` |
 
 ### Sections
@@ -163,10 +163,11 @@ Then run **Developer: Reload Window**. Reinstalling the same version often leave
 
 ## Limitations
 
-- Syntax highlighting only in the editor (no LSP diagnostics from this extension).
+- Syntax highlighting only in the editor (diagnostics come from the shared FlowSpec linter, not an LSP).
 - No Gherkin generation or test-runner integration.
 - Duration highlighting covers common English units (`second(s)`, `minute(s)`, `hour(s)`, `day(s)`).
+- **Implicit Actions** (named interaction lines under a `Screen` without the `Action` keyword) are not given special TextMate scopes. Distinguishing them from ordinary prose would require brittle indent look-ahead. They still parse and lint as Actions; explicit `Action` lines continue to highlight as structural directives.
 
 ## Language reference
 
-See [../README.md](../README.md) for the full FlowSpec v1 language description.
+See [../README.md](../README.md) for language rules, authoring guidelines, and linting behavior.

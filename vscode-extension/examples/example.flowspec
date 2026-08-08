@@ -100,6 +100,24 @@ When the user sends a message
 
 # --- Additional highlighting samples ---
 
+# Concise Screen interactions (implicit Actions parse as Actions; TextMate
+# does not specially highlight the bare interaction name lines)
+Flow Start free meditation
+Screen Choose focus
+  Shows
+    Focus options
+  Select focus
+    Rules
+      Focus must be one of Breathing, Visualization, Affirmation, Balanced
+    Store selected focus
+    Go to Choose voice
+Screen Choose voice
+  Select voice
+    If the voice requires Premium
+      Go to Premium paywall
+    Otherwise
+      Store selected voice
+
 # Optional colons omitted
 Flow Answer a user message
 Id conversation.answer-message-alt
