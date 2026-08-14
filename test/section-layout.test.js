@@ -29,12 +29,12 @@ describe("Section structural directive", () => {
     assert.equal(nested[0].value, "Task list");
   });
 
-  it("allows Shows inside Section", () => {
+  it("rejects Shows inside Section", () => {
     const d = lintFlowSpecFile(
       ["Flow Demo", "  Screen Today", "    Section Sidebar", "      Shows", "        Inbox"].join("\n"),
       "a.flowspec"
     );
-    assert.equal(hasCode(d, "FS007"), false);
+    assert.equal(hasCode(d, "FS007"), true);
   });
 
   it("promotes implicit Action inside Section", () => {
@@ -55,12 +55,12 @@ describe("Section structural directive", () => {
     assert.equal(Boolean(action.implicit), false);
   });
 
-  it("allows Section with only Shows and no behavior", () => {
+  it("rejects Section with Shows", () => {
     const d = lintFlowSpecFile(
       ["Flow Demo", "  Screen Today", "    Section Sidebar", "      Shows", "        Areas"].join("\n"),
       "a.flowspec"
     );
-    assert.equal(d.filter((x) => x.severity === "error").length, 0);
+    assert.ok(hasCode(d, "FS007"));
   });
 
   it("rejects Id inside Section", () => {

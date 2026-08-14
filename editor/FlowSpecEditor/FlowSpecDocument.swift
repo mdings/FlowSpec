@@ -43,17 +43,16 @@ struct FlowSpecDocument: FileDocument {
       Screen Home
       Id home.screen
 
+        Shows
+          Time-of-day greeting in Greeting
+          Recommended cards in Recommendations
+
         Layout
           Greeting
           Recommendations
 
         Section Greeting
-          Shows
-            Time-of-day greeting
-
         Section Recommendations
-          Shows
-            Recommended cards
 
         When the user opens a card
           Go to detail.screen

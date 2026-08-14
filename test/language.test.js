@@ -20,10 +20,10 @@ describe("canonical language definition", () => {
   });
 
   it("provides presentation-neutral UTF-16 highlight ranges", () => {
-    const source = "Flow Emoji 😀\n  Shows\n    # note\n  If search fails\n";
+    const source = "Flow Emoji 😀\n  Screen Result\n    Shows\n      # note\n  If search fails\n";
     const highlights = language.syntaxHighlights(source);
     assert.deepEqual(highlights.map(({ category }) => category), [
-      "structural", "section", "comment", "control",
+      "structural", "structural", "section", "comment", "control",
     ]);
     for (const highlight of highlights) {
       assert.ok(highlight.location >= 0);

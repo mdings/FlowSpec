@@ -65,7 +65,7 @@ Go to
 | `Rules` | Business constraints (`Flow`, `Action`, or `Layout`) |
 | `Uses` | Optional services, models, tools, or runtime configuration used by a Flow or Action |
 | `Steps` | Required functional work (not technical or test steps) |
-| `Shows` | What becomes visible (on `Flow`, `Screen`, `Section`, or `Action`) |
+| `Shows` | What becomes visible; only valid as a direct child of `Screen` |
 | `Outcome` | Observable result of a Flow or Action |
 
 ### Flow control

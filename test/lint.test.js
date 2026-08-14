@@ -125,7 +125,7 @@ describe("FS007 / FS008 / FS009 behavioral sections", () => {
     assert.equal(hasCode(d, "FS008"), false);
   });
 
-  it("does not attach same-indent Shows to a preceding Screen (Flow owns the sibling)", () => {
+  it("rejects same-indent Shows because the Flow owns the sibling", () => {
     const source = [
       "Flow Email login",
       "",
@@ -147,7 +147,7 @@ describe("FS007 / FS008 / FS009 behavioral sections", () => {
       false
     );
     const d = lintFlowSpecFile(source, "a.flowspec");
-    assert.equal(hasCode(d, "FS007"), false, JSON.stringify(d, null, 2));
+    assert.ok(hasCode(d, "FS007"), JSON.stringify(d, null, 2));
   });
 
   it("allows indented Shows inside a Screen", () => {
@@ -156,10 +156,12 @@ describe("FS007 / FS008 / FS009 behavioral sections", () => {
     assert.equal(hasCode(d, "FS007"), false, JSON.stringify(d, null, 2));
   });
 
-  it("allows Shows inside an Action", () => {
+  it("rejects Shows inside an Action", () => {
     const source = ["Flow Demo", "  Action Show login options", "    Shows", "      Login button"].join("\n");
     const d = lintFlowSpecFile(source, "a.flowspec");
-    assert.equal(hasCode(d, "FS007"), false);
+    const error = d.find((diagnostic) => diagnostic.code === "FS007");
+    assert.ok(error);
+    assert.match(error.message, /direct child of Screen/);
   });
 
   it("does not attach same-indent Shows to a preceding Action", () => {
@@ -208,10 +210,10 @@ describe("FS007 / FS008 / FS009 behavioral sections", () => {
     assert.equal(hasCode(d, "FS007"), false, JSON.stringify(d, null, 2));
   });
 
-  it("allows Shows nested under control-flow inside an Action", () => {
+  it("rejects Shows nested under control-flow inside an Action", () => {
     const source = ["Flow Demo", "  Action Complete sign-in", "    If authentication succeeds", "      Shows", "        Signed-in home", "      Go to Conversation"].join("\n");
     const d = lintFlowSpecFile(source, "a.flowspec");
-    assert.equal(hasCode(d, "FS007"), false, JSON.stringify(d, null, 2));
+    assert.ok(hasCode(d, "FS007"), JSON.stringify(d, null, 2));
   });
 
   it("rejects document-level Shows (must be indented under the Flow)", () => {
@@ -241,10 +243,10 @@ describe("FS007 / FS008 / FS009 behavioral sections", () => {
     assert.ok(hasCode(d, "FS008"));
   });
 
-  it("allows Screen Shows plus nested Action Shows", () => {
+  it("rejects nested Action Shows even when the Screen has Shows", () => {
     const source = ["Flow Demo", "  Screen Login", "    Shows", "      Login options", "    Action Show login error", "      Shows", "        Error message"].join("\n");
     const d = lintFlowSpecFile(source, "a.flowspec");
-    assert.equal(hasCode(d, "FS007"), false, JSON.stringify(d, null, 2));
+    assert.ok(hasCode(d, "FS007"), JSON.stringify(d, null, 2));
     assert.equal(hasCode(d, "FS008"), false, JSON.stringify(d, null, 2));
   });
 
@@ -505,12 +507,10 @@ describe("FS017 Outcome is final", () => {
     assert.match(warn.message, /If authentication fails/);
   });
 
-  it("warns when Shows appears after Outcome", () => {
+  it("rejects Shows inside an Action after Outcome", () => {
     const source = ["Flow Demo", "  Action Demo", "    Outcome", "      Done", "    Shows", "      Result"].join("\n");
     const d = lintFlowSpecFile(source, "a.flowspec");
-    const warn = d.find((x) => x.code === "FS017");
-    assert.ok(warn);
-    assert.match(warn.message, /Move "Shows"/);
+    assert.ok(d.some((x) => x.code === "FS007" && /direct child of Screen/.test(x.message)));
   });
 
   it("does not warn for nested content within Outcome", () => {
@@ -872,13 +872,12 @@ describe("canonical multi-file fixture", () => {
 });
 
 describe("Flow-owned behavior", () => {
-  it("allows each behavioral section directly under Flow", () => {
+  it("allows each Flow behavioral section directly under Flow", () => {
     const cases = [
       ["Receives", "  Receives\n    Input"],
       ["Rules", "  Rules\n    Something must be true"],
       ["Uses", "  Uses\n    Provider OpenAI"],
       ["Steps", "  Steps\n    Do something"],
-      ["Shows", "  Shows\n    Progress"],
       ["Outcome", "  Outcome\n    Something is ready"],
     ];
     for (const [label, body] of cases) {
@@ -891,8 +890,13 @@ describe("Flow-owned behavior", () => {
     }
   });
 
+  it("rejects Shows directly under Flow", () => {
+    const d = lintFlowSpecFile("Flow Example\n  Shows\n    Progress\n", "a.flowspec");
+    assert.ok(hasCode(d, "FS007"), JSON.stringify(d, null, 2));
+  });
+
   it("allows a combined Flow with Id and full behavior", () => {
-    const source = ["Flow Bootstrap conversation", "Id conversation.bootstrap", "", "    Receives", "      Session", "", "    Rules", "      Bootstrap the conversation only once per session", "", "    Uses", "      Provider OpenAI", "", "    Steps", "      At the same time", "        Load the user profile", "        Load the conversation history for the session", "", "      Once the conversation history is loaded", "        If the conversation history is empty", "          Go to Start conversation", "        Otherwise", "          Go to Restore conversation", "", "    If bootstrap fails", "      Shows", "        Conversation error with retry", "", "    Shows", "      Initial status", "", "    Outcome", "      Conversation is ready to start or continue", "", "  Screen Start conversation", "  Screen Restore conversation"].join("\n");
+    const source = ["Flow Bootstrap conversation", "Id conversation.bootstrap", "", "    Receives", "      Session", "", "    Rules", "      Bootstrap the conversation only once per session", "", "    Uses", "      Provider OpenAI", "", "    Steps", "      At the same time", "        Load the user profile", "        Load the conversation history for the session", "", "      Once the conversation history is loaded", "        If the conversation history is empty", "          Go to Start conversation", "        Otherwise", "          Go to Restore conversation", "", "    Outcome", "      Conversation is ready to start or continue", "", "  Screen Start conversation", "    Shows", "      Initial status", "      Conversation error with retry", "", "  Screen Restore conversation"].join("\n");
     const d = lintFlowSpecFile(source, "a.flowspec");
     assert.equal(
       d.filter((x) => x.severity === "error").length,

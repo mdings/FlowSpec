@@ -19,6 +19,8 @@ Id meditation.start-free
 
     Shows
       Voice options
+      Voice name for the held voice
+      Voice description for the held voice
 
     Select voice
       If the voice requires Premium and the user has no Premium
@@ -29,9 +31,10 @@ Id meditation.start-free
         Go to Choose duration
 
     Hold voice
-      Shows
-        Voice name
-        Voice description
+      Steps
+        Mark the held voice for preview
+      Outcome
+        Voice preview details are available
 
   Screen Choose duration
   Id meditation.choose-duration

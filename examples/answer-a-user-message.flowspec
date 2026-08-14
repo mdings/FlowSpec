@@ -4,6 +4,11 @@ Id: conversation.answer-message
   Screen: Conversation
   Id: conversation.screen
 
+    Shows
+      Assistant response in the conversation
+      Quick replies below the assistant response when available
+      Assistant response without quick replies when product search fails
+
     When the user sends a message
 
       Action: Find relevant products
@@ -31,8 +36,8 @@ Id: conversation.answer-message
         Action: Show assistant response
         Id: conversation.show-response
 
-          Shows
-            Assistant response in the conversation
+          Steps
+            Display the assistant response in the conversation
 
       Once product results are available
 
@@ -64,16 +69,16 @@ Id: conversation.answer-message
         Action: Show quick replies
         Id: conversation.show-quick-replies
 
-          Shows
-            Quick replies below the assistant response
+          Steps
+            Display quick replies below the assistant response
 
       If product search fails
 
         Action: Continue without quick replies
         Id: conversation.continue-without-quick-replies
 
-          Shows
-            Assistant response without quick replies
+          Steps
+            Keep the assistant response visible without quick replies
 
           Outcome
             Conversation remains usable

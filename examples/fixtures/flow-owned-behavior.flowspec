@@ -5,6 +5,9 @@ Id samples.flow-owned.bootstrap
   Screen Start conversation
   Id samples.flow-owned.start
 
+    Shows
+      Conversation error with retry when bootstrap fails
+
   Screen Restore conversation
   Id samples.flow-owned.restore
 
@@ -31,8 +34,7 @@ Id samples.flow-owned.bootstrap
         Go to samples.flow-owned.restore
 
   If bootstrap fails
-    Shows
-      Conversation error with retry
+    Go to samples.flow-owned.start
 
   Outcome
     Conversation is ready to start or continue

@@ -169,15 +169,15 @@ enum FlowSpecCompletionProvider {
             ["Flow"]
         case .flow:
             ["Screen", "Action", "Receives", "Rules", "Uses", "Steps",
-             "Shows", "Outcome", "When", "Once", "If", "Go to"]
+             "Outcome", "When", "Once", "If", "Go to"]
         case .screen:
             ["Section", "Layout", "Action", "Shows", "When", "Once", "If", "Go to"]
         case .section:
-            ["Section", "Layout", "Action", "Shows", "When", "Once", "If", "Go to"]
+            ["Section", "Layout", "Action", "When", "Once", "If", "Go to"]
         case .layout:
             ["Rules", "When"]
         case .action:
-            ["Receives", "Rules", "Uses", "Steps", "Shows", "Outcome",
+            ["Receives", "Rules", "Uses", "Steps", "Outcome",
              "When", "Once", "If", "Go to"]
         case .steps, .parallel:
             ["When", "Once", "If", "At the same time", "Go to"]
@@ -191,7 +191,7 @@ enum FlowSpecCompletionProvider {
     }
 
     private static func controlDirectives(insideSteps: Bool) -> Set<String> {
-        var result: Set<String> = ["When", "Once", "If", "Shows", "Go to"]
+        var result: Set<String> = ["When", "Once", "If", "Go to"]
         if insideSteps { result.insert("At the same time") }
         return result
     }

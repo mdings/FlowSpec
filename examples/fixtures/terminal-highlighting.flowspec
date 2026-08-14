@@ -8,6 +8,13 @@ Id premium.onboarding
   Screen Premium paywall
   Id premium.paywall
 
+    Shows
+      Plan options in Sidebar
+      Plan comparison in Content
+      Plan details in Inspector
+      Retry payment when payment fails
+      Trial banner when the selected plan requires a trial
+
     Layout
       Sidebar | Content | Inspector
 
@@ -21,16 +28,8 @@ Id premium.onboarding
           Inspector
 
     Section Sidebar
-      Shows
-        Plan options
-
     Section Content
-      Shows
-        Plan comparison
-
     Section Inspector
-      Shows
-        Plan details
 
     # Explicit Action
     Action Open checkout
@@ -45,8 +44,7 @@ Id premium.onboarding
           Log plan selection
           Notify analytics
         If payment fails
-          Shows
-            Retry payment
+          Offer retry payment
       Outcome
         Checkout is available
 
@@ -55,8 +53,7 @@ Id premium.onboarding
       Rules
         Plan must be Yearly or Monthly
       If the plan requires a trial
-        Shows
-          Trial banner
+        Display the trial banner
       Otherwise
         Go to premium.paywall
 

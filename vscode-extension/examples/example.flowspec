@@ -4,6 +4,11 @@ Id: conversation.answer-message
   Screen: Conversation
   Id: conversation.screen
 
+    Shows
+      Assistant response in the conversation
+      Quick replies below the assistant response when available
+      Assistant response without quick replies when product search fails
+
   When the user sends a message
 
     At the same time
@@ -42,8 +47,8 @@ Id: conversation.answer-message
         Receives
           Assistant response
 
-        Shows
-          Assistant response in the conversation
+        Steps
+          Display the assistant response in the conversation
 
         Outcome
           Assistant response is shown
@@ -81,8 +86,8 @@ Id: conversation.answer-message
         Receives
           Quick replies
 
-        Shows
-          Quick replies below the assistant response
+        Steps
+          Display quick replies below the assistant response
 
         Outcome
           Quick replies are shown
@@ -92,8 +97,8 @@ Id: conversation.answer-message
       Action: Continue without quick replies
       Id: conversation.continue-without-quick-replies
 
-        Shows
-          Assistant response without quick replies
+        Steps
+          Keep the assistant response visible without quick replies
 
         Outcome
           Conversation remains usable
@@ -121,6 +126,10 @@ Id: conversation.answer-message
   # Section + Layout (structural UI regions)
   Flow Today workspace
   Screen Today
+    Shows
+      Areas in Sidebar
+      Today's tasks in Content
+      Selected task details in Inspector
     Layout
       Sidebar | Content | Inspector
       Rules
@@ -131,14 +140,8 @@ Id: conversation.answer-message
           Content
           Inspector
     Section Sidebar
-      Shows
-        Areas
     Section Content
-      Shows
-        Today's tasks
     Section Inspector
-      Shows
-        Selected task details
 
   # Highlighting for Id definitions and Id-shaped Go to targets
   Action Bootstrap conversation
@@ -169,12 +172,12 @@ Id: conversation.answer-message
     Show no more than 3 quick replies
 
   # Quoted strings (apostrophes in prose must not open strings)
-  Action: Send welcome email
+  Screen: Welcome email
   Id: samples.send-welcome
-  Shows
-    Greeting with "welcome" and 'user name'
-    Store the user's name when provided
-    Store the user's email address when provided
+    Shows
+      Greeting with "welcome" and 'user name'
+      Stored user name when provided
+      Stored user email address when provided
 
   # Directive-like words in normal text should NOT highlight
   Action: Prose sample

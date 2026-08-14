@@ -1,5 +1,9 @@
 Flow Bootstrap conversation
 
+  Screen Conversation
+    Shows
+      Conversation error with retry when response generation fails
+
   Action Generate initial assistant response
 
     Receives
@@ -19,8 +23,7 @@ Flow Bootstrap conversation
       Generate the initial assistant response
 
     If generating the response fails
-      Shows
-        Conversation error with retry
+      Make a retry available
 
     Outcome
       Initial assistant response is available

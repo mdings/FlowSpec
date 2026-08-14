@@ -10,7 +10,8 @@ This page is generated from the same definition used by the parser, linter, VS C
 - Directives are recognized only at the beginning of a line after optional indentation; trailing colons are optional.
 - Flow, Screen, Action, Section, Layout, Id, behavioral sections, and control flow use the canonical casing shown in the directive reference.
 - Id is optional on Flow, Screen, and explicit Action only. Section, Layout, and implicit Actions cannot own an Id.
-- Receives, Rules, Uses, Steps, Shows, and Outcome are optional.
+- Receives, Rules, Uses, Steps, and Outcome are optional behavioral sections on a Flow or Action.
+- Shows is optional and may only appear as a direct child of Screen.
 - A Flow or explicit Action may own behavioral sections directly.
 - Section is a non-navigable region inside a Screen or Section; Layout describes direct child Sections.
 - A named interaction directly under a Screen or Section becomes an implicit Action when it has nested behavior.
@@ -36,7 +37,7 @@ This page is generated from the same definition used by the parser, linter, VS C
 | `Rules` | Constraints that must remain true within the owning Flow, Action, or Layout. | `Rules` |
 | `Uses` | Services, models, tools, or runtime configuration used by a Flow or Action. | `Uses` |
 | `Steps` | Required functional work, without technical or test details. | `Steps` |
-| `Shows` | What becomes visible on a Flow, Screen, Section, or Action. | `Shows` |
+| `Shows` | What becomes visible on a Screen. May only be a direct child of Screen. | `Shows` |
 | `Outcome` | An observable or reusable result that other behavior can wait for. | `Outcome` |
 
 ## Flow control
@@ -51,7 +52,7 @@ This page is generated from the same definition used by the parser, linter, VS C
 | `If ... fails` | Fallback when something cannot complete successfully. | `If product search fails` |
 | `Go to` | Navigates to a top-level Flow, Screen, or Action name or Id. | `Go to: Verify login code` |
 
-Recommended behavioral section order: `Receives` → `Rules` → `Uses` → `Steps` → `Shows` → `Outcome`.
+Recommended behavioral section order: `Receives` → `Rules` → `Uses` → `Steps` → `Outcome`.
 
 ## Authoring guidelines
 

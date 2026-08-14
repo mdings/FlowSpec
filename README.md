@@ -40,7 +40,7 @@ FlowSpec uses Title Case for all directives to keep the language visually consis
 - `Screen`, top-level `Action`, control-flow, and behavioral sections that belong to a Flow must be **indented under** that Flow. An unindented `Screen` after a `Flow` is not owned by the Flow (FS024).
 - Sections must be indented beneath their owning `Flow`, `Screen`, `Action`, `Section`, or `Layout` (as allowed for each section type).
 - `Id` is optional on `Flow`, `Screen`, and explicit `Action` only. `Section`, `Layout`, and implicit Actions cannot have an `Id`. When present, place `Id` immediately after the structural directive; `Id` may share the owner's indentation (special association rule) so following indented children still belong to the owner.
-- `Receives`, `Rules`, `Uses`, `Steps`, `Shows`, and `Outcome` are optional. Missing sections are allowed.
+- `Receives`, `Rules`, `Uses`, `Steps`, and `Outcome` are optional on a `Flow` or `Action`. `Shows` is optional and may only be a direct child of `Screen`.
 - A `Flow` may own behavioral sections directly. An explicit `Action` is only needed when behavior deserves an independent name or identity.
 - Behavior that is only meaningful while a Screen is active should normally be a child of that Screen. Flow-level `When` remains valid for overall/system events.
 - `When` remains part of the language; it is not required for local Screen interactions (prefer implicit Actions).
@@ -51,7 +51,7 @@ FlowSpec uses Title Case for all directives to keep the language visually consis
 ```text
 Flow
 ├── Id (optional; may share Flow indent)
-├── direct Flow behavior (Receives / Rules / Uses / Steps / Shows / Outcome)
+├── direct Flow behavior (Receives / Rules / Uses / Steps / Outcome)
 ├── Flow-level When / Once / If / … (overall / system events)
 ├── Screen
 │   ├── Id (optional; may share Screen indent)
@@ -108,7 +108,7 @@ Go to
 
 ### Behavioral sections
 
-These sections may be owned by a `Flow` or an `Action` (and, where noted, by `Screen` / `Section` / `Layout`).
+These sections may be owned by a `Flow` or an `Action` where noted. `Shows` is Screen-only; `Rules` is also available on Layout.
 
 | Directive | Description | Example |
 | --------- | ----------- | ------- |
@@ -116,7 +116,7 @@ These sections may be owned by a `Flow` or an `Action` (and, where noted, by `Sc
 | `Rules` | Constraints that must remain true within the owning context (`Flow`, `Action`, or `Layout`). | `Rules` / `  Bootstrap only once per session` |
 | `Uses` | Optional services, models, tools, or runtime configuration used by the Flow or Action. | `Uses` / `  Provider OpenAI` |
 | `Steps` | Required functional work, without technical or test details. | `Steps` / `  Load conversation history` |
-| `Shows` | What becomes visible to the user (allowed on `Flow`, `Screen`, `Section`, or `Action`). Flow-level `Shows` describes visible effects of the overall Flow, not a specific Screen. | `Shows` / `  Conversation error with retry` |
+| `Shows` | What becomes visible to the user. Must be a direct child of `Screen`. | `Shows` / `  Conversation error with retry` |
 | `Outcome` | Observable or reusable result; other behavior can wait for it. | `Outcome` / `  Conversation is ready` |
 
 ### Flow-owned behavior
@@ -244,14 +244,14 @@ Flow Voice
 
   Screen Choose voice
 
+    Shows
+      Voice options
+      Voice name for the held voice
+      Voice description for the held voice
+
     Select voice
       If the voice requires Premium
         Go to Premium paywall
-
-    Hold voice
-      Shows
-        Voice name
-        Voice description
 ```
 
 is equivalent to writing `Action Select voice` / `Action Hold voice` under that Screen.
@@ -272,13 +272,12 @@ A `Section` is a meaningful region within a `Screen`. It may nest inside another
 ```flowspec
 Screen Today
 
-  Section Sidebar
-    Shows
-      Navigation
+  Shows
+    Navigation in Sidebar
+    Tasks in Content
 
+  Section Sidebar
   Section Content
-    Shows
-      Tasks
 ```
 
 Nested:
@@ -298,8 +297,8 @@ Screen Today
 **Rules**
 
 - Ownership: direct child of `Screen` or `Section` only.
-- May contain `Shows`, `Layout`, nested `Section`, implicit/explicit Actions, and supported Screen-level control-flow where already appropriate.
-- Behavior is optional — a Section with only `Shows`, nested Sections, or Layout is valid.
+- May contain `Layout`, nested `Section`, implicit/explicit Actions, and supported Screen-level control-flow where already appropriate.
+- Behavior is optional — a Section with nested Sections or Layout is valid.
 - Implicit Actions inside a Section work the same as under a Screen.
 - **No `Id`.** **Not a `Go to` target.** If a region needs independent navigation, model it as a `Screen`.
 
@@ -516,9 +515,6 @@ Id: [stable identifier]
   If [branch]
     [Branch work]
 
-  Shows
-    [Visible user-facing effect]
-
   Outcome
     [Observable or reusable result]
 ```
@@ -652,8 +648,8 @@ Exit codes:
 | FS004 | error | `Id` may only belong to the directly preceding `Flow`, `Screen`, or `Action` |
 | FS005 | error | `Id` must match `^[a-z0-9][a-z0-9._-]*$` |
 | FS006 | error | `Id` must be unique across all loaded FlowSpec files |
-| FS007 | error | `Receives` / `Uses` / `Steps` / `Outcome` only as direct children of a `Flow` or `Action`; `Rules` inside a `Flow`, `Action`, or `Layout`; `Shows` inside a `Flow`, `Screen`, `Section`, or `Action` (indent-based ownership — adjacency never counts) |
-| FS008 | error | Each behavioral section at most once per `Flow` or `Action`; `Shows` at most once per `Screen` or `Section`; `Rules` at most once per `Layout` |
+| FS007 | error | `Receives` / `Uses` / `Steps` / `Outcome` only as direct children of a `Flow` or `Action`; `Rules` inside a `Flow`, `Action`, or `Layout`; `Shows` only as a direct child of `Screen` |
+| FS008 | error | Each behavioral section at most once per `Flow` or `Action`; `Shows` at most once per `Screen`; `Rules` at most once per `Layout` |
 | FS011 | error | `At the same time` only inside `Steps` |
 | FS012 | error | `Once` / `If` / `Otherwise` / `If … fails` may appear directly inside a `Flow`, `Screen`, or `Action`, or inside `Steps` — not inside `Receives`, `Rules`, `Uses`, `Shows`, or `Outcome` |
 | FS013 | error | `Otherwise` must match a preceding `If` at the same indent in the same parent |
@@ -662,7 +658,7 @@ Exit codes:
 
 | Code | Severity | Rule |
 | ---- | -------- | ---- |
-| FS009 | warning | Recommended section order on `Flow` or `Action`: Receives → Rules → Uses → Steps → control-flow → Shows → Outcome |
+| FS009 | warning | Recommended section order on `Flow` or `Action`: Receives → Rules → Uses → Steps → control-flow → Outcome |
 | FS010 | warning | `Action` should not be empty (`Id` alone does not count) |
 | FS014 | warning | `Go to` target should resolve to a **top-level** `Flow`, `Screen`, or `Action` name or `Id` in any loaded file (not Actions nested under `When` / control-flow) |
 | FS015 | warning | `Go to` target should not match more than one name/Id (including across files) |
@@ -752,11 +748,11 @@ Receives  → What does this Flow or Action need?
 Rules     → What must remain true?
 Uses      → What capability or runtime dependency is used?
 Steps     → What functionally happens?
-Shows     → What does the user see?
+Shows     → What does the user see on this Screen?
 Outcome   → What is true or available afterwards?
 ```
 
-These questions apply equally to Flow-owned behavior and Action-owned behavior.
+The Flow/Action questions apply to both owners. `Shows` belongs only to `Screen`.
 ---
 
 ## 9. FlowSpec vs Gherkin
