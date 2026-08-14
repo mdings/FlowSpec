@@ -89,6 +89,9 @@ Go to Generate assistant reply
   Without user input
 ```
 
+`With` and `Without` are highlighted as argument directives only inside their
+owning `Go to` statement.
+
 Directives are highlighted only at the beginning of a line (after optional indentation). Words such as `when` inside ordinary prose stay normal text.
 
 ## Syntax example

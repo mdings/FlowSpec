@@ -20,6 +20,9 @@
       "include": "#at-the-same-time"
     },
     {
+      "include": "#go-to-id"
+    },
+    {
       "include": "#go-to"
     },
     {
@@ -115,28 +118,62 @@
         }
       }
     },
-    "go-to": {
+    "go-to-id": {
       "name": "meta.flow-control.go-to.flowspec",
-      "begin": "^(\\s*)(Go to)\\b\\s*:?",
+      "begin": "^(\\s*)(Go to)\\b\\s*:?[ \\t]*([a-z0-9][a-z0-9._-]*)[ \\t]*(#.*)?$",
       "beginCaptures": {
         "2": {
           "name": "keyword.control.flow.flowspec"
+        },
+        "3": {
+          "name": "entity.name.identifier.flowspec"
+        },
+        "4": {
+          "name": "comment.line.number-sign.flowspec"
         }
       },
-      "end": "$",
-      "contentName": "entity.name.flowspec",
+      "end": "(?=^(?!\\s*$)(?!\\1[ \\t]+)|\\z)",
       "patterns": [
         {
-          "name": "entity.name.identifier.flowspec",
-          "match": "[a-z0-9][a-z0-9._-]*"
+          "include": "#go-to-arguments"
         },
         {
           "include": "#comments"
-        },
-        {
-          "include": "#strings"
         }
       ]
+    },
+    "go-to": {
+      "name": "meta.flow-control.go-to.flowspec",
+      "begin": "^(\\s*)(Go to)\\b\\s*:?[ \\t]*(.*?)[ \\t]*(#.*)?$",
+      "beginCaptures": {
+        "2": {
+          "name": "keyword.control.flow.flowspec"
+        },
+        "3": {
+          "name": "entity.name.flowspec"
+        },
+        "4": {
+          "name": "comment.line.number-sign.flowspec"
+        }
+      },
+      "end": "(?=^(?!\\s*$)(?!\\1[ \\t]+)|\\z)",
+      "patterns": [
+        {
+          "include": "#go-to-arguments"
+        },
+        {
+          "include": "#comments"
+        }
+      ]
+    },
+    "go-to-arguments": {
+      "name": "meta.flow-control.go-to-argument.flowspec",
+      "match": "^(\\s*)(With|Without)\\b\\s*:?",
+      "captures": {
+        "2": {
+          "name": "keyword.control.argument.flowspec"
+        }
+      }
     },
     "flow-control": {
       "name": "meta.flow-control.flowspec",

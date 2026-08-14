@@ -29,6 +29,8 @@ const section = compilePattern(grammar.repository["section-directives"].match);
 const ifFails = compilePattern(grammar.repository["if-fails"].match);
 const atSameTime = compilePattern(grammar.repository["at-the-same-time"].match);
 const goTo = compilePattern(grammar.repository["go-to"].begin);
+const goToId = compilePattern(grammar.repository["go-to-id"].begin);
+const goToArgument = compilePattern(grammar.repository["go-to-arguments"].match);
 const flowControl = compilePattern(grammar.repository["flow-control"].match);
 const comment = compilePattern(grammar.repository.comments.match);
 const duration = compilePattern(grammar.repository.durations.match);
@@ -103,20 +105,24 @@ assert(
   )
 );
 assert("Go to begin pattern is line-anchored", goTo.source.startsWith("^"));
+assert("matches With and Without argument directives", (
+  new RegExp(goToArgument.source).test("        With campaign context") &&
+  new RegExp(goToArgument.source).test("        Without user input")
+));
+assert("Go to arguments are scoped only inside Go to", (
+  grammar.repository["go-to"].patterns.some((pattern) => pattern.include === "#go-to-arguments") &&
+  !grammar.patterns.some((pattern) => pattern.include === "#go-to-arguments")
+));
 
-const goToIdPattern = grammar.repository["go-to"].patterns.find(
-  (p) => p.name === "entity.name.identifier.flowspec"
-);
-assert("Go to highlights Id-shaped targets", Boolean(goToIdPattern));
+assert("Go to highlights Id-shaped targets", grammar.repository["go-to-id"].beginCaptures[3].name === "entity.name.identifier.flowspec");
 assert(
   "Go to Id pattern matches namespaced Ids",
-  goToIdPattern &&
-    new RegExp(goToIdPattern.match).test("conversation.bootstrap") &&
-    new RegExp(goToIdPattern.match).test("jack-hunt.conversation")
+  new RegExp(goToId.source).test("Go to conversation.bootstrap") &&
+    new RegExp(goToId.source).test("Go to jack-hunt.conversation")
 );
 assert(
   "Go to Id pattern does not match Title Case display names",
-  goToIdPattern && !new RegExp(`^${goToIdPattern.match}$`).test("Conversation")
+  !new RegExp(goToId.source).test("Go to Conversation")
 );
 
 const singleQuoteBegin = grammar.repository.strings.patterns.find(

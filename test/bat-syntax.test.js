@@ -53,7 +53,8 @@ describe("bat FlowSpec.sublime-syntax", () => {
       ["section-directives", "match", "section-directives"],
       ["if-fails", "match", "if-fails"],
       ["at-the-same-time", "match", "at-the-same-time"],
-      ["go-to", "begin", "go-to"],
+      ["go-to-id", "begin", "go-to"],
+      ["go-to-arguments", "match", "go-to-arguments"],
       ["flow-control", "match", "flow-control"],
       ["comments", "match", "comments"],
       ["durations", "match", "durations"],
@@ -83,6 +84,7 @@ describe("bat FlowSpec.sublime-syntax", () => {
     const ifFails = compile(grammar.repository["if-fails"].match);
     const atSameTime = compile(grammar.repository["at-the-same-time"].match);
     const goTo = compile(grammar.repository["go-to"].begin);
+    const goToArgument = compile(grammar.repository["go-to-arguments"].match);
     const idDirective = compile(grammar.repository["id-directive"].begin);
     const comment = compile(grammar.repository.comments.match);
 
@@ -92,6 +94,7 @@ describe("bat FlowSpec.sublime-syntax", () => {
     assert.ok((fixture.match(ifFails) || []).some((m) => /fails/.test(m)));
     assert.ok((fixture.match(atSameTime) || []).length >= 1);
     assert.ok((fixture.match(goTo) || []).length >= 1);
+    assert.ok((fixture.match(goToArgument) || []).length >= 2);
     assert.ok((fixture.match(idDirective) || []).length >= 2);
     assert.ok((fixture.match(comment) || []).length >= 1);
     assert.match(fixture, /Sidebar \| Content \| Inspector/);
@@ -163,6 +166,8 @@ describe("bat FlowSpec.sublime-syntax", () => {
       assert.match(render.stdout, /\u001b\[\d+mFlow\u001b/);
       assert.match(render.stdout, /\u001b\[\d+mId\u001b/);
       assert.match(render.stdout, /\u001b\[\d+mGo to\u001b/);
+      assert.match(render.stdout, /\u001b\[\d+mWith\u001b/);
+      assert.match(render.stdout, /\u001b\[\d+mWithout\u001b/);
       assert.match(render.stdout, /\u001b\[\d+m# /);
       // Implicit Action name stays uncolored as a bare line.
       assert.match(render.stdout, /\n {4}Select plan\n/);

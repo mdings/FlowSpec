@@ -32,6 +32,22 @@ describe("canonical language definition", () => {
     }
   });
 
+  it("highlights With and Without only beneath Go to", () => {
+    const source = [
+      "Flow Demo",
+      "  With ordinary prose outside a handoff",
+      "  Go to Destination",
+      "    With campaign context",
+      "    Without user input",
+      "  Without ordinary prose after the handoff",
+    ].join("\n");
+    const highlightedText = language.syntaxHighlights(source).map((highlight) =>
+      source.slice(highlight.location, highlight.location + highlight.length)
+    );
+
+    assert.deepEqual(highlightedText, ["Flow", "Go to", "With", "Without"]);
+  });
+
   it("is represented in the generated documentation and TextMate grammar", () => {
     const root = path.join(__dirname, "..");
     const docs = fs.readFileSync(path.join(root, "docs/language-reference.md"), "utf8");

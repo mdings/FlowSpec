@@ -57,8 +57,10 @@ This page is generated from the same definition used by the parser, linter, VS C
 
 A Go to statement may own indented argument clauses that describe the handoff to its destination.
 
-- With supplies named context, input, or instructions to the destination.
-- Without explicitly omits named context or input, even when it is available in the current scope.
+| Directive | Description | Example |
+| --- | --- | --- |
+| `With` | Supplies named context, input, or instructions to a Go to destination. | `With campaign AI instructions from the campaign` |
+| `Without` | Explicitly omits named context or input from a Go to destination. | `Without user input` |
 
 ```flowspec
 Go to Generate assistant reply

@@ -29,6 +29,7 @@ describe("Go to arguments", () => {
         "Without user input",
       ]
     );
+    assert.ok(goTo.children.every((node) => node.type === "content"));
     assert.ok(goTo.children.every((node) => node.parent === goTo));
   });
 

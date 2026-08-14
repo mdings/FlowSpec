@@ -40,6 +40,8 @@ Id premium.onboarding
         Prepare checkout session
         Once checkout is ready
           Go to premium.checkout
+            With campaign AI instructions from the campaign
+            Without user input
         At the same time
           Log plan selection
           Notify analytics

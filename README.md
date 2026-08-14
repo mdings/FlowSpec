@@ -194,8 +194,9 @@ Go to Generate assistant reply
 ```
 
 Every line indented directly beneath `Go to` is part of that destination's
-argument handoff. `With` and `Without` are clause prefixes, not standalone
-FlowSpec directives, so they are meaningful only within the owning `Go to`.
+argument handoff. `With` and `Without` are nested argument directives, so they
+are highlighted and meaningful only within the owning `Go to`; they are not
+valid as standalone directives.
 The handoff remains descriptive: FlowSpec records what is supplied or omitted
 without prescribing the implementation's calling convention.
 

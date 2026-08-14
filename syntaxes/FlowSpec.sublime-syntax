@@ -58,17 +58,23 @@ contexts:
       scope: meta.flow-control.at-the-same-time.flowspec
       captures: { 2: keyword.control.flow.flowspec }
   go-to:
-    - match: '^(\s*)(Go to)\b\s*:?'
-      captures: { 2: keyword.control.flow.flowspec }
+    - match: '^(\s*)(Go to)\b\s*:?[ \t]*([a-z0-9][a-z0-9._-]*)[ \t]*(#.*)?$'
+      captures: { 2: keyword.control.flow.flowspec, 3: entity.name.identifier.flowspec, 4: comment.line.number-sign.flowspec }
       push:
-        - meta_scope: meta.flow-control.go-to.flowspec
-        - meta_content_scope: entity.name.flowspec
-        - match: $
+        - match: '^(?=\s*\S)(?!\s*(?:(?:With|Without)\b|#))'
           pop: true
-        - match: '[a-z0-9][a-z0-9._-]*'
-          scope: entity.name.identifier.flowspec
+        - include: go-to-arguments
         - include: comments
-        - include: strings
+    - match: '^(\s*)(Go to)\b\s*:?[ \t]*(.*?)[ \t]*(#.*)?$'
+      captures: { 2: keyword.control.flow.flowspec, 3: entity.name.flowspec, 4: comment.line.number-sign.flowspec }
+      push:
+        - match: '^(?=\s*\S)(?!\s*(?:(?:With|Without)\b|#))'
+          pop: true
+        - include: go-to-arguments
+        - include: comments
+  go-to-arguments:
+    - match: '^(\s*)(With|Without)\b\s*:?'
+      captures: { 2: keyword.control.argument.flowspec }
   flow-control:
     - match: '^(\s*)(When|Once|If|Otherwise)\b\s*:?'
       scope: meta.flow-control.flowspec
