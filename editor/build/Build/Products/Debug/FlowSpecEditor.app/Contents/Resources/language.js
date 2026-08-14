@@ -16,8 +16,8 @@ const DIRECTIVES = [
   { name: "Receives", type: "receives", category: "section", description: "Information the Flow or Action needs before it can run.", example: "Receives", trailingSpace: false },
   { name: "Rules", type: "rules", category: "section", description: "Constraints that must remain true within the owning Flow, Action, or Layout.", example: "Rules", trailingSpace: false },
   { name: "Uses", type: "uses", category: "section", description: "Services, models, tools, or runtime configuration used by a Flow or Action.", example: "Uses", trailingSpace: false },
-  { name: "Steps", type: "steps", category: "section", description: "Required functional work, without technical or test details.", example: "Steps", trailingSpace: false },
-  { name: "Shows", type: "shows", category: "section", description: "What becomes visible on a Flow, Screen, Section, or Action.", example: "Shows", trailingSpace: false },
+  { name: "Steps", type: "steps", category: "section", description: "A flat list of required functional work, without technical or test details. Cannot contain another Steps section.", example: "Steps", trailingSpace: false, allowsSelfNesting: false },
+  { name: "Shows", type: "shows", category: "section", description: "What becomes visible on a Screen. May only be a direct child of Screen.", example: "Shows", trailingSpace: false },
   { name: "Outcome", type: "outcome", category: "section", description: "An observable or reusable result that other behavior can wait for.", example: "Outcome", trailingSpace: false },
   { name: "When", type: "when", category: "control", description: "Behavioral trigger that starts activity.", example: "When the user sends a message", trailingSpace: true },
   { name: "Once", type: "once", category: "control", description: "Starts after an outcome or dependency is available.", example: "Once product results are available", trailingSpace: true },
@@ -25,7 +25,9 @@ const DIRECTIVES = [
   { name: "Otherwise", type: "otherwise", category: "control", description: "Alternate path for the preceding If.", example: "Otherwise", trailingSpace: false },
   { name: "At the same time", type: "parallel", category: "control", description: "Parallel work inside Steps.", example: "At the same time", trailingSpace: false },
   { name: "If ... fails", type: "ifFails", category: "control", description: "Fallback when something cannot complete successfully.", example: "If product search fails", trailingSpace: true, variable: true },
-  { name: "Go to", type: "goTo", category: "control", description: "Navigates to a top-level Flow, Screen, or Action name or Id.", example: "Go to: Verify login code", trailingSpace: true },
+  { name: "Go to", type: "goTo", category: "control", description: "Navigates to a top-level Flow, Screen, or Action name or Id. Indented With/Without clauses describe arguments passed to the destination.", example: "Go to: Verify login code", trailingSpace: true },
+  { name: "With", type: "withArgument", category: "argument", parent: "goTo", description: "Supplies named context, input, or instructions to a Go to destination.", example: "With campaign AI instructions from the campaign", trailingSpace: true },
+  { name: "Without", type: "withoutArgument", category: "argument", parent: "goTo", description: "Explicitly omits named context or input from a Go to destination.", example: "Without user input", trailingSpace: true },
 ];
 const HIGHLIGHT_DIRECTIVES = [
   ...DIRECTIVES.filter((directive) => directive.variable),
@@ -38,13 +40,25 @@ const LANGUAGE_REQUIREMENTS = [
   "Directives are recognized only at the beginning of a line after optional indentation; trailing colons are optional.",
   "Flow, Screen, Action, Section, Layout, Id, behavioral sections, and control flow use the canonical casing shown in the directive reference.",
   "Id is optional on Flow, Screen, and explicit Action only. Section, Layout, and implicit Actions cannot own an Id.",
-  "Receives, Rules, Uses, Steps, Shows, and Outcome are optional.",
+  "Receives, Rules, Uses, Steps, and Outcome are optional behavioral sections on a Flow or Action.",
+  "Steps is a flat behavioral section and cannot contain another Steps section.",
+  "Shows is optional and may only appear as a direct child of Screen.",
   "A Flow or explicit Action may own behavioral sections directly.",
   "Section is a non-navigable region inside a Screen or Section; Layout describes direct child Sections.",
   "A named interaction directly under a Screen or Section becomes an implicit Action when it has nested behavior.",
   "Once, If, Otherwise, and If ... fails may appear in Flow, Screen, Action, or Steps; At the same time belongs only inside Steps.",
   "Go to resolves only to top-level Flow, Screen, or Action names and Ids, never Section or Layout.",
+  "Indented lines beneath Go to are argument clauses for the destination: With supplies context or input, while Without explicitly omits it.",
 ];
+
+const GO_TO_ARGUMENTS = {
+  description: "A Go to statement may own indented argument clauses that describe the handoff to its destination.",
+  example: [
+    "Go to Generate assistant reply",
+    "  With campaign AI instructions from the campaign",
+    "  Without user input",
+  ].join("\n"),
+};
 
 const AUTHORING_GUIDELINES = [
   "Omit information that can be safely inferred from structural context.",
@@ -57,7 +71,7 @@ const AUTHORING_GUIDELINES = [
   "Keep Steps functional rather than technical or test-oriented.",
 ];
 
-const RECOMMENDED_SECTION_ORDER = ["Receives", "Rules", "Uses", "Steps", "Shows", "Outcome"];
+const RECOMMENDED_SECTION_ORDER = ["Receives", "Rules", "Uses", "Steps", "Outcome"];
 
 function directives(category) {
   return DIRECTIVES.filter((directive) => directive.category === category);
@@ -104,14 +118,19 @@ function syntaxHighlights(source) {
   const text = String(source);
   const result = [];
   let offset = 0;
+  let goToIndent = null;
   for (const line of text.split(/\n/)) {
     const indent = (line.match(/^[ \t]*/) || [""])[0].length;
     const body = line.slice(indent);
+    if (body && !body.startsWith("#") && goToIndent !== null && indent <= goToIndent) {
+      goToIndent = null;
+    }
     if (body.startsWith("#")) {
       result.push({ location: offset + indent, length: line.length - indent, category: "comment" });
     } else {
       // Variable phrases (If ... fails) must win over their shorter prefix (If).
       const directive = HIGHLIGHT_DIRECTIVES.find((candidate) => {
+        if (candidate.parent === "goTo" && !(goToIndent !== null && indent > goToIndent)) return false;
         if (candidate.variable) return /^If\b.+?\bfails\b(?:\s*:)?(?=\s|$)/.test(body);
         const spellings = [candidate.name, ...(candidate.deprecated || [])];
         return spellings.some((name) => body === name || body.startsWith(`${name}:`) || body.startsWith(`${name} `));
@@ -123,8 +142,13 @@ function syntaxHighlights(source) {
         result.push({
           location: offset + indent,
           length: matchedName.length,
-          category: directive.category === "structural" ? "structural" : directive.category === "control" ? "control" : "section",
+          category: directive.category === "structural"
+            ? "structural"
+            : directive.category === "control" || directive.category === "argument"
+              ? "control"
+              : "section",
         });
+        if (directive.type === "goTo") goToIndent = indent;
       }
       const comment = line.indexOf("#");
       if (comment >= 0) result.push({ location: offset + comment, length: line.length - comment, category: "comment" });
@@ -138,6 +162,7 @@ module.exports = {
   DIRECTIVES,
   LANGUAGE_REQUIREMENTS,
   AUTHORING_GUIDELINES,
+  GO_TO_ARGUMENTS,
   RECOMMENDED_SECTION_ORDER,
   directives,
   canonicalNames,

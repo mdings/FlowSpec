@@ -44,7 +44,7 @@ const FLOW_CONTROL = {
 
 /** All canonical directive spellings for suggestion lookup (lowercase key → Title Case). */
 const DIRECTIVE_SUGGESTIONS = Object.fromEntries(
-  DIRECTIVES.filter((directive) => !directive.variable).map((directive) => [
+  DIRECTIVES.filter((directive) => !directive.variable && !directive.parent).map((directive) => [
     directive.name.toLowerCase(),
     directive.name,
   ])

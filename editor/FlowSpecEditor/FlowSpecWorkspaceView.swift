@@ -148,13 +148,37 @@ final class FlowSpecWorkspace: ObservableObject {
 
     func updateText(_ newText: String) {
         guard newText != text, let selectedURL else { return }
-        text = newText
-        if newText == savedText[selectedURL] {
-            drafts.removeValue(forKey: selectedURL)
-            dirtyURLs.remove(selectedURL)
+        applyDraft(url: selectedURL, newText: newText)
+    }
+
+    func applyLinkedSourceChanges(
+        _ changes: [FlowSpecLinkedSourceChange],
+        undoManager: UndoManager?
+    ) {
+        let applicable = changes.filter { $0.oldText != $0.newText }
+        guard !applicable.isEmpty else { return }
+
+        let inverses = applicable.map {
+            FlowSpecLinkedSourceChange(url: $0.url, oldText: $0.newText, newText: $0.oldText)
+        }
+        for change in applicable {
+            applyDraft(url: change.url, newText: change.newText)
+        }
+        undoManager?.registerUndo(withTarget: self) { workspace in
+            workspace.applyLinkedSourceChanges(inverses, undoManager: undoManager)
+        }
+    }
+
+    private func applyDraft(url: URL, newText: String) {
+        if url == selectedURL {
+            text = newText
+        }
+        if newText == savedText[url] {
+            drafts.removeValue(forKey: url)
+            dirtyURLs.remove(url)
         } else {
-            drafts[selectedURL] = newText
-            dirtyURLs.insert(selectedURL)
+            drafts[url] = newText
+            dirtyURLs.insert(url)
         }
     }
 
@@ -274,6 +298,9 @@ struct FlowSpecWorkspaceView: View {
                     ),
                     navigationTarget: navigationTarget,
                     onGoToLink: followGoTo,
+                    onLinkedSourceChanges: { changes, undoManager in
+                        workspace.applyLinkedSourceChanges(changes, undoManager: undoManager)
+                    },
                     validationContext: workspace.selectedURL.map {
                         FlowSpecValidationContext(
                             files: workspace.sourceFiles,
@@ -507,6 +534,34 @@ private final class WorkspaceWindowObserverView: NSView {
     }
 }
 
+private struct FlowSpecSidebarFileName: View {
+    let url: URL
+
+    private var stem: String {
+        url.deletingPathExtension().lastPathComponent
+    }
+
+    private var fileExtension: String {
+        url.pathExtension
+    }
+
+    var body: some View {
+        HStack(spacing: 0) {
+            Text(stem)
+                .lineLimit(1)
+                .truncationMode(.tail)
+            if !fileExtension.isEmpty {
+                Text(".\(fileExtension)")
+                    .lineLimit(1)
+                    .fixedSize()
+                    .opacity(0.55)
+            }
+        }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(url.lastPathComponent)
+    }
+}
+
 private struct FlowSpecWorkspaceTree: View {
     let nodes: [FlowSpecWorkspaceNode]
     let selectedURL: URL?
@@ -550,11 +605,11 @@ private struct FlowSpecWorkspaceTree: View {
                         select(node.url)
                     } label: {
                         HStack(spacing: 7) {
-                            Label(
-                                node.url.deletingPathExtension().lastPathComponent,
-                                systemImage: "doc.plaintext"
-                            )
-                            .lineLimit(1)
+                            Label {
+                                FlowSpecSidebarFileName(url: node.url)
+                            } icon: {
+                                Image(systemName: "doc.plaintext")
+                            }
                             Spacer(minLength: 5)
                             if dirtyURLs.contains(node.url) {
                                 Circle()

@@ -2,7 +2,7 @@
  * FlowSpec v1 linter — structural rules FS001–FS024 and style warnings FS101–FS107.
  */
 
-const { ID_PATTERN, RECOMMENDED_SECTION_ORDER } = require("./constants");
+const { DIRECTIVES, ID_PATTERN, RECOMMENDED_SECTION_ORDER } = require("./constants");
 const {
   createDiagnostic,
   sortDiagnostics,
@@ -21,6 +21,12 @@ const FLOW_OR_ACTION_SECTION_TYPES = new Set([
   "steps",
   "outcome",
 ]);
+
+const NON_RECURSIVE_SECTION_TYPES = new Set(
+  DIRECTIVES.filter(
+    (directive) => directive.category === "section" && directive.allowsSelfNesting === false
+  ).map((directive) => directive.type)
+);
 
 const CONTROL_TYPES = new Set(["once", "if", "otherwise", "ifFails"]);
 const CONTROL_OR_WHEN_TYPES = new Set(["when", "once", "if", "otherwise", "ifFails"]);
@@ -359,19 +365,17 @@ function lintFileStructure(root, filePath, diagnostics) {
       }
     }
 
-    // FS008 — duplicate section under Flow, Action, Screen, Section, or Layout
+    // FS008 — duplicate section under Flow, Action, Screen, or Layout
     if (
       node.type === "flow" ||
       node.type === "action" ||
       node.type === "screen" ||
-      node.type === "section" ||
       node.type === "layout"
     ) {
       const seen = new Map();
       for (const child of node.children || []) {
         if (!isSection(child)) continue;
         if (node.type === "screen" && child.type !== "shows") continue;
-        if (node.type === "section" && child.type !== "shows") continue;
         if (node.type === "layout" && child.type !== "rules") continue;
         // Flow-owned sections must be indented beneath the Flow (same-indent
         // attachments are rejected by FS007 and skipped here).
@@ -425,12 +429,12 @@ function lintFileStructure(root, filePath, diagnostics) {
             createDiagnostic({
               code: "FS009",
               severity: "warning",
-              message: `${child.value} appears out of the recommended order (Receives → Rules → Uses → Steps → control-flow → Shows → Outcome).`,
+              message: `${child.value} appears out of the recommended order (Receives → Rules → Uses → Steps → control-flow → Outcome).`,
               filePath,
               line: child.location.line,
               column: child.location.column,
               suggestion:
-                "Preferred order: Receives, Rules, Uses, Steps, control-flow, Shows, Outcome.",
+                "Preferred order: Receives, Rules, Uses, Steps, control-flow, Outcome.",
             })
           );
         } else {
@@ -453,7 +457,7 @@ function lintFileStructure(root, filePath, diagnostics) {
             code: "FS010",
             severity: "warning",
             message:
-              "Action is empty. Add Receives, Rules, Uses, Steps, Shows, Outcome, a nested control instruction, or Go to.",
+              "Action is empty. Add Receives, Rules, Uses, Steps, Outcome, a nested control instruction, or Go to.",
             filePath,
             line: node.location.line,
             column: node.location.column,
@@ -741,6 +745,22 @@ function isValidControlPlacement(node) {
 function lintFlowOrActionSectionPlacement(node, filePath, diagnostics) {
   if (isFlowOrActionSectionOwner(node.parent, node)) return;
 
+  if (node.parent?.type === node.type && NON_RECURSIVE_SECTION_TYPES.has(node.type)) {
+    const label = node.value || node.type;
+    diagnostics.push(
+      createDiagnostic({
+        code: "FS007",
+        severity: "error",
+        message: `"${label}" cannot contain another "${label}" section.`,
+        filePath,
+        line: node.location.line,
+        column: node.location.column,
+        suggestion: `Remove the nested "${label}" and keep its functional work directly inside the outer section.`,
+      })
+    );
+    return;
+  }
+
   const label = node.value || node.type;
   const preceding = findPrecedingStructuralSibling(node);
   /** @type {string|undefined} */
@@ -830,8 +850,7 @@ function lintRulesPlacement(node, filePath, diagnostics) {
 }
 
 /**
- * Shows must be indented under a Flow, Screen, Section, or Action
- * (or under control-flow inside one of those).
+ * Shows must be a direct child of Screen.
  * @param {object} node
  * @param {string} filePath
  * @param {object[]} diagnostics
@@ -845,28 +864,15 @@ function lintShowsPlacement(node, filePath, diagnostics) {
   if (preceding?.type === "screen") {
     const name = (preceding.value || "").trim() || "Screen";
     suggestion = `Indent "Shows" under "Screen ${name}" if it describes that screen.`;
-  } else if (preceding?.type === "section") {
-    const name = (preceding.value || "").trim() || "Section";
-    suggestion = `Indent "Shows" under "Section ${name}" if it describes that section.`;
-  } else if (preceding?.type === "action") {
-    const name = (preceding.value || "").trim() || "Action";
-    suggestion = `Indent "Shows" under "Action ${name}" if it belongs to that action.`;
-  } else if (preceding?.type === "flow") {
-    const name = (preceding.value || "").trim() || "Flow";
-    suggestion = `Indent "Shows" under "Flow ${name}" if it describes that flow.`;
-  } else if (
-    node.parent?.type === "flow" &&
-    !(node.indentation > node.parent.indentation)
-  ) {
-    suggestion =
-      'Indent "Shows" beneath the Flow if it describes Flow-level visible effects.';
+  } else {
+    suggestion = 'Move "Shows" directly beneath the Screen whose visible content it describes.';
   }
 
   diagnostics.push(
     createDiagnostic({
       code: "FS007",
       severity: "error",
-      message: '"Shows" must be nested inside a Flow, Screen, Section, or Action.',
+      message: '"Shows" must be a direct child of Screen.',
       filePath,
       line: node.location.line,
       column: node.location.column,
@@ -894,27 +900,7 @@ function isFlowOrActionSectionOwner(parent, section) {
  * @returns {boolean}
  */
 function isValidShowsPlacement(node) {
-  const parent = node.parent;
-  if (!parent) return false;
-  if (parent.type === "action" || parent.type === "screen" || parent.type === "section") {
-    return true;
-  }
-  if (parent.type === "flow") {
-    return node.indentation > parent.indentation;
-  }
-  if (CONTROL_OR_WHEN_TYPES.has(parent.type)) {
-    return Boolean(
-      findAncestor(
-        node,
-        (n) =>
-          n.type === "action" ||
-          n.type === "screen" ||
-          n.type === "section" ||
-          (n.type === "flow" && node.indentation > n.indentation)
-      )
-    );
-  }
-  return false;
+  return node.parent?.type === "screen";
 }
 
 /**
@@ -1560,7 +1546,7 @@ function warnRedundantSameNamedAction(flow, filePath, diagnostics) {
       line: action.location.line,
       column: action.location.column,
       suggestion:
-        "Move Receives / Rules / Uses / Steps / Shows / Outcome onto the Flow, or keep the Action only if it is independently meaningful.",
+        "Move Receives / Rules / Uses / Steps / Outcome onto the Flow, or keep the Action only if it is independently meaningful.",
     })
   );
 }

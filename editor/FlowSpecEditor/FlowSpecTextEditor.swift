@@ -73,6 +73,7 @@ struct FlowSpecTextEditor: NSViewRepresentable {
     let fontSize: FlowSpecFontSize
     let navigationTarget: FlowSpecNavigationTarget?
     let onGoToLink: ((Int) -> Void)?
+    let onLinkedSourceChanges: (([FlowSpecLinkedSourceChange], UndoManager?) -> Void)?
     let validationContext: FlowSpecValidationContext?
 
     func makeCoordinator() -> Coordinator {
@@ -80,6 +81,7 @@ struct FlowSpecTextEditor: NSViewRepresentable {
             text: $text,
             hoveredDiagnostic: $hoveredDiagnostic,
             onGoToLink: onGoToLink,
+            onLinkedSourceChanges: onLinkedSourceChanges,
             validationContext: validationContext,
             lineSpacing: lineSpacing.points,
             fontSize: fontSize.points
@@ -174,6 +176,7 @@ struct FlowSpecTextEditor: NSViewRepresentable {
     func updateNSView(_ scrollView: NSScrollView, context: Context) {
         guard let textView = scrollView.documentView as? NSTextView else { return }
         context.coordinator.onGoToLink = onGoToLink
+        context.coordinator.onLinkedSourceChanges = onLinkedSourceChanges
         context.coordinator.validationContext = validationContext
         let spacingChanged = context.coordinator.lineSpacing != lineSpacing.points
         let fontSizeChanged = context.coordinator.fontSize != fontSize.points
@@ -296,15 +299,18 @@ struct FlowSpecTextEditor: NSViewRepresentable {
         weak var textView: NSTextView?
         var pendingHighlight: DispatchWorkItem?
         var onGoToLink: ((Int) -> Void)?
+        var onLinkedSourceChanges: (([FlowSpecLinkedSourceChange], UndoManager?) -> Void)?
         var lastNavigationID: UUID?
         var validationContext: FlowSpecValidationContext?
         var lineSpacing: CGFloat
         var fontSize: CGFloat
+        private var isApplyingLinkedRename = false
 
         init(
             text: Binding<String>,
             hoveredDiagnostic: Binding<String?>,
             onGoToLink: ((Int) -> Void)?,
+            onLinkedSourceChanges: (([FlowSpecLinkedSourceChange], UndoManager?) -> Void)?,
             validationContext: FlowSpecValidationContext?,
             lineSpacing: CGFloat,
             fontSize: CGFloat
@@ -312,12 +318,14 @@ struct FlowSpecTextEditor: NSViewRepresentable {
             _text = text
             _hoveredDiagnostic = hoveredDiagnostic
             self.onGoToLink = onGoToLink
+            self.onLinkedSourceChanges = onLinkedSourceChanges
             self.validationContext = validationContext
             self.lineSpacing = lineSpacing
             self.fontSize = fontSize
         }
 
         func textDidChange(_ notification: Notification) {
+            guard !isApplyingLinkedRename else { return }
             guard let textView = notification.object as? NSTextView else { return }
             text = textView.string
             scheduleHighlight(for: textView)
@@ -325,6 +333,116 @@ struct FlowSpecTextEditor: NSViewRepresentable {
 
         func textViewDidChangeSelection(_ notification: Notification) {
             (notification.object as? IndentingTextView)?.refreshCurrentLine()
+        }
+
+        func textView(
+            _ textView: NSTextView,
+            shouldChangeTextIn affectedCharRange: NSRange,
+            replacementString: String?
+        ) -> Bool {
+            if isApplyingLinkedRename { return true }
+            guard let replacementString else { return true }
+            if textView.hasMarkedText() { return true }
+            if textView.undoManager?.isUndoing == true
+                || textView.undoManager?.isRedoing == true {
+                return true
+            }
+
+            let currentFileURL = validationContext?.currentFileURL
+                ?? URL(fileURLWithPath: "/document.flowspec")
+            let files: [FlowSpecSourceFile]
+            if let validationContext {
+                files = validationContext.files.map { file in
+                    file.url == currentFileURL
+                        ? FlowSpecSourceFile(url: file.url, source: textView.string)
+                        : file
+                }
+            } else {
+                files = [FlowSpecSourceFile(url: currentFileURL, source: textView.string)]
+            }
+
+            let plan = FlowSpecStructureValidator.linkedRenameReplacements(
+                in: files,
+                currentFileURL: currentFileURL,
+                editedRange: affectedCharRange,
+                replacement: replacementString
+            )
+            guard !plan.currentFile.isEmpty || !plan.otherFiles.isEmpty else {
+                return true
+            }
+
+            isApplyingLinkedRename = true
+            let undo = textView.undoManager
+            undo?.beginUndoGrouping()
+
+            textView.replaceCharacters(in: affectedCharRange, with: replacementString)
+
+            let utf16Delta = (replacementString as NSString).length - affectedCharRange.length
+            var caret = affectedCharRange.location + (replacementString as NSString).length
+            let originalReplacementRange = NSRange(
+                location: affectedCharRange.location,
+                length: (replacementString as NSString).length
+            )
+
+            let followUps = plan.currentFile
+                .compactMap { edit -> FlowSpecTextReplacement? in
+                    var range = edit.range
+                    if range.location >= NSMaxRange(affectedCharRange) {
+                        range.location += utf16Delta
+                    } else if NSMaxRange(range) > affectedCharRange.location {
+                        return nil
+                    }
+                    return FlowSpecTextReplacement(
+                        fileURL: edit.fileURL,
+                        range: range,
+                        newText: edit.newText
+                    )
+                }
+                .sorted { $0.range.location > $1.range.location }
+
+            let documentLength = (textView.string as NSString).length
+            for edit in followUps {
+                guard NSMaxRange(edit.range) <= documentLength,
+                      NSIntersectionRange(edit.range, originalReplacementRange).length == 0
+                else { continue }
+                let delta = (edit.newText as NSString).length - edit.range.length
+                textView.replaceCharacters(in: edit.range, with: edit.newText)
+                if edit.range.location < caret {
+                    caret += delta
+                }
+            }
+
+            if !plan.otherFiles.isEmpty {
+                let changes = FlowSpecStructureValidator.groupedSourceChanges(
+                    plan.otherFiles,
+                    files: files
+                )
+                if !changes.isEmpty {
+                    onLinkedSourceChanges?(changes, undo)
+                    if let context = validationContext {
+                        let updated = Dictionary(
+                            uniqueKeysWithValues: changes.map { ($0.url, $0.newText) }
+                        )
+                        validationContext = FlowSpecValidationContext(
+                            files: context.files.map { file in
+                                guard let newText = updated[file.url] else { return file }
+                                return FlowSpecSourceFile(url: file.url, source: newText)
+                            },
+                            currentFileURL: context.currentFileURL
+                        )
+                    }
+                }
+            }
+
+            undo?.endUndoGrouping()
+            isApplyingLinkedRename = false
+
+            let length = (textView.string as NSString).length
+            caret = min(max(0, caret), length)
+            textView.setSelectedRange(NSRange(location: caret, length: 0))
+            text = textView.string
+            scheduleHighlight(for: textView)
+            return false
         }
 
         private func scheduleHighlight(for textView: NSTextView) {
@@ -703,28 +821,51 @@ final class IndentingTextView: NSTextView {
     }
 
     private func drawGoToTargetIcons(in dirtyRect: NSRect) {
-        let iconSize = goToTargetIconSize
-        let configuration = NSImage.SymbolConfiguration(pointSize: iconSize, weight: .medium)
-            .applying(NSImage.SymbolConfiguration(hierarchicalColor: .tertiaryLabelColor))
-        guard let icon = NSImage(systemSymbolName: "target", accessibilityDescription: nil)?
-            .withSymbolConfiguration(configuration) else {
-            return
-        }
-
-        enumerateGoToTargets { _, _, _, iconRect in
-            guard iconRect.insetBy(dx: -2, dy: -2).intersects(dirtyRect) else { return }
-            icon.draw(
-                in: iconRect,
-                from: NSRect(origin: .zero, size: icon.size),
-                operation: .sourceOver,
-                fraction: 1,
-                respectFlipped: true,
-                hints: nil
-            )
+        let color = NSColor.secondaryLabelColor
+        effectiveAppearance.performAsCurrentDrawingAppearance {
+            enumerateGoToTargets { _, _, _, iconRect in
+                guard iconRect.insetBy(dx: -2, dy: -2).intersects(dirtyRect) else { return }
+                drawTargetSymbol(in: iconRect, color: color)
+            }
         }
     }
 
-    private var goToTargetIconSize: CGFloat { max(9, min(12, editorFontSize - 4)) }
+    private func drawTargetSymbol(in rect: NSRect, color: NSColor) {
+        let scale = window?.backingScaleFactor ?? NSScreen.main?.backingScaleFactor ?? 2
+        func snap(_ value: CGFloat) -> CGFloat { (value * scale).rounded() / scale }
+
+        let size = snap(min(rect.width, rect.height))
+        let bounds = NSRect(
+            x: snap(rect.midX - size / 2),
+            y: snap(rect.midY - size / 2),
+            width: size,
+            height: size
+        )
+        let lineWidth = max(1.25, snap(size * 0.11))
+        let hairline = lineWidth / 2
+
+        color.setStroke()
+        color.setFill()
+
+        let outer = NSBezierPath(ovalIn: bounds.insetBy(dx: hairline, dy: hairline))
+        outer.lineWidth = lineWidth
+        outer.stroke()
+
+        let innerInset = snap(size * 0.26)
+        let inner = NSBezierPath(ovalIn: bounds.insetBy(dx: innerInset, dy: innerInset))
+        inner.lineWidth = lineWidth
+        inner.stroke()
+
+        let dot = max(1.75, snap(size * 0.18))
+        NSBezierPath(ovalIn: NSRect(
+            x: snap(bounds.midX - dot / 2),
+            y: snap(bounds.midY - dot / 2),
+            width: dot,
+            height: dot
+        )).fill()
+    }
+
+    private var goToTargetIconSize: CGFloat { max(12, min(15, editorFontSize - 2)) }
     private let goToTargetIconGap: CGFloat = 5
 
     private func enumerateGoToTargets(

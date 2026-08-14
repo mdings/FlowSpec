@@ -7,7 +7,7 @@
         "key": "Improve",
         "location": {
           "startingColumn": 13,
-          "startingLine": 134
+          "startingLine": 138
         }
       },
       {
@@ -15,7 +15,7 @@
         "key": "Improved",
         "location": {
           "startingColumn": 13,
-          "startingLine": 145
+          "startingLine": 149
         }
       },
       {
@@ -23,7 +23,7 @@
         "key": "Improve",
         "location": {
           "startingColumn": 31,
-          "startingLine": 86
+          "startingLine": 90
         }
       },
       {
@@ -31,7 +31,7 @@
         "key": "Line Spacing",
         "location": {
           "startingColumn": 37,
-          "startingLine": 109
+          "startingLine": 113
         }
       },
       {
@@ -39,7 +39,7 @@
         "key": "Line Spacing: %@",
         "location": {
           "startingColumn": 23,
-          "startingLine": 110
+          "startingLine": 114
         }
       },
       {
@@ -47,7 +47,7 @@
         "key": "Line Spacing",
         "location": {
           "startingColumn": 27,
-          "startingLine": 107
+          "startingLine": 111
         }
       },
       {
@@ -55,7 +55,7 @@
         "key": "Text Size",
         "location": {
           "startingColumn": 37,
-          "startingLine": 129
+          "startingLine": 133
         }
       },
       {
@@ -63,7 +63,7 @@
         "key": "Text Size: %@",
         "location": {
           "startingColumn": 23,
-          "startingLine": 130
+          "startingLine": 134
         }
       },
       {
@@ -71,7 +71,7 @@
         "key": "Text Size",
         "location": {
           "startingColumn": 27,
-          "startingLine": 127
+          "startingLine": 131
         }
       },
       {
@@ -79,7 +79,7 @@
         "key": "OK",
         "location": {
           "startingColumn": 20,
-          "startingLine": 140
+          "startingLine": 144
         }
       },
       {
@@ -87,7 +87,7 @@
         "key": "OK",
         "location": {
           "startingColumn": 20,
-          "startingLine": 151
+          "startingLine": 155
         }
       },
       {
@@ -95,7 +95,7 @@
         "key": "Structure hints",
         "location": {
           "startingColumn": 26,
-          "startingLine": 215
+          "startingLine": 219
         }
       }
     ]

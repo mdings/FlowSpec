@@ -6,7 +6,7 @@ Directive suggestions appear as you type at the start of a line and follow FlowS
 
 Use **File → Open Folder…** to open a folder of FlowSpec files in a workspace window. The sidebar includes `.flowspec` files from nested folders and ignores unrelated files. If the folder contains `index.flowspec`, it opens first. Unsaved workspace files receive a dot in the sidebar and the window uses the standard macOS edited indicator. Press `⌘S` or use the toolbar Save button to save the active file; pending edits remain available when switching between files.
 
-`Go to` destinations are shown as links. Click the destination name to open its matching top-level Flow, Screen, or Action. Folder workspaces resolve names and `Id` values across all loaded FlowSpec files, using the same rules as the linter.
+`Go to` destinations are shown as links. Click the destination name to open its matching top-level Flow, Screen, or Action. Folder workspaces resolve names and `Id` values across all loaded FlowSpec files, using the same rules as the linter. Renaming a Flow, Screen, or Action name or `Id` also updates unique `Go to` references to that destination, including references in other workspace files.
 
 The editor bundles the canonical core directly from the repository's root `lib/` directory and uses it for linting, syntax highlighting, navigation, and the Improve authoring guide. A soft red dashed underline marks structure that needs attention; an amber dotted underline marks an authoring suggestion. Toggle the **Structure hints** drawer at the bottom, then hover underlined text to read its plain-language explanation in the drawer. The linter runs entirely on the Mac with no network service or AI involved.
 

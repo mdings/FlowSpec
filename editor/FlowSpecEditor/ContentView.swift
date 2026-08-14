@@ -28,6 +28,7 @@ struct FlowSpecEditorSurface: View {
     @Binding var text: String
     let navigationTarget: FlowSpecNavigationTarget?
     let onGoToLink: ((Int) -> Void)?
+    let onLinkedSourceChanges: (([FlowSpecLinkedSourceChange], UndoManager?) -> Void)?
     let validationContext: FlowSpecValidationContext?
     @State private var isStructureDrawerOpen = false
     @State private var hoveredDiagnostic: String?
@@ -45,11 +46,13 @@ struct FlowSpecEditorSurface: View {
         text: Binding<String>,
         navigationTarget: FlowSpecNavigationTarget? = nil,
         onGoToLink: ((Int) -> Void)? = nil,
+        onLinkedSourceChanges: (([FlowSpecLinkedSourceChange], UndoManager?) -> Void)? = nil,
         validationContext: FlowSpecValidationContext? = nil
     ) {
         _text = text
         self.navigationTarget = navigationTarget
         self.onGoToLink = onGoToLink
+        self.onLinkedSourceChanges = onLinkedSourceChanges
         self.validationContext = validationContext
     }
 
@@ -63,6 +66,7 @@ struct FlowSpecEditorSurface: View {
                 fontSize: fontSize,
                 navigationTarget: navigationTarget,
                 onGoToLink: onGoToLink,
+                onLinkedSourceChanges: onLinkedSourceChanges,
                 validationContext: validationContext
             )
             .frame(maxWidth: .infinity, maxHeight: .infinity)

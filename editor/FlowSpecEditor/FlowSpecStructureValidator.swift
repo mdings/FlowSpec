@@ -33,6 +33,18 @@ struct FlowSpecGoToIncomingReference {
     }
 }
 
+struct FlowSpecTextReplacement {
+    let fileURL: URL
+    let range: NSRange
+    let newText: String
+}
+
+struct FlowSpecLinkedSourceChange {
+    let url: URL
+    let oldText: String
+    let newText: String
+}
+
 struct FlowSpecGoToTargetMark {
     let range: NSRange
     let incoming: [FlowSpecGoToIncomingReference]
@@ -125,6 +137,47 @@ enum FlowSpecStructureValidator {
         runtime.goToDestinations(in: files, currentFileURL: currentFileURL)
     }
 
+    static func linkedRenameReplacements(
+        in files: [FlowSpecSourceFile],
+        currentFileURL: URL,
+        editedRange: NSRange,
+        replacement: String
+    ) -> (currentFile: [FlowSpecTextReplacement], otherFiles: [FlowSpecTextReplacement]) {
+        runtime.linkedRenameReplacements(
+            in: files,
+            currentFileURL: currentFileURL,
+            editedRange: editedRange,
+            replacement: replacement
+        )
+    }
+
+    static func groupedSourceChanges(
+        _ replacements: [FlowSpecTextReplacement],
+        files: [FlowSpecSourceFile]
+    ) -> [FlowSpecLinkedSourceChange] {
+        let filesByURL = Dictionary(uniqueKeysWithValues: files.map { ($0.url, $0) })
+        let grouped = Dictionary(grouping: replacements, by: \.fileURL)
+        return grouped.compactMap { url, edits in
+            guard let file = filesByURL[url] else { return nil }
+            let newText = applying(edits, to: file.source)
+            guard newText != file.source else { return nil }
+            return FlowSpecLinkedSourceChange(url: url, oldText: file.source, newText: newText)
+        }
+    }
+
+    private static func applying(_ replacements: [FlowSpecTextReplacement], to source: String) -> String {
+        var result = source as NSString
+        let ordered = replacements.sorted { $0.range.location > $1.range.location }
+        for replacement in ordered {
+            guard NSMaxRange(replacement.range) <= result.length else { continue }
+            result = result.replacingCharacters(
+                in: replacement.range,
+                with: replacement.newText
+            ) as NSString
+        }
+        return result as String
+    }
+
     static func syntaxHighlights(in source: String) -> [FlowSpecSyntaxHighlight] {
         runtime.syntaxHighlights(in: source)
     }
@@ -139,6 +192,7 @@ private final class FlowSpecLinterRuntime {
     private let resolveGoToFunction: JSValue?
     private let resolvedGoToRangesFunction: JSValue?
     private let referencedGoToDestinationsFunction: JSValue?
+    private let renameGoToReferencesFunction: JSValue?
     private let syntaxHighlightsFunction: JSValue?
     private let authoringGuideFunction: JSValue?
 
@@ -150,6 +204,7 @@ private final class FlowSpecLinterRuntime {
             self.resolveGoToFunction = nil
             self.resolvedGoToRangesFunction = nil
             self.referencedGoToDestinationsFunction = nil
+            self.renameGoToReferencesFunction = nil
             self.syntaxHighlightsFunction = nil
             self.authoringGuideFunction = nil
             return
@@ -250,6 +305,13 @@ private final class FlowSpecLinterRuntime {
             #"""
             (function(files, filePath) {
               return require("goto").referencedGoToDestinations(files, filePath);
+            })
+            """#
+        )
+        self.renameGoToReferencesFunction = context.evaluateScript(
+            #"""
+            (function(files, edit) {
+              return require("goto").renameGoToReferences(files, edit);
             })
             """#
         )
@@ -461,6 +523,80 @@ private final class FlowSpecLinterRuntime {
             guard !incoming.isEmpty else { return nil }
             return FlowSpecGoToTargetMark(range: range, incoming: incoming)
         }
+    }
+
+    func linkedRenameReplacements(
+        in files: [FlowSpecSourceFile],
+        currentFileURL: URL,
+        editedRange: NSRange,
+        replacement: String
+    ) -> (currentFile: [FlowSpecTextReplacement], otherFiles: [FlowSpecTextReplacement]) {
+        let empty: ([FlowSpecTextReplacement], [FlowSpecTextReplacement]) = ([], [])
+        guard let currentFile = files.first(where: { $0.url == currentFileURL }),
+              let renameGoToReferencesFunction else {
+            return empty
+        }
+
+        let mapper = SourceLocationMapper(source: currentFile.source)
+        guard let start = mapper.position(at: editedRange.location),
+              let end = mapper.position(at: NSMaxRange(editedRange)),
+              start.line == end.line else {
+            return empty
+        }
+
+        let fileArguments: [[String: Any]] = files.map {
+            ["source": $0.source, "filePath": $0.url.path]
+        }
+        let editArgument: [String: Any] = [
+            "filePath": currentFileURL.path,
+            "line": start.line,
+            "startColumn": start.column,
+            "endColumn": end.column,
+            "replacementText": replacement
+        ]
+
+        guard let result = renameGoToReferencesFunction.call(
+            withArguments: [fileArguments, editArgument]
+        ),
+        !result.isUndefined,
+        !result.isNull,
+        let dictionary = result.toDictionary() as? [String: Any],
+        let rawEdits = dictionary["edits"] as? [[String: Any]] else {
+            return empty
+        }
+
+        let filesByPath = Dictionary(uniqueKeysWithValues: files.map { ($0.url.path, $0) })
+        var currentFileEdits: [FlowSpecTextReplacement] = []
+        var otherFileEdits: [FlowSpecTextReplacement] = []
+
+        for rawEdit in rawEdits {
+            guard let filePath = rawEdit["filePath"] as? String,
+                  let file = filesByPath[filePath],
+                  let line = intValue(rawEdit["line"]),
+                  let startColumn = intValue(rawEdit["startColumn"]),
+                  let endColumn = intValue(rawEdit["endColumn"]),
+                  let newText = rawEdit["newText"] as? String,
+                  let range = SourceLocationMapper(source: file.source).range(
+                    line: line,
+                    column: startColumn,
+                    endLine: line,
+                    endColumn: endColumn
+                  ) else {
+                continue
+            }
+            let edit = FlowSpecTextReplacement(
+                fileURL: file.url,
+                range: range,
+                newText: newText
+            )
+            if file.url == currentFileURL {
+                currentFileEdits.append(edit)
+            } else {
+                otherFileEdits.append(edit)
+            }
+        }
+
+        return (currentFileEdits, otherFileEdits)
     }
 
     private func intValue(_ value: Any?) -> Int? {

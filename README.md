@@ -509,6 +509,8 @@ may be simplified to a direct conditional transition. Lint **FS105** may warn (w
 - **`Action`** names a unit of behavior (what the user or system does).
 - **`Steps`** lists required functional work inside that action, without prescribing technical implementation or executable test steps.
 
+`Steps` is flat: it may contain functional work and supported control flow, but it cannot contain another `Steps` section. Keep sub-work as directly indented lines within the single owning `Steps` block.
+
 Under a Screen interaction, functional work may also appear as direct indented lines when that stays clear (see the concise examples). Prefer `Steps` when grouping work helps readability.
 
 FlowSpec documents "too technical" / "too test-oriented" wording as a convention only; it does not detect it automatically.

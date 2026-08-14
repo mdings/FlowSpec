@@ -1,6 +1,7 @@
 /**
- * Shared Go to target indexing and definition resolution.
- * Used by the linter (FS014/FS015) and the VS Code Definition Provider.
+ * Shared Go to target indexing, definition resolution, and linked rename.
+ * Used by the linter (FS014/FS015), the VS Code Definition Provider, and editors
+ * that keep unique Go to references in sync when a destination name or Id changes.
  *
  * Go to may only resolve to top-level Flow / Screen / Action nodes:
  * - Flow as a document child
@@ -97,22 +98,43 @@ function matchGoToTargets(ref, targets) {
 }
 
 /**
- * Compute the 1-based column range of the target text after `Go to`.
+ * Escape a directive keyword for use in a line-start regex.
+ * @param {string} keyword
+ * @returns {string}
+ */
+function escapeKeyword(keyword) {
+  return String(keyword || "").replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+/**
+ * 1-based column range of `value` after an optional indented keyword and colon.
+ * An empty value yields a zero-width range at the insertion point after the prefix.
  * @param {string} lineText
- * @param {string} targetValue
+ * @param {string|null} keyword
+ * @param {string} value
  * @returns {{ startColumn: number, endColumn: number } | null}
  */
-function getGoToTargetRange(lineText, targetValue) {
+function getKeywordValueRange(lineText, keyword, value) {
   const indentMatch = String(lineText || "").match(/^[ \t]*/);
   const indent = indentMatch ? indentMatch[0].length : 0;
   const trimmed = String(lineText || "").slice(indent);
-  const prefix = trimmed.match(/^Go to\b\s*:?\s*/);
-  if (!prefix) return null;
+  const target = String(value || "").trim();
 
-  const target = String(targetValue || "").trim();
-  if (!target) return null;
+  let prefixLength = 0;
+  if (keyword) {
+    const prefix = trimmed.match(
+      new RegExp(`^${escapeKeyword(keyword)}\\b\\s*:?\\s*`)
+    );
+    if (!prefix) return null;
+    prefixLength = prefix[0].length;
+  }
 
-  const remainder = trimmed.slice(prefix[0].length);
+  const remainder = trimmed.slice(prefixLength);
+  if (!target) {
+    const startColumn = indent + prefixLength + 1;
+    return { startColumn, endColumn: startColumn };
+  }
+
   let offset = 0;
   if (remainder.startsWith(target)) {
     offset = 0;
@@ -122,11 +144,75 @@ function getGoToTargetRange(lineText, targetValue) {
     offset = idx;
   }
 
-  const startColumn = indent + prefix[0].length + offset + 1;
+  const startColumn = indent + prefixLength + offset + 1;
   return {
     startColumn,
     endColumn: startColumn + target.length,
   };
+}
+
+/**
+ * Compute the 1-based column range of the target text after `Go to`.
+ * @param {string} lineText
+ * @param {string} targetValue
+ * @returns {{ startColumn: number, endColumn: number } | null}
+ */
+function getGoToTargetRange(lineText, targetValue) {
+  const target = String(targetValue || "").trim();
+  if (!target) return null;
+  return getKeywordValueRange(lineText, "Go to", target);
+}
+
+/**
+ * Display-name range for a top-level Flow / Screen / Action.
+ * @param {string} lineText
+ * @param {object} node
+ * @returns {{ startColumn: number, endColumn: number } | null}
+ */
+function getStructuralNameRange(lineText, node) {
+  const value = String(node?.value || "").trim();
+  if (node?.implicit) {
+    return getKeywordValueRange(lineText, null, value);
+  }
+  const keyword = node?.rawKind;
+  if (!keyword) return null;
+  return getKeywordValueRange(lineText, keyword, value);
+}
+
+/**
+ * Id value range for the optional Id belonging to a structural node.
+ * @param {string} lineText
+ * @param {object} idNode
+ * @returns {{ startColumn: number, endColumn: number } | null}
+ */
+function getIdValueRange(lineText, idNode) {
+  const keyword = idNode?.rawKind || "Id";
+  return getKeywordValueRange(lineText, keyword, String(idNode?.value || ""));
+}
+
+/**
+ * True when the 1-based half-open edit sits inside a field, including a caret
+ * at either edge so names and Ids can be extended.
+ * @param {{ startColumn: number, endColumn: number }} edit
+ * @param {{ startColumn: number, endColumn: number }} field
+ * @returns {boolean}
+ */
+function isEditInsideField(edit, field) {
+  return edit.startColumn >= field.startColumn && edit.endColumn <= field.endColumn;
+}
+
+/**
+ * Apply a same-line column edit to the exact field substring.
+ * @param {string} value
+ * @param {{ startColumn: number, endColumn: number }} field
+ * @param {{ startColumn: number, endColumn: number }} edit
+ * @param {string} replacementText
+ * @returns {string}
+ */
+function applyEditToField(value, field, edit, replacementText) {
+  const start = edit.startColumn - field.startColumn;
+  const end = edit.endColumn - field.startColumn;
+  return value.slice(0, start) + replacementText + value.slice(end);
 }
 
 /**
@@ -275,12 +361,159 @@ function referencedGoToDestinations(files, filePath) {
   return [...byTarget.values()];
 }
 
+/**
+ * Follow-up `Go to` replacements when a top-level Flow / Screen / Action name
+ * or Id is edited in place.
+ *
+ * Only unique references that already resolved to this destination through the
+ * edited field are updated. The original edit is not included; ranges are
+ * 1-based and refer to sources before that edit.
+ *
+ * @param {Array<{ source: string, filePath: string }>} files
+ * @param {{
+ *   filePath: string,
+ *   line: number,
+ *   startColumn: number,
+ *   endColumn: number,
+ *   replacementText: string
+ * }} edit
+ * @returns {{
+ *   field: "name"|"id",
+ *   oldValue: string,
+ *   newValue: string,
+ *   edits: Array<{
+ *     filePath: string,
+ *     line: number,
+ *     startColumn: number,
+ *     endColumn: number,
+ *     newText: string
+ *   }>
+ * } | null}
+ */
+function renameGoToReferences(files, edit) {
+  if (!edit || !edit.filePath || !Number.isInteger(edit.line)) return null;
+  const replacementText = String(edit.replacementText ?? "");
+  if (/[\r\n]/.test(replacementText)) return null;
+
+  const startColumn = Number(edit.startColumn);
+  const endColumn = Number(edit.endColumn);
+  if (!Number.isFinite(startColumn) || !Number.isFinite(endColumn)) return null;
+  if (startColumn < 1 || endColumn < startColumn) return null;
+
+  const columnEdit = { startColumn, endColumn };
+
+  /** @type {FlowSpecTarget[]} */
+  const targets = [];
+  /** @type {Array<{ filePath: string, root: object, lines: string[] }>} */
+  const parsedFiles = [];
+
+  for (const file of files) {
+    const parsed = parseTree(file.source, file.filePath);
+    collectStructuralTargets(parsed.root, file.filePath, targets);
+    parsedFiles.push({
+      filePath: file.filePath,
+      root: parsed.root,
+      lines: parsed.lines,
+    });
+  }
+
+  const current = parsedFiles.find((file) => file.filePath === edit.filePath);
+  if (!current) return null;
+  const lineText = current.lines[edit.line - 1];
+  if (lineText == null) return null;
+
+  /** @type {{ field: "name"|"id", oldValue: string, fieldRange: { startColumn: number, endColumn: number }, target: FlowSpecTarget } | null} */
+  let hit = null;
+  for (const target of targets) {
+    if (target.filePath !== edit.filePath) continue;
+    if (target.line === edit.line) {
+      const fieldRange = getStructuralNameRange(lineText, target.node);
+      if (fieldRange && isEditInsideField(columnEdit, fieldRange)) {
+        hit = {
+          field: "name",
+          oldValue: String(target.name || "").trim(),
+          fieldRange,
+          target,
+        };
+        break;
+      }
+    }
+    if (target.node?.idNode && target.node.idNode.location.line === edit.line) {
+      const fieldRange = getIdValueRange(lineText, target.node.idNode);
+      if (fieldRange && isEditInsideField(columnEdit, fieldRange)) {
+        hit = {
+          field: "id",
+          oldValue: String(target.id || "").trim(),
+          fieldRange,
+          target,
+        };
+        break;
+      }
+    }
+  }
+  if (!hit || !hit.oldValue) return null;
+
+  const nextValue = applyEditToField(
+    hit.oldValue,
+    hit.fieldRange,
+    columnEdit,
+    replacementText
+  ).trim();
+  if (nextValue === hit.oldValue) return null;
+
+  /** @type {Array<{ filePath: string, line: number, startColumn: number, endColumn: number, newText: string }>} */
+  const edits = [];
+  for (const origin of parsedFiles) {
+    walkNodes(origin.root, (node) => {
+      if (node.type !== "goTo") return;
+      const ref = String(node.value || "").trim();
+      if (ref !== hit.oldValue) return;
+      if (hit.field === "name" && ref !== hit.target.name) return;
+      if (hit.field === "id" && ref !== hit.target.id) return;
+
+      const matches = matchGoToTargets(ref, targets);
+      if (matches.length !== 1) return;
+      const match = matches[0];
+      if (
+        match.filePath !== hit.target.filePath ||
+        match.line !== hit.target.line
+      ) {
+        return;
+      }
+
+      const range = getGoToTargetRange(
+        origin.lines[node.location.line - 1] || "",
+        ref
+      );
+      if (!range) return;
+      edits.push({
+        filePath: origin.filePath,
+        line: node.location.line,
+        startColumn: range.startColumn,
+        endColumn: range.endColumn,
+        newText: nextValue,
+      });
+    });
+  }
+
+  if (edits.length === 0) return null;
+  return {
+    field: hit.field,
+    oldValue: hit.oldValue,
+    newValue: nextValue,
+    edits,
+  };
+}
+
 module.exports = {
   collectStructuralTargets,
   isTopLevelGoToTarget,
   matchGoToTargets,
+  getKeywordValueRange,
   getGoToTargetRange,
+  getStructuralNameRange,
   findGoToAtPosition,
   resolveGoToDefinitions,
   referencedGoToDestinations,
+  renameGoToReferences,
 };

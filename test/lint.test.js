@@ -125,6 +125,25 @@ describe("FS007 / FS008 / FS009 behavioral sections", () => {
     assert.equal(hasCode(d, "FS008"), false);
   });
 
+  it("rejects Steps nested inside Steps", () => {
+    const source = [
+      "Flow Demo",
+      "  Action Prepare reply",
+      "    Steps",
+      "      Gather context",
+      "      Steps",
+      "        Generate the reply",
+    ].join("\n");
+    const diagnostics = lintFlowSpecFile(source, "a.flowspec");
+    const error = diagnostics.find(
+      (diagnostic) => diagnostic.code === "FS007" && diagnostic.line === 5
+    );
+
+    assert.ok(error, JSON.stringify(diagnostics, null, 2));
+    assert.match(error.message, /cannot contain another "Steps"/);
+    assert.match(error.suggestion, /directly inside the outer section/);
+  });
+
   it("rejects same-indent Shows because the Flow owns the sibling", () => {
     const source = [
       "Flow Email login",

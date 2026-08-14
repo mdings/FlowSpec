@@ -886,6 +886,7 @@ function canHaveChildren(node) {
     node.type === "otherwise" ||
     node.type === "ifFails" ||
     node.type === "parallel" ||
+    node.type === "goTo" ||
     node.type === "id"
   );
 }

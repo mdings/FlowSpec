@@ -11,6 +11,7 @@ This page is generated from the same definition used by the parser, linter, VS C
 - Flow, Screen, Action, Section, Layout, Id, behavioral sections, and control flow use the canonical casing shown in the directive reference.
 - Id is optional on Flow, Screen, and explicit Action only. Section, Layout, and implicit Actions cannot own an Id.
 - Receives, Rules, Uses, Steps, and Outcome are optional behavioral sections on a Flow or Action.
+- Steps is a flat behavioral section and cannot contain another Steps section.
 - Shows is optional and may only appear as a direct child of Screen.
 - A Flow or explicit Action may own behavioral sections directly.
 - Section is a non-navigable region inside a Screen or Section; Layout describes direct child Sections.
@@ -37,7 +38,7 @@ This page is generated from the same definition used by the parser, linter, VS C
 | `Receives` | Information the Flow or Action needs before it can run. | `Receives` |
 | `Rules` | Constraints that must remain true within the owning Flow, Action, or Layout. | `Rules` |
 | `Uses` | Services, models, tools, or runtime configuration used by a Flow or Action. | `Uses` |
-| `Steps` | Required functional work, without technical or test details. | `Steps` |
+| `Steps` | A flat list of required functional work, without technical or test details. Cannot contain another Steps section. | `Steps` |
 | `Shows` | What becomes visible on a Screen. May only be a direct child of Screen. | `Shows` |
 | `Outcome` | An observable or reusable result that other behavior can wait for. | `Outcome` |
 
