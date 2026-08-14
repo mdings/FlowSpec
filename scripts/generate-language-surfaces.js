@@ -4,7 +4,7 @@ const fs = require("fs");
 const path = require("path");
 const {
   DIRECTIVES, LANGUAGE_REQUIREMENTS, AUTHORING_GUIDELINES,
-  RECOMMENDED_SECTION_ORDER, directives, literalSpellings, regexAlternation,
+  RECOMMENDED_SECTION_ORDER, GO_TO_ARGUMENTS, directives, literalSpellings, regexAlternation,
 } = require("../lib/language");
 
 const root = path.join(__dirname, "..");
@@ -196,6 +196,17 @@ ${markdownTable(DIRECTIVES.filter((directive) => directive.category === "metadat
 ## Flow control
 
 ${markdownTable(directives("control"))}
+
+### Go to arguments
+
+${GO_TO_ARGUMENTS.description}
+
+- ${GO_TO_ARGUMENTS.with}
+- ${GO_TO_ARGUMENTS.without}
+
+\`\`\`flowspec
+${GO_TO_ARGUMENTS.example}
+\`\`\`
 
 Recommended behavioral section order: ${RECOMMENDED_SECTION_ORDER.map((name) => `\`${name}\``).join(" → ")}.
 

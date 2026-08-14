@@ -17,6 +17,7 @@ This page is generated from the same definition used by the parser, linter, VS C
 - A named interaction directly under a Screen or Section becomes an implicit Action when it has nested behavior.
 - Once, If, Otherwise, and If ... fails may appear in Flow, Screen, Action, or Steps; At the same time belongs only inside Steps.
 - Go to resolves only to top-level Flow, Screen, or Action names and Ids, never Section or Layout.
+- Indented lines beneath Go to are argument clauses for the destination: With supplies context or input, while Without explicitly omits it.
 
 ## Structural directives
 
@@ -50,7 +51,20 @@ This page is generated from the same definition used by the parser, linter, VS C
 | `Otherwise` | Alternate path for the preceding If. | `Otherwise` |
 | `At the same time` | Parallel work inside Steps. | `At the same time` |
 | `If ... fails` | Fallback when something cannot complete successfully. | `If product search fails` |
-| `Go to` | Navigates to a top-level Flow, Screen, or Action name or Id. | `Go to: Verify login code` |
+| `Go to` | Navigates to a top-level Flow, Screen, or Action name or Id. Indented With/Without clauses describe arguments passed to the destination. | `Go to: Verify login code` |
+
+### Go to arguments
+
+A Go to statement may own indented argument clauses that describe the handoff to its destination.
+
+- With supplies named context, input, or instructions to the destination.
+- Without explicitly omits named context or input, even when it is available in the current scope.
+
+```flowspec
+Go to Generate assistant reply
+  With campaign AI instructions from the campaign
+  Without user input
+```
 
 Recommended behavioral section order: `Receives` → `Rules` → `Uses` → `Steps` → `Outcome`.
 

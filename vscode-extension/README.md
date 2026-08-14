@@ -80,6 +80,15 @@ Go to
 | `If … fails` | Error / fallback path |
 | `Go to` | Navigate to another screen or flow |
 
+`Go to` may contain indented argument clauses. `With …` supplies context or
+input to the destination; `Without …` explicitly omits it:
+
+```flowspec
+Go to Generate assistant reply
+  With campaign AI instructions from the campaign
+  Without user input
+```
+
 Directives are highlighted only at the beginning of a line (after optional indentation). Words such as `when` inside ordinary prose stay normal text.
 
 ## Syntax example

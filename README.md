@@ -179,6 +179,26 @@ Same-named Flow + Action pairs remain valid for backwards compatibility, but lin
 | `If … fails` | Fallback when something cannot complete successfully. | `If product search fails` |
 | `Go to` | Navigate to another screen, flow, or action. | `Go to: Verify login code` |
 
+#### Passing arguments with Go to
+
+A `Go to` statement may own indented argument clauses. These clauses describe
+the handoff to the destination:
+
+- `With …` supplies context, input, or instructions.
+- `Without …` explicitly omits context or input, even when it is available in the current scope.
+
+```flowspec
+Go to Generate assistant reply
+  With campaign AI instructions from the campaign
+  Without user input
+```
+
+Every line indented directly beneath `Go to` is part of that destination's
+argument handoff. `With` and `Without` are clause prefixes, not standalone
+FlowSpec directives, so they are meaningful only within the owning `Go to`.
+The handoff remains descriptive: FlowSpec records what is supplied or omitted
+without prescribing the implementation's calling convention.
+
 `Once`, `If`, `Otherwise`, and `If … fails` may appear directly inside a `Flow`, `Screen`, or `Action`, or inside `Steps`.
 
 `Uses` may appear as a direct section inside a `Flow` or an `Action` (not inside a `Screen`, or nested under another section). It is descriptive only — not infrastructure-as-code.
