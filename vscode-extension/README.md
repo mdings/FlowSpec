@@ -16,7 +16,7 @@ This extension provides TextMate-based highlighting for `.flowspec` files and pu
 
 ## Linting
 
-Diagnostics use the shared core in [`../lib`](../lib) (structural rules FS001–FS023 and style warnings FS101–FS105). See the root [README](../README.md#6-linting-behavior) for categories, the restriction table, and CLI usage.
+Diagnostics use the shared core in [`../lib`](../lib) (structural rules FS001–FS024 and style warnings FS101–FS107). See the root [README](../README.md#6-linting-behavior) for categories, the restriction table, and CLI usage.
 
 On package, `npm run sync-lib` copies the core into `vendor/flowspec` so the VSIX is self-contained.
 
@@ -50,7 +50,7 @@ Go to
 
 | Directive | Example |
 | --------- | ------- |
-| `Flow` | `Flow: Answer a user message` |
+| `Flow` | `Flow: Bootstrap conversation` (may own behavioral sections directly) |
 | `Screen` | `Screen: Conversation` |
 | `Action` | `Action: Create quick replies` (under a `Screen` or `Section`, the keyword may be omitted for local interactions) |
 | `Section` | `Section: Sidebar` (region inside a Screen; not a Go to target) |
@@ -61,12 +61,12 @@ Go to
 
 | Directive | Role |
 | --------- | ---- |
-| `Receives` | Inputs an action needs |
-| `Rules` | Business constraints |
-| `Uses` | Optional services, models, tools, or runtime configuration used by an Action |
+| `Receives` | Inputs a Flow or Action needs |
+| `Rules` | Business constraints (`Flow`, `Action`, or `Layout`) |
+| `Uses` | Optional services, models, tools, or runtime configuration used by a Flow or Action |
 | `Steps` | Required functional work (not technical or test steps) |
-| `Shows` | What becomes visible (on `Screen`, `Section`, or `Action`) |
-| `Outcome` | Observable result of an action |
+| `Shows` | What becomes visible (on `Flow`, `Screen`, `Section`, or `Action`) |
+| `Outcome` | Observable result of a Flow or Action |
 
 ### Flow control
 
@@ -172,6 +172,17 @@ Then run **Developer: Reload Window**. Reinstalling the same version often leave
 - No Gherkin generation or test-runner integration.
 - Duration highlighting covers common English units (`second(s)`, `minute(s)`, `hour(s)`, `day(s)`).
 - **Implicit Actions** (named interaction lines under a `Screen` without the `Action` keyword) are not given special TextMate scopes. Distinguishing them from ordinary prose would require brittle indent look-ahead. They still parse and lint as Actions; explicit `Action` lines continue to highlight as structural directives.
+
+## Terminal highlighting (`bat`)
+
+For portable terminal highlighting (Warp terminal, iTerm, SSH, etc.), install the syntect syntax from the repo root:
+
+```bash
+npm run install:bat
+# or: ./scripts/install-bat-syntax.sh
+```
+
+See the root [README](../README.md#11-terminal-syntax-highlighting). Both grammars are generated from `lib/language.js`; run `npm run generate` at the repository root after changing the language definition.
 
 ## Language reference
 

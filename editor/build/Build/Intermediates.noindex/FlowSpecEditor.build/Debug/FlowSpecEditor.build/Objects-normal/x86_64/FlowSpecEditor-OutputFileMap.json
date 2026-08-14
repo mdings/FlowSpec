@@ -1,0 +1,109 @@
+{
+  "" : {
+    "diagnostics" : "/Users/maarten.dings/Documents/FlowSpec/editor/build/Build/Intermediates.noindex/FlowSpecEditor.build/Debug/FlowSpecEditor.build/Objects-normal/x86_64/FlowSpecEditor-primary.dia",
+    "emit-module-dependencies" : "/Users/maarten.dings/Documents/FlowSpec/editor/build/Build/Intermediates.noindex/FlowSpecEditor.build/Debug/FlowSpecEditor.build/Objects-normal/x86_64/FlowSpecEditor-primary-emit-module.d",
+    "emit-module-diagnostics" : "/Users/maarten.dings/Documents/FlowSpec/editor/build/Build/Intermediates.noindex/FlowSpecEditor.build/Debug/FlowSpecEditor.build/Objects-normal/x86_64/FlowSpecEditor-primary-emit-module.dia",
+    "pch" : "/Users/maarten.dings/Documents/FlowSpec/editor/build/Build/Intermediates.noindex/FlowSpecEditor.build/Debug/FlowSpecEditor.build/Objects-normal/x86_64/FlowSpecEditor-primary-Bridging-header.pch",
+    "swift-dependencies" : "/Users/maarten.dings/Documents/FlowSpec/editor/build/Build/Intermediates.noindex/FlowSpecEditor.build/Debug/FlowSpecEditor.build/Objects-normal/x86_64/FlowSpecEditor-primary.swiftdeps"
+  },
+  "/Users/maarten.dings/Documents/FlowSpec/editor/FlowSpecEditor/ContentView.swift" : {
+    "const-values" : "/Users/maarten.dings/Documents/FlowSpec/editor/build/Build/Intermediates.noindex/FlowSpecEditor.build/Debug/FlowSpecEditor.build/Objects-normal/x86_64/ContentView.swiftconstvalues",
+    "dependencies" : "/Users/maarten.dings/Documents/FlowSpec/editor/build/Build/Intermediates.noindex/FlowSpecEditor.build/Debug/FlowSpecEditor.build/Objects-normal/x86_64/ContentView.d",
+    "diagnostics" : "/Users/maarten.dings/Documents/FlowSpec/editor/build/Build/Intermediates.noindex/FlowSpecEditor.build/Debug/FlowSpecEditor.build/Objects-normal/x86_64/ContentView.dia",
+    "index-unit-output-path" : "/FlowSpecEditor.build/Debug/FlowSpecEditor.build/Objects-normal/x86_64/ContentView.o",
+    "llvm-bc" : "/Users/maarten.dings/Documents/FlowSpec/editor/build/Build/Intermediates.noindex/FlowSpecEditor.build/Debug/FlowSpecEditor.build/Objects-normal/x86_64/ContentView.bc",
+    "object" : "/Users/maarten.dings/Documents/FlowSpec/editor/build/Build/Intermediates.noindex/FlowSpecEditor.build/Debug/FlowSpecEditor.build/Objects-normal/x86_64/ContentView.o",
+    "swift-dependencies" : "/Users/maarten.dings/Documents/FlowSpec/editor/build/Build/Intermediates.noindex/FlowSpecEditor.build/Debug/FlowSpecEditor.build/Objects-normal/x86_64/ContentView.swiftdeps",
+    "swiftmodule" : "/Users/maarten.dings/Documents/FlowSpec/editor/build/Build/Intermediates.noindex/FlowSpecEditor.build/Debug/FlowSpecEditor.build/Objects-normal/x86_64/ContentView~partial.swiftmodule"
+  },
+  "/Users/maarten.dings/Documents/FlowSpec/editor/FlowSpecEditor/FlowSpecCompletion.swift" : {
+    "const-values" : "/Users/maarten.dings/Documents/FlowSpec/editor/build/Build/Intermediates.noindex/FlowSpecEditor.build/Debug/FlowSpecEditor.build/Objects-normal/x86_64/FlowSpecCompletion.swiftconstvalues",
+    "dependencies" : "/Users/maarten.dings/Documents/FlowSpec/editor/build/Build/Intermediates.noindex/FlowSpecEditor.build/Debug/FlowSpecEditor.build/Objects-normal/x86_64/FlowSpecCompletion.d",
+    "diagnostics" : "/Users/maarten.dings/Documents/FlowSpec/editor/build/Build/Intermediates.noindex/FlowSpecEditor.build/Debug/FlowSpecEditor.build/Objects-normal/x86_64/FlowSpecCompletion.dia",
+    "index-unit-output-path" : "/FlowSpecEditor.build/Debug/FlowSpecEditor.build/Objects-normal/x86_64/FlowSpecCompletion.o",
+    "llvm-bc" : "/Users/maarten.dings/Documents/FlowSpec/editor/build/Build/Intermediates.noindex/FlowSpecEditor.build/Debug/FlowSpecEditor.build/Objects-normal/x86_64/FlowSpecCompletion.bc",
+    "object" : "/Users/maarten.dings/Documents/FlowSpec/editor/build/Build/Intermediates.noindex/FlowSpecEditor.build/Debug/FlowSpecEditor.build/Objects-normal/x86_64/FlowSpecCompletion.o",
+    "swift-dependencies" : "/Users/maarten.dings/Documents/FlowSpec/editor/build/Build/Intermediates.noindex/FlowSpecEditor.build/Debug/FlowSpecEditor.build/Objects-normal/x86_64/FlowSpecCompletion.swiftdeps",
+    "swiftmodule" : "/Users/maarten.dings/Documents/FlowSpec/editor/build/Build/Intermediates.noindex/FlowSpecEditor.build/Debug/FlowSpecEditor.build/Objects-normal/x86_64/FlowSpecCompletion~partial.swiftmodule"
+  },
+  "/Users/maarten.dings/Documents/FlowSpec/editor/FlowSpecEditor/FlowSpecDocument.swift" : {
+    "const-values" : "/Users/maarten.dings/Documents/FlowSpec/editor/build/Build/Intermediates.noindex/FlowSpecEditor.build/Debug/FlowSpecEditor.build/Objects-normal/x86_64/FlowSpecDocument.swiftconstvalues",
+    "dependencies" : "/Users/maarten.dings/Documents/FlowSpec/editor/build/Build/Intermediates.noindex/FlowSpecEditor.build/Debug/FlowSpecEditor.build/Objects-normal/x86_64/FlowSpecDocument.d",
+    "diagnostics" : "/Users/maarten.dings/Documents/FlowSpec/editor/build/Build/Intermediates.noindex/FlowSpecEditor.build/Debug/FlowSpecEditor.build/Objects-normal/x86_64/FlowSpecDocument.dia",
+    "index-unit-output-path" : "/FlowSpecEditor.build/Debug/FlowSpecEditor.build/Objects-normal/x86_64/FlowSpecDocument.o",
+    "llvm-bc" : "/Users/maarten.dings/Documents/FlowSpec/editor/build/Build/Intermediates.noindex/FlowSpecEditor.build/Debug/FlowSpecEditor.build/Objects-normal/x86_64/FlowSpecDocument.bc",
+    "object" : "/Users/maarten.dings/Documents/FlowSpec/editor/build/Build/Intermediates.noindex/FlowSpecEditor.build/Debug/FlowSpecEditor.build/Objects-normal/x86_64/FlowSpecDocument.o",
+    "swift-dependencies" : "/Users/maarten.dings/Documents/FlowSpec/editor/build/Build/Intermediates.noindex/FlowSpecEditor.build/Debug/FlowSpecEditor.build/Objects-normal/x86_64/FlowSpecDocument.swiftdeps",
+    "swiftmodule" : "/Users/maarten.dings/Documents/FlowSpec/editor/build/Build/Intermediates.noindex/FlowSpecEditor.build/Debug/FlowSpecEditor.build/Objects-normal/x86_64/FlowSpecDocument~partial.swiftmodule"
+  },
+  "/Users/maarten.dings/Documents/FlowSpec/editor/FlowSpecEditor/FlowSpecEditorApp.swift" : {
+    "const-values" : "/Users/maarten.dings/Documents/FlowSpec/editor/build/Build/Intermediates.noindex/FlowSpecEditor.build/Debug/FlowSpecEditor.build/Objects-normal/x86_64/FlowSpecEditorApp.swiftconstvalues",
+    "dependencies" : "/Users/maarten.dings/Documents/FlowSpec/editor/build/Build/Intermediates.noindex/FlowSpecEditor.build/Debug/FlowSpecEditor.build/Objects-normal/x86_64/FlowSpecEditorApp.d",
+    "diagnostics" : "/Users/maarten.dings/Documents/FlowSpec/editor/build/Build/Intermediates.noindex/FlowSpecEditor.build/Debug/FlowSpecEditor.build/Objects-normal/x86_64/FlowSpecEditorApp.dia",
+    "index-unit-output-path" : "/FlowSpecEditor.build/Debug/FlowSpecEditor.build/Objects-normal/x86_64/FlowSpecEditorApp.o",
+    "llvm-bc" : "/Users/maarten.dings/Documents/FlowSpec/editor/build/Build/Intermediates.noindex/FlowSpecEditor.build/Debug/FlowSpecEditor.build/Objects-normal/x86_64/FlowSpecEditorApp.bc",
+    "object" : "/Users/maarten.dings/Documents/FlowSpec/editor/build/Build/Intermediates.noindex/FlowSpecEditor.build/Debug/FlowSpecEditor.build/Objects-normal/x86_64/FlowSpecEditorApp.o",
+    "swift-dependencies" : "/Users/maarten.dings/Documents/FlowSpec/editor/build/Build/Intermediates.noindex/FlowSpecEditor.build/Debug/FlowSpecEditor.build/Objects-normal/x86_64/FlowSpecEditorApp.swiftdeps",
+    "swiftmodule" : "/Users/maarten.dings/Documents/FlowSpec/editor/build/Build/Intermediates.noindex/FlowSpecEditor.build/Debug/FlowSpecEditor.build/Objects-normal/x86_64/FlowSpecEditorApp~partial.swiftmodule"
+  },
+  "/Users/maarten.dings/Documents/FlowSpec/editor/FlowSpecEditor/FlowSpecImprove.swift" : {
+    "const-values" : "/Users/maarten.dings/Documents/FlowSpec/editor/build/Build/Intermediates.noindex/FlowSpecEditor.build/Debug/FlowSpecEditor.build/Objects-normal/x86_64/FlowSpecImprove.swiftconstvalues",
+    "dependencies" : "/Users/maarten.dings/Documents/FlowSpec/editor/build/Build/Intermediates.noindex/FlowSpecEditor.build/Debug/FlowSpecEditor.build/Objects-normal/x86_64/FlowSpecImprove.d",
+    "diagnostics" : "/Users/maarten.dings/Documents/FlowSpec/editor/build/Build/Intermediates.noindex/FlowSpecEditor.build/Debug/FlowSpecEditor.build/Objects-normal/x86_64/FlowSpecImprove.dia",
+    "index-unit-output-path" : "/FlowSpecEditor.build/Debug/FlowSpecEditor.build/Objects-normal/x86_64/FlowSpecImprove.o",
+    "llvm-bc" : "/Users/maarten.dings/Documents/FlowSpec/editor/build/Build/Intermediates.noindex/FlowSpecEditor.build/Debug/FlowSpecEditor.build/Objects-normal/x86_64/FlowSpecImprove.bc",
+    "object" : "/Users/maarten.dings/Documents/FlowSpec/editor/build/Build/Intermediates.noindex/FlowSpecEditor.build/Debug/FlowSpecEditor.build/Objects-normal/x86_64/FlowSpecImprove.o",
+    "swift-dependencies" : "/Users/maarten.dings/Documents/FlowSpec/editor/build/Build/Intermediates.noindex/FlowSpecEditor.build/Debug/FlowSpecEditor.build/Objects-normal/x86_64/FlowSpecImprove.swiftdeps",
+    "swiftmodule" : "/Users/maarten.dings/Documents/FlowSpec/editor/build/Build/Intermediates.noindex/FlowSpecEditor.build/Debug/FlowSpecEditor.build/Objects-normal/x86_64/FlowSpecImprove~partial.swiftmodule"
+  },
+  "/Users/maarten.dings/Documents/FlowSpec/editor/FlowSpecEditor/FlowSpecStructureValidator.swift" : {
+    "const-values" : "/Users/maarten.dings/Documents/FlowSpec/editor/build/Build/Intermediates.noindex/FlowSpecEditor.build/Debug/FlowSpecEditor.build/Objects-normal/x86_64/FlowSpecStructureValidator.swiftconstvalues",
+    "dependencies" : "/Users/maarten.dings/Documents/FlowSpec/editor/build/Build/Intermediates.noindex/FlowSpecEditor.build/Debug/FlowSpecEditor.build/Objects-normal/x86_64/FlowSpecStructureValidator.d",
+    "diagnostics" : "/Users/maarten.dings/Documents/FlowSpec/editor/build/Build/Intermediates.noindex/FlowSpecEditor.build/Debug/FlowSpecEditor.build/Objects-normal/x86_64/FlowSpecStructureValidator.dia",
+    "index-unit-output-path" : "/FlowSpecEditor.build/Debug/FlowSpecEditor.build/Objects-normal/x86_64/FlowSpecStructureValidator.o",
+    "llvm-bc" : "/Users/maarten.dings/Documents/FlowSpec/editor/build/Build/Intermediates.noindex/FlowSpecEditor.build/Debug/FlowSpecEditor.build/Objects-normal/x86_64/FlowSpecStructureValidator.bc",
+    "object" : "/Users/maarten.dings/Documents/FlowSpec/editor/build/Build/Intermediates.noindex/FlowSpecEditor.build/Debug/FlowSpecEditor.build/Objects-normal/x86_64/FlowSpecStructureValidator.o",
+    "swift-dependencies" : "/Users/maarten.dings/Documents/FlowSpec/editor/build/Build/Intermediates.noindex/FlowSpecEditor.build/Debug/FlowSpecEditor.build/Objects-normal/x86_64/FlowSpecStructureValidator.swiftdeps",
+    "swiftmodule" : "/Users/maarten.dings/Documents/FlowSpec/editor/build/Build/Intermediates.noindex/FlowSpecEditor.build/Debug/FlowSpecEditor.build/Objects-normal/x86_64/FlowSpecStructureValidator~partial.swiftmodule"
+  },
+  "/Users/maarten.dings/Documents/FlowSpec/editor/FlowSpecEditor/FlowSpecSyntaxHighlighter.swift" : {
+    "const-values" : "/Users/maarten.dings/Documents/FlowSpec/editor/build/Build/Intermediates.noindex/FlowSpecEditor.build/Debug/FlowSpecEditor.build/Objects-normal/x86_64/FlowSpecSyntaxHighlighter.swiftconstvalues",
+    "dependencies" : "/Users/maarten.dings/Documents/FlowSpec/editor/build/Build/Intermediates.noindex/FlowSpecEditor.build/Debug/FlowSpecEditor.build/Objects-normal/x86_64/FlowSpecSyntaxHighlighter.d",
+    "diagnostics" : "/Users/maarten.dings/Documents/FlowSpec/editor/build/Build/Intermediates.noindex/FlowSpecEditor.build/Debug/FlowSpecEditor.build/Objects-normal/x86_64/FlowSpecSyntaxHighlighter.dia",
+    "index-unit-output-path" : "/FlowSpecEditor.build/Debug/FlowSpecEditor.build/Objects-normal/x86_64/FlowSpecSyntaxHighlighter.o",
+    "llvm-bc" : "/Users/maarten.dings/Documents/FlowSpec/editor/build/Build/Intermediates.noindex/FlowSpecEditor.build/Debug/FlowSpecEditor.build/Objects-normal/x86_64/FlowSpecSyntaxHighlighter.bc",
+    "object" : "/Users/maarten.dings/Documents/FlowSpec/editor/build/Build/Intermediates.noindex/FlowSpecEditor.build/Debug/FlowSpecEditor.build/Objects-normal/x86_64/FlowSpecSyntaxHighlighter.o",
+    "swift-dependencies" : "/Users/maarten.dings/Documents/FlowSpec/editor/build/Build/Intermediates.noindex/FlowSpecEditor.build/Debug/FlowSpecEditor.build/Objects-normal/x86_64/FlowSpecSyntaxHighlighter.swiftdeps",
+    "swiftmodule" : "/Users/maarten.dings/Documents/FlowSpec/editor/build/Build/Intermediates.noindex/FlowSpecEditor.build/Debug/FlowSpecEditor.build/Objects-normal/x86_64/FlowSpecSyntaxHighlighter~partial.swiftmodule"
+  },
+  "/Users/maarten.dings/Documents/FlowSpec/editor/FlowSpecEditor/FlowSpecTextEditor.swift" : {
+    "const-values" : "/Users/maarten.dings/Documents/FlowSpec/editor/build/Build/Intermediates.noindex/FlowSpecEditor.build/Debug/FlowSpecEditor.build/Objects-normal/x86_64/FlowSpecTextEditor.swiftconstvalues",
+    "dependencies" : "/Users/maarten.dings/Documents/FlowSpec/editor/build/Build/Intermediates.noindex/FlowSpecEditor.build/Debug/FlowSpecEditor.build/Objects-normal/x86_64/FlowSpecTextEditor.d",
+    "diagnostics" : "/Users/maarten.dings/Documents/FlowSpec/editor/build/Build/Intermediates.noindex/FlowSpecEditor.build/Debug/FlowSpecEditor.build/Objects-normal/x86_64/FlowSpecTextEditor.dia",
+    "index-unit-output-path" : "/FlowSpecEditor.build/Debug/FlowSpecEditor.build/Objects-normal/x86_64/FlowSpecTextEditor.o",
+    "llvm-bc" : "/Users/maarten.dings/Documents/FlowSpec/editor/build/Build/Intermediates.noindex/FlowSpecEditor.build/Debug/FlowSpecEditor.build/Objects-normal/x86_64/FlowSpecTextEditor.bc",
+    "object" : "/Users/maarten.dings/Documents/FlowSpec/editor/build/Build/Intermediates.noindex/FlowSpecEditor.build/Debug/FlowSpecEditor.build/Objects-normal/x86_64/FlowSpecTextEditor.o",
+    "swift-dependencies" : "/Users/maarten.dings/Documents/FlowSpec/editor/build/Build/Intermediates.noindex/FlowSpecEditor.build/Debug/FlowSpecEditor.build/Objects-normal/x86_64/FlowSpecTextEditor.swiftdeps",
+    "swiftmodule" : "/Users/maarten.dings/Documents/FlowSpec/editor/build/Build/Intermediates.noindex/FlowSpecEditor.build/Debug/FlowSpecEditor.build/Objects-normal/x86_64/FlowSpecTextEditor~partial.swiftmodule"
+  },
+  "/Users/maarten.dings/Documents/FlowSpec/editor/FlowSpecEditor/FlowSpecWorkspaceView.swift" : {
+    "const-values" : "/Users/maarten.dings/Documents/FlowSpec/editor/build/Build/Intermediates.noindex/FlowSpecEditor.build/Debug/FlowSpecEditor.build/Objects-normal/x86_64/FlowSpecWorkspaceView.swiftconstvalues",
+    "dependencies" : "/Users/maarten.dings/Documents/FlowSpec/editor/build/Build/Intermediates.noindex/FlowSpecEditor.build/Debug/FlowSpecEditor.build/Objects-normal/x86_64/FlowSpecWorkspaceView.d",
+    "diagnostics" : "/Users/maarten.dings/Documents/FlowSpec/editor/build/Build/Intermediates.noindex/FlowSpecEditor.build/Debug/FlowSpecEditor.build/Objects-normal/x86_64/FlowSpecWorkspaceView.dia",
+    "index-unit-output-path" : "/FlowSpecEditor.build/Debug/FlowSpecEditor.build/Objects-normal/x86_64/FlowSpecWorkspaceView.o",
+    "llvm-bc" : "/Users/maarten.dings/Documents/FlowSpec/editor/build/Build/Intermediates.noindex/FlowSpecEditor.build/Debug/FlowSpecEditor.build/Objects-normal/x86_64/FlowSpecWorkspaceView.bc",
+    "object" : "/Users/maarten.dings/Documents/FlowSpec/editor/build/Build/Intermediates.noindex/FlowSpecEditor.build/Debug/FlowSpecEditor.build/Objects-normal/x86_64/FlowSpecWorkspaceView.o",
+    "swift-dependencies" : "/Users/maarten.dings/Documents/FlowSpec/editor/build/Build/Intermediates.noindex/FlowSpecEditor.build/Debug/FlowSpecEditor.build/Objects-normal/x86_64/FlowSpecWorkspaceView.swiftdeps",
+    "swiftmodule" : "/Users/maarten.dings/Documents/FlowSpec/editor/build/Build/Intermediates.noindex/FlowSpecEditor.build/Debug/FlowSpecEditor.build/Objects-normal/x86_64/FlowSpecWorkspaceView~partial.swiftmodule"
+  },
+  "/Users/maarten.dings/Documents/FlowSpec/editor/build/Build/Intermediates.noindex/FlowSpecEditor.build/Debug/FlowSpecEditor.build/DerivedSources/GeneratedAssetSymbols.swift" : {
+    "const-values" : "/Users/maarten.dings/Documents/FlowSpec/editor/build/Build/Intermediates.noindex/FlowSpecEditor.build/Debug/FlowSpecEditor.build/Objects-normal/x86_64/GeneratedAssetSymbols.swiftconstvalues",
+    "dependencies" : "/Users/maarten.dings/Documents/FlowSpec/editor/build/Build/Intermediates.noindex/FlowSpecEditor.build/Debug/FlowSpecEditor.build/Objects-normal/x86_64/GeneratedAssetSymbols.d",
+    "diagnostics" : "/Users/maarten.dings/Documents/FlowSpec/editor/build/Build/Intermediates.noindex/FlowSpecEditor.build/Debug/FlowSpecEditor.build/Objects-normal/x86_64/GeneratedAssetSymbols.dia",
+    "index-unit-output-path" : "/FlowSpecEditor.build/Debug/FlowSpecEditor.build/Objects-normal/x86_64/GeneratedAssetSymbols.o",
+    "llvm-bc" : "/Users/maarten.dings/Documents/FlowSpec/editor/build/Build/Intermediates.noindex/FlowSpecEditor.build/Debug/FlowSpecEditor.build/Objects-normal/x86_64/GeneratedAssetSymbols.bc",
+    "object" : "/Users/maarten.dings/Documents/FlowSpec/editor/build/Build/Intermediates.noindex/FlowSpecEditor.build/Debug/FlowSpecEditor.build/Objects-normal/x86_64/GeneratedAssetSymbols.o",
+    "swift-dependencies" : "/Users/maarten.dings/Documents/FlowSpec/editor/build/Build/Intermediates.noindex/FlowSpecEditor.build/Debug/FlowSpecEditor.build/Objects-normal/x86_64/GeneratedAssetSymbols.swiftdeps",
+    "swiftmodule" : "/Users/maarten.dings/Documents/FlowSpec/editor/build/Build/Intermediates.noindex/FlowSpecEditor.build/Debug/FlowSpecEditor.build/Objects-normal/x86_64/GeneratedAssetSymbols~partial.swiftmodule"
+  }
+}

@@ -1,0 +1,76 @@
+# Representative fixture for terminal (bat/syntect) syntax highlighting.
+# Implicit Action lines (e.g. Select plan) stay ordinary text by design.
+
+Flow Premium onboarding
+Id premium.onboarding
+
+# Structural Screen with nested Layout and Section
+  Screen Premium paywall
+  Id premium.paywall
+
+    Layout
+      Sidebar | Content | Inspector
+
+      Rules
+        Sidebar can be collapsed
+
+      When the user enters the mobile breakpoint
+        Layout
+          Sidebar
+          Content
+          Inspector
+
+    Section Sidebar
+      Shows
+        Plan options
+
+    Section Content
+      Shows
+        Plan comparison
+
+    Section Inspector
+      Shows
+        Plan details
+
+    # Explicit Action
+    Action Open checkout
+    Id premium.open-checkout
+      Receives
+        Selected plan
+      Steps
+        Prepare checkout session
+        Once checkout is ready
+          Go to premium.checkout
+        At the same time
+          Log plan selection
+          Notify analytics
+        If payment fails
+          Shows
+            Retry payment
+      Outcome
+        Checkout is available
+
+    # Implicit Action — name line intentionally unhighlighted
+    Select plan
+      Rules
+        Plan must be Yearly or Monthly
+      If the plan requires a trial
+        Shows
+          Trial banner
+      Otherwise
+        Go to premium.paywall
+
+  Screen Checkout
+  Id premium.checkout
+    Shows
+      Payment form
+
+  # Mid-line prose must not highlight as directives
+  Action Prose sample
+  Id samples.prose
+    Rules
+      Only show this when product results are available
+      Do not run if the user is anonymous
+      Follow the rules in the brand guide
+      Wait no longer than 10 minutes
+      Greeting with "welcome" and the user's name

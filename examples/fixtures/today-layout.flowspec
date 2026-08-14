@@ -1,31 +1,31 @@
 Flow Today workspace
 Id today.workspace
 
-Screen Today
-Id today.screen
+  Screen Today
+  Id today.screen
 
-  Layout
-    Sidebar | Content | Inspector
+    Layout
+      Sidebar | Content | Inspector
 
-    Rules
-      Sidebar can be collapsed
+      Rules
+        Sidebar can be collapsed
 
-    When the user enters the mobile breakpoint
-      Layout
-        Sidebar
-        Content
-        Inspector
+      When the user enters the mobile breakpoint
+        Layout
+          Sidebar
+          Content
+          Inspector
 
-  Section Sidebar
-    Shows
-      Areas
-      Inbox
-      Upcoming
+    Section Sidebar
+      Shows
+        Areas
+        Inbox
+        Upcoming
 
-  Section Content
-    Shows
-      Today's tasks
+    Section Content
+      Shows
+        Today's tasks
 
-  Section Inspector
-    Shows
-      Selected task details
+    Section Inspector
+      Shows
+        Selected task details

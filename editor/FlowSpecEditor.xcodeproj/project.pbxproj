@@ -1,0 +1,174 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		A10000000000000000000001 /* FlowSpecEditorApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000001 /* FlowSpecEditorApp.swift */; };
+		A10000000000000000000002 /* FlowSpecDocument.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000002 /* FlowSpecDocument.swift */; };
+		A10000000000000000000003 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000003 /* ContentView.swift */; };
+		A10000000000000000000004 /* FlowSpecTextEditor.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000004 /* FlowSpecTextEditor.swift */; };
+		A10000000000000000000005 /* FlowSpecSyntaxHighlighter.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000005 /* FlowSpecSyntaxHighlighter.swift */; };
+		A10000000000000000000007 /* FlowSpecStructureValidator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000000000000000000000A /* FlowSpecStructureValidator.swift */; };
+		A10000000000000000000008 /* constants.js in Resources */ = {isa = PBXBuildFile; fileRef = A2000000000000000000000B /* constants.js */; };
+		A10000000000000000000009 /* diagnostics.js in Resources */ = {isa = PBXBuildFile; fileRef = A2000000000000000000000C /* diagnostics.js */; };
+		A1000000000000000000000A /* parse.js in Resources */ = {isa = PBXBuildFile; fileRef = A2000000000000000000000D /* parse.js */; };
+		A1000000000000000000000B /* goto.js in Resources */ = {isa = PBXBuildFile; fileRef = A2000000000000000000000E /* goto.js */; };
+		A1000000000000000000000C /* lint.js in Resources */ = {isa = PBXBuildFile; fileRef = A2000000000000000000000F /* lint.js */; };
+		A1000000000000000000000D /* JavaScriptCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A20000000000000000000010 /* JavaScriptCore.framework */; };
+		A1000000000000000000000E /* FlowSpecWorkspaceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000011 /* FlowSpecWorkspaceView.swift */; };
+		A1000000000000000000000F /* FlowSpecCompletion.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000012 /* FlowSpecCompletion.swift */; };
+		A10000000000000000000010 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000013 /* Assets.xcassets */; };
+		A10000000000000000000011 /* FlowSpecImprove.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000014 /* FlowSpecImprove.swift */; };
+		A10000000000000000000012 /* FoundationModels.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A20000000000000000000015 /* FoundationModels.framework */; };
+		A10000000000000000000013 /* language.js in Resources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000016 /* language.js */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		A20000000000000000000001 /* FlowSpecEditorApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlowSpecEditorApp.swift; sourceTree = "<group>"; };
+		A20000000000000000000002 /* FlowSpecDocument.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlowSpecDocument.swift; sourceTree = "<group>"; };
+		A20000000000000000000003 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		A20000000000000000000004 /* FlowSpecTextEditor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlowSpecTextEditor.swift; sourceTree = "<group>"; };
+		A20000000000000000000005 /* FlowSpecSyntaxHighlighter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlowSpecSyntaxHighlighter.swift; sourceTree = "<group>"; };
+		A20000000000000000000007 /* FlowSpecEditor.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FlowSpecEditor.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A20000000000000000000008 /* FlowSpecEditor.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = FlowSpecEditor.entitlements; sourceTree = "<group>"; };
+		A20000000000000000000009 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		A2000000000000000000000A /* FlowSpecStructureValidator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlowSpecStructureValidator.swift; sourceTree = "<group>"; };
+		A2000000000000000000000B /* constants.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = constants.js; sourceTree = "<group>"; };
+		A2000000000000000000000C /* diagnostics.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = diagnostics.js; sourceTree = "<group>"; };
+		A2000000000000000000000D /* parse.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = parse.js; sourceTree = "<group>"; };
+		A2000000000000000000000E /* goto.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = goto.js; sourceTree = "<group>"; };
+		A2000000000000000000000F /* lint.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = lint.js; sourceTree = "<group>"; };
+		A20000000000000000000010 /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
+		A20000000000000000000011 /* FlowSpecWorkspaceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlowSpecWorkspaceView.swift; sourceTree = "<group>"; };
+		A20000000000000000000012 /* FlowSpecCompletion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlowSpecCompletion.swift; sourceTree = "<group>"; };
+		A20000000000000000000013 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		A20000000000000000000014 /* FlowSpecImprove.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlowSpecImprove.swift; sourceTree = "<group>"; };
+		A20000000000000000000015 /* FoundationModels.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = FoundationModels.framework; path = System/Library/Frameworks/FoundationModels.framework; sourceTree = SDKROOT; };
+		A20000000000000000000016 /* language.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = language.js; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		A30000000000000000000001 /* Frameworks */ = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (A1000000000000000000000D /* JavaScriptCore.framework in Frameworks */, A10000000000000000000012 /* FoundationModels.framework in Frameworks */); runOnlyForDeploymentPostprocessing = 0; };
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		A40000000000000000000001 = {
+			isa = PBXGroup;
+			children = (A40000000000000000000002 /* FlowSpecEditor */, A40000000000000000000004 /* Frameworks */, A40000000000000000000003 /* Products */);
+			sourceTree = "<group>";
+		};
+		A40000000000000000000002 /* FlowSpecEditor */ = {
+			isa = PBXGroup;
+			children = (
+				A20000000000000000000001 /* FlowSpecEditorApp.swift */,
+				A20000000000000000000002 /* FlowSpecDocument.swift */,
+				A20000000000000000000003 /* ContentView.swift */,
+				A20000000000000000000011 /* FlowSpecWorkspaceView.swift */,
+				A20000000000000000000004 /* FlowSpecTextEditor.swift */,
+				A20000000000000000000012 /* FlowSpecCompletion.swift */,
+				A20000000000000000000014 /* FlowSpecImprove.swift */,
+				A20000000000000000000005 /* FlowSpecSyntaxHighlighter.swift */,
+				A2000000000000000000000A /* FlowSpecStructureValidator.swift */,
+				A20000000000000000000008 /* FlowSpecEditor.entitlements */,
+				A20000000000000000000009 /* Info.plist */,
+				A20000000000000000000013 /* Assets.xcassets */,
+				A40000000000000000000005 /* FlowSpec core */,
+			);
+			path = FlowSpecEditor;
+			sourceTree = "<group>";
+		};
+		A40000000000000000000003 /* Products */ = {isa = PBXGroup; children = (A20000000000000000000007 /* FlowSpecEditor.app */); name = Products; sourceTree = "<group>"; };
+		A40000000000000000000004 /* Frameworks */ = {isa = PBXGroup; children = (A20000000000000000000010 /* JavaScriptCore.framework */, A20000000000000000000015 /* FoundationModels.framework */); name = Frameworks; sourceTree = "<group>"; };
+		A40000000000000000000005 /* FlowSpec core */ = {isa = PBXGroup; children = (A20000000000000000000016 /* language.js */, A2000000000000000000000B /* constants.js */, A2000000000000000000000C /* diagnostics.js */, A2000000000000000000000D /* parse.js */, A2000000000000000000000E /* goto.js */, A2000000000000000000000F /* lint.js */); name = "FlowSpec core"; path = ../../lib; sourceTree = "<group>"; };
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		A50000000000000000000001 /* FlowSpecEditor */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A90000000000000000000002 /* Build configuration list for PBXNativeTarget */;
+			buildPhases = (A60000000000000000000001 /* Sources */, A30000000000000000000001 /* Frameworks */, A70000000000000000000001 /* Resources */);
+			buildRules = ();
+			dependencies = ();
+			name = FlowSpecEditor;
+			productName = FlowSpecEditor;
+			productReference = A20000000000000000000007 /* FlowSpecEditor.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		A80000000000000000000001 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {BuildIndependentTargetsInParallel = 1; LastSwiftUpdateCheck = 2660; LastUpgradeCheck = 2660; TargetAttributes = {A50000000000000000000001 = {CreatedOnToolsVersion = 26.6; }; }; };
+			buildConfigurationList = A90000000000000000000001 /* Build configuration list for PBXProject */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (en, Base);
+			mainGroup = A40000000000000000000001;
+			productRefGroup = A40000000000000000000003 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (A50000000000000000000001 /* FlowSpecEditor */);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		A70000000000000000000001 /* Resources */ = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (A10000000000000000000013 /* language.js in Resources */, A10000000000000000000008 /* constants.js in Resources */, A10000000000000000000009 /* diagnostics.js in Resources */, A1000000000000000000000A /* parse.js in Resources */, A1000000000000000000000B /* goto.js in Resources */, A1000000000000000000000C /* lint.js in Resources */, A10000000000000000000010 /* Assets.xcassets in Resources */); runOnlyForDeploymentPostprocessing = 0; };
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		A60000000000000000000001 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (A10000000000000000000001, A10000000000000000000002, A10000000000000000000003, A10000000000000000000004, A10000000000000000000005, A10000000000000000000007, A1000000000000000000000E, A1000000000000000000000F, A10000000000000000000011); runOnlyForDeploymentPostprocessing = 0; };
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		AA0000000000000000000001 /* Debug */ = {isa = XCBuildConfiguration; buildSettings = {CLANG_ENABLE_MODULES = YES; MACOSX_DEPLOYMENT_TARGET = 26.0; SDKROOT = macosx; SWIFT_VERSION = 5.0; }; name = Debug; };
+		AA0000000000000000000002 /* Release */ = {isa = XCBuildConfiguration; buildSettings = {CLANG_ENABLE_MODULES = YES; MACOSX_DEPLOYMENT_TARGET = 26.0; SDKROOT = macosx; SWIFT_COMPILATION_MODE = wholemodule; SWIFT_VERSION = 5.0; }; name = Release; };
+		AA0000000000000000000003 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = FlowSpecEditor/FlowSpecEditor.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = FlowSpecEditor/Info.plist;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.maartendings.FlowSpecEditor;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+			};
+			name = Debug;
+		};
+		AA0000000000000000000004 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = FlowSpecEditor/FlowSpecEditor.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = FlowSpecEditor/Info.plist;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.maartendings.FlowSpecEditor;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		A90000000000000000000001 = {isa = XCConfigurationList; buildConfigurations = (AA0000000000000000000001, AA0000000000000000000002); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
+		A90000000000000000000002 = {isa = XCConfigurationList; buildConfigurations = (AA0000000000000000000003, AA0000000000000000000004); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
+/* End XCConfigurationList section */
+	};
+	rootObject = A80000000000000000000001 /* Project object */;
+}

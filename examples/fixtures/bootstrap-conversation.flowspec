@@ -1,26 +1,26 @@
 Flow Bootstrap conversation
 
-Action Generate initial assistant response
+  Action Generate initial assistant response
 
-  Receives
-    Shopping session
-    Conversation context
-    Combined dimension prompt
+    Receives
+      Shopping session
+      Conversation context
+      Combined dimension prompt
 
-  Rules
-    Use the combined dimension prompt as instruction context
+    Rules
+      Use the combined dimension prompt as instruction context
 
-  Uses
-    Provider OpenAI
-    Model GPT-5
-    Reasoning effort high
+    Uses
+      Provider OpenAI
+      Model GPT-5
+      Reasoning effort high
 
-  Steps
-    Generate the initial assistant response
+    Steps
+      Generate the initial assistant response
 
-  If generating the response fails
-    Shows
-      Conversation error with retry
+    If generating the response fails
+      Shows
+        Conversation error with retry
 
-  Outcome
-    Initial assistant response is available
+    Outcome
+      Initial assistant response is available

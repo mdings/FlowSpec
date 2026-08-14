@@ -1,65 +1,65 @@
 Flow Start free meditation
 Id meditation.start-free
 
-Screen Choose focus
-Id meditation.choose-focus
+  Screen Choose focus
+  Id meditation.choose-focus
 
-  Shows
-    Focus options
-
-  Select focus
-    Rules
-      Focus must be one of Breathing, Visualization, Affirmation, Balanced
-
-    Store selected focus
-    Go to Choose voice
-
-Screen Choose voice
-Id meditation.choose-voice
-
-  Shows
-    Voice options
-
-  Select voice
-    If the voice requires Premium and the user has no Premium
-      Go to Premium paywall
-
-    Otherwise
-      Store selected voice
-      Go to Choose duration
-
-  Hold voice
     Shows
-      Voice name
-      Voice description
+      Focus options
 
-Screen Choose duration
-Id meditation.choose-duration
+    Select focus
+      Rules
+        Focus must be one of Breathing, Visualization, Affirmation, Balanced
 
-  Shows
-    Duration options
+      Store selected focus
+      Go to Choose voice
 
-  Select duration
-    Store selected duration
-    Go to Generate meditation
+  Screen Choose voice
+  Id meditation.choose-voice
 
-Screen Premium paywall
-Id meditation.premium-paywall
+    Shows
+      Voice options
 
-  Shows
-    Premium benefits
-    Purchase options
+    Select voice
+      If the voice requires Premium and the user has no Premium
+        Go to Premium paywall
 
-Action Generate meditation
-Id meditation.generate
+      Otherwise
+        Store selected voice
+        Go to Choose duration
 
-  Receives
-    Selected focus
-    Selected voice
-    Selected duration
+    Hold voice
+      Shows
+        Voice name
+        Voice description
 
-  Steps
-    Generate the meditation session
+  Screen Choose duration
+  Id meditation.choose-duration
 
-  Outcome
-    Meditation is ready
+    Shows
+      Duration options
+
+    Select duration
+      Store selected duration
+      Go to Generate meditation
+
+  Screen Premium paywall
+  Id meditation.premium-paywall
+
+    Shows
+      Premium benefits
+      Purchase options
+
+  Action Generate meditation
+  Id meditation.generate
+
+    Receives
+      Selected focus
+      Selected voice
+      Selected duration
+
+    Steps
+      Generate the meditation session
+
+    Outcome
+      Meditation is ready

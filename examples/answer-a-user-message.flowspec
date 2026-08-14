@@ -1,79 +1,79 @@
 Flow: Answer a user message
 Id: conversation.answer-message
 
-Screen: Conversation
-Id: conversation.screen
+  Screen: Conversation
+  Id: conversation.screen
 
-When the user sends a message
+    When the user sends a message
 
-  Action: Find relevant products
-  Id: conversation.find-products
+      Action: Find relevant products
+      Id: conversation.find-products
 
-    Steps
-      Find products relevant to the user message
-      Rank the matching products
+        Steps
+          Find products relevant to the user message
+          Rank the matching products
 
-    Outcome
-      Product results are available
+        Outcome
+          Product results are available
 
-  Action: Create assistant response
-  Id: conversation.create-response
+      Action: Create assistant response
+      Id: conversation.create-response
 
-    Steps
-      Interpret the user’s request
-      Create a relevant response
+        Steps
+          Interpret the user’s request
+          Create a relevant response
 
-    Outcome
-      Assistant response is available
+        Outcome
+          Assistant response is available
 
-  Once assistant response is available
+      Once assistant response is available
 
-    Action: Show assistant response
-    Id: conversation.show-response
+        Action: Show assistant response
+        Id: conversation.show-response
 
-      Shows
-        Assistant response in the conversation
+          Shows
+            Assistant response in the conversation
 
-  Once product results are available
+      Once product results are available
 
-    Action: Create quick replies
-    Id: conversation.create-quick-replies
+        Action: Create quick replies
+        Id: conversation.create-quick-replies
 
-      Receives
-        User message
-        Product results
+          Receives
+            User message
+            Product results
 
-      Rules
-        Show no more than 3 quick replies
-        Quick replies must use available product information
+          Rules
+            Show no more than 3 quick replies
+            Quick replies must use available product information
 
-      Steps
-        Inspect the best product-search result
+          Steps
+            Inspect the best product-search result
 
-        If the best result is a brand
-          Create product chips from that brand
+            If the best result is a brand
+              Create product chips from that brand
 
-        Otherwise
-          Create relevant category chips
+            Otherwise
+              Create relevant category chips
 
-      Outcome
-        Quick replies are available
+          Outcome
+            Quick replies are available
 
-  Once quick replies are available
+      Once quick replies are available
 
-    Action: Show quick replies
-    Id: conversation.show-quick-replies
+        Action: Show quick replies
+        Id: conversation.show-quick-replies
 
-      Shows
-        Quick replies below the assistant response
+          Shows
+            Quick replies below the assistant response
 
-  If product search fails
+      If product search fails
 
-    Action: Continue without quick replies
-    Id: conversation.continue-without-quick-replies
+        Action: Continue without quick replies
+        Id: conversation.continue-without-quick-replies
 
-      Shows
-        Assistant response without quick replies
+          Shows
+            Assistant response without quick replies
 
-      Outcome
-        Conversation remains usable
+          Outcome
+            Conversation remains usable

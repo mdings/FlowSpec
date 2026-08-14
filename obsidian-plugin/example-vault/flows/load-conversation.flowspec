@@ -1,10 +1,10 @@
 Flow Load conversation after sign-in
 
-Screen Conversation
+  Screen Conversation
 
-  Action Enter conversation
-    Steps
-      Go to Get or create shopping session
+    Action Enter conversation
+      Steps
+        Go to Get or create shopping session
 
-      Once the shopping session is ready
-        Go to Start conversation
+        Once the shopping session is ready
+          Go to Start conversation

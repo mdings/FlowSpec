@@ -12,6 +12,12 @@ It is a behavioral specification — not a programming language, not an executab
 
 > FlowSpec should omit information that can be safely inferred from its structural context.
 
+> Do not introduce an Action merely to repeat the name of its owning Flow.
+
+> If behavior only makes sense while a Screen is active, place it under that Screen.
+
+> Indentation determines ownership. Adjacency never does.
+
 Keep three layers distinct:
 
 | Layer | Role |
@@ -28,17 +34,42 @@ FlowSpec uses Title Case for all directives to keep the language visually consis
 
 - A file must start with a single top-level `Flow` (blank lines and `#` comments may precede it).
 - Hierarchy is indentation-based. Mixed tabs and spaces are rejected.
+- **Indentation determines ownership. Adjacency never does.** Blank lines are cosmetic.
 - Directives are recognized only at the beginning of a line after optional indentation. Directive-like words inside ordinary prose are not directives.
 - Colons after directives are optional; both `Flow Sign in` and `Flow: Sign in` parse identically.
-- Sections must be indented beneath their owning `Screen` or `Action`. Adjacency does not imply ownership.
-- `Id` is optional on `Flow`, `Screen`, and explicit `Action` only. `Section`, `Layout`, and implicit Actions cannot have an `Id`. When present, place it immediately after the structural directive.
-- `Receives`, `Rules`, `Uses`, `Steps`, and `Outcome` are optional. Missing sections are allowed.
-- `When` remains part of the language; it is not required for local Screen interactions.
+- `Screen`, top-level `Action`, control-flow, and behavioral sections that belong to a Flow must be **indented under** that Flow. An unindented `Screen` after a `Flow` is not owned by the Flow (FS024).
+- Sections must be indented beneath their owning `Flow`, `Screen`, `Action`, `Section`, or `Layout` (as allowed for each section type).
+- `Id` is optional on `Flow`, `Screen`, and explicit `Action` only. `Section`, `Layout`, and implicit Actions cannot have an `Id`. When present, place `Id` immediately after the structural directive; `Id` may share the owner's indentation (special association rule) so following indented children still belong to the owner.
+- `Receives`, `Rules`, `Uses`, `Steps`, `Shows`, and `Outcome` are optional. Missing sections are allowed.
+- A `Flow` may own behavioral sections directly. An explicit `Action` is only needed when behavior deserves an independent name or identity.
+- Behavior that is only meaningful while a Screen is active should normally be a child of that Screen. Flow-level `When` remains valid for overall/system events.
+- `When` remains part of the language; it is not required for local Screen interactions (prefer implicit Actions).
 - Older uppercase forms `FLOW`, `SCREEN`, `ACTION`, and `ID` still parse for backwards compatibility but produce **FS016** warnings. Prefer Title Case.
+
+### Ownership hierarchy
+
+```text
+Flow
+├── Id (optional; may share Flow indent)
+├── direct Flow behavior (Receives / Rules / Uses / Steps / Shows / Outcome)
+├── Flow-level When / Once / If / … (overall / system events)
+├── Screen
+│   ├── Id (optional; may share Screen indent)
+│   ├── Shows / Layout / Section
+│   ├── When / Once / If / Otherwise (screen-local)
+│   ├── implicit Actions
+│   └── explicit Actions
+└── top-level Action (Flow-scoped capability)
+```
 
 ---
 
 ## 2. Directive reference
+
+The compact [language reference](docs/language-reference.md) is generated from
+[`lib/language.js`](lib/language.js), the same definition consumed by the parser,
+linter, VS Code and terminal grammars, and Swift editor. Edit the definition and
+run `npm run generate`; `npm test` rejects stale generated surfaces.
 
 Supported directives (exact casing):
 
@@ -68,23 +99,73 @@ Go to
 
 | Directive | Description | Example |
 | --------- | ----------- | ------- |
-| `Flow` | Names a complete user journey or business flow. | `Flow: Answer a user message` |
+| `Flow` | Names a complete user journey, capability, or process. May own behavioral sections directly. | `Flow: Bootstrap conversation` |
 | `Screen` | Defines the screen, page, modal, or UI context. | `Screen: Conversation` |
-| `Action` | Defines something the user or the system does. Under a `Screen` or `Section`, the keyword may be omitted for a direct named interaction. | `Action: Create quick replies` |
+| `Action` | Independently meaningful behavior inside or alongside a Flow. Under a `Screen` or `Section`, the keyword may be omitted for a direct named interaction. | `Action: Create quick replies` |
 | `Section` | A meaningful region within a `Screen` (or nested `Section`). Not navigable; no `Id`; not a `Go to` target. | `Section: Sidebar` |
 | `Layout` | Describes spatial relationships between direct child `Section`s of a `Screen` or `Section`. | `Layout` / `  Sidebar \| Content` |
 | `Id` | Optional stable machine-readable reference for a `Flow`, `Screen`, or `Action`. | `Id: conversation.create-quick-replies` |
 
-### Action sections
+### Behavioral sections
+
+These sections may be owned by a `Flow` or an `Action` (and, where noted, by `Screen` / `Section` / `Layout`).
 
 | Directive | Description | Example |
 | --------- | ----------- | ------- |
-| `Receives` | Information an action needs before it can run. | `Receives` / `  User message` |
-| `Rules` | Constraints that must remain true within the owning context (`Action` or `Layout`). | `Rules` / `  Sidebar can be collapsed` |
-| `Uses` | Optional services, models, tools, or runtime configuration used by an Action. | `Uses` / `  Provider OpenAI` |
-| `Steps` | Required functional work inside an action, without technical or test details. | `Steps` / `  Find matching products` |
-| `Shows` | What becomes visible to the user (allowed on `Screen`, `Section`, or `Action`). | `Shows` / `  Quick replies below the assistant response` |
-| `Outcome` | Observable or reusable result; other actions can wait for it. | `Outcome` / `  Quick replies are available` |
+| `Receives` | Information the Flow or Action needs before it can run. | `Receives` / `  Session` |
+| `Rules` | Constraints that must remain true within the owning context (`Flow`, `Action`, or `Layout`). | `Rules` / `  Bootstrap only once per session` |
+| `Uses` | Optional services, models, tools, or runtime configuration used by the Flow or Action. | `Uses` / `  Provider OpenAI` |
+| `Steps` | Required functional work, without technical or test details. | `Steps` / `  Load conversation history` |
+| `Shows` | What becomes visible to the user (allowed on `Flow`, `Screen`, `Section`, or `Action`). Flow-level `Shows` describes visible effects of the overall Flow, not a specific Screen. | `Shows` / `  Conversation error with retry` |
+| `Outcome` | Observable or reusable result; other behavior can wait for it. | `Outcome` / `  Conversation is ready` |
+
+### Flow-owned behavior
+
+A Flow may describe its own behavior directly. Prefer this when an Action would only repeat the Flow’s meaning:
+
+```flowspec
+Flow Bootstrap conversation
+Id conversation.bootstrap
+
+  Receives
+    Session
+
+  Rules
+    Bootstrap the conversation only once per session
+
+  Steps
+    Load the conversation history
+
+  Outcome
+    Conversation is ready
+```
+
+Indentation remains mandatory. This is invalid because `Receives` is not indented beneath the Flow:
+
+```flowspec
+Flow Bootstrap conversation
+
+Receives
+  Session
+```
+
+### When to use Action
+
+Use an explicit `Action` when the behavior deserves an independent name or identity within the Flow — reusable behavior, `Go to` targets, system capabilities, or decomposition into named units:
+
+```flowspec
+Flow Create meditation
+
+  Screen Choose voice
+    ...
+
+  Action Generate meditation
+  Id meditation.generate
+    Steps
+      Compose the meditation audio
+```
+
+Same-named Flow + Action pairs remain valid for backwards compatibility, but lint **FS106** may suggest moving the behavior onto the Flow when the Action adds no useful decomposition.
 
 ### Flow-control directives
 
@@ -100,7 +181,7 @@ Go to
 
 `Once`, `If`, `Otherwise`, and `If … fails` may appear directly inside a `Flow`, `Screen`, or `Action`, or inside `Steps`.
 
-`Uses` may appear only as a direct section inside an `Action` (not inside a `Flow`, `Screen`, or nested under another section). It is descriptive only — not infrastructure-as-code.
+`Uses` may appear as a direct section inside a `Flow` or an `Action` (not inside a `Screen`, or nested under another section). It is descriptive only — not infrastructure-as-code.
 
 ```flowspec
 Screen Enter email
@@ -121,28 +202,63 @@ Shows
 
 ## 3. Screen interactions vs explicit Actions
 
+### Screen owns screen-local behavior
+
+Anything that is only meaningful while a Screen is active should normally be structurally owned by that Screen:
+
+```flowspec
+Flow Home
+Id home.main
+
+  Screen Home
+  Id home.screen
+
+    Shows
+      Mood selector
+
+    Select mood
+      Store selected mood
+
+    When the user changes mood
+      Store selected mood
+```
+
+Prefer the concise implicit Action (`Select mood`) when the interaction is obvious. Use `When` under the Screen when the event itself adds meaningful context.
+
+### Local vs global events
+
+| Kind | Prefer | Example |
+| ---- | ------ | ------- |
+| Local interaction | Implicit Action under Screen | `Open Profile` / `  Go to profile.screen` |
+| Meaningful screen-local event | `When` under Screen | `When the payment authorization expires` |
+| Overall / system event | `When` under Flow | `When connectivity returns` |
+
+Flow-level `When` remains valid. Lint **FS107** may warn when a Flow-level `When` looks like a screen-local UI interaction sitting beside a Screen (warning only).
+
 ### Screen interactions (implicit Actions)
 
 Inside a `Screen` or `Section`, a direct named interaction line may omit the `Action` keyword. When that line has nested behavior (a section, control-flow, `Go to`, or `At the same time`), FlowSpec treats it as an Action and normalizes it to the same internal Action representation as an explicit `Action`.
 
 ```flowspec
-Screen Choose voice
+Flow Voice
 
-  Select voice
-    If the voice requires Premium
-      Go to Premium paywall
+  Screen Choose voice
 
-  Hold voice
-    Shows
-      Voice name
-      Voice description
+    Select voice
+      If the voice requires Premium
+        Go to Premium paywall
+
+    Hold voice
+      Shows
+        Voice name
+        Voice description
 ```
 
 is equivalent to writing `Action Select voice` / `Action Hold voice` under that Screen.
 
 **Boundaries**
 
-- Implicit Actions are allowed only as **direct children of a Screen**.
+- Implicit Actions are allowed only as **direct children of a Screen or Section**.
 - They must have **nested behavior** (not merely indented prose notes).
 - They are **not** inferred inside a `Flow`, `Action`, `Steps`, `Rules`, `Shows`, `Outcome`, `Uses`, or other sections.
 - Ordinary prose and section body lines are never promoted to Actions.
@@ -246,6 +362,22 @@ Explicit `Action` remains fully supported inside Screens too.
 
 These guidelines improve scanability. They are not syntax requirements. Conservative lint suggestions may point at high-confidence cases; they never block parsing and are never auto-fixed.
 
+### Prefer Flow-owned behavior over a same-named Action
+
+When a Flow’s only content is an Action that repeats the Flow name, move the behavior onto the Flow:
+
+```flowspec
+Flow Bootstrap conversation
+
+  Receives
+    Session
+
+  Steps
+    Load conversation history
+```
+
+Keep an explicit Action when it is independently meaningful, referenced by `Go to`, or part of a larger multi-behavior Flow. Lint **FS106** may warn on redundant same-named wrappers (warning only).
+
 ### Outcome is optional
 
 Use `Outcome` when the resulting state is meaningful to the wider flow, can be depended on later, or is not already obvious from the Action and its Steps.
@@ -286,29 +418,37 @@ unless documenting that input adds useful information. Lint **FS102** may warn w
 This pattern is valid but often unnecessarily verbose for local UI:
 
 ```flowspec
-When the user selects a focus
+Flow Start free meditation
 
-  Action Select focus
+  Screen Choose focus
+
+    When the user selects a focus
+
+      Action Select focus
 ```
 
 Prefer:
 
 ```flowspec
-Screen Choose focus
+Flow Start free meditation
 
-  Select focus
-    ...
+  Screen Choose focus
+
+    Select focus
+      ...
 ```
 
 Do not remove `When` from the language. `When` remains appropriate for system events, external events, lifecycle events, and triggers that are not obvious local Screen interactions:
 
 ```flowspec
-When the user becomes signed in
-When connectivity returns
-When generation completes
+Flow Enter app
+
+  When the user becomes signed in
+  When connectivity returns
+  When generation completes
 ```
 
-Lint **FS103** may warn on high-confidence duplicate `When` + `Action` phrasing (warning only).
+Lint **FS103** may warn on high-confidence duplicate `When` + `Action` phrasing (warning only). Lint **FS107** may warn when a Flow-level `When` looks screen-local.
 
 ### Prefer one Action for variants of the same decision
 
@@ -355,35 +495,35 @@ FlowSpec documents "too technical" / "too test-oriented" wording as a convention
 
 ### Recommended section order
 
-When multiple sections and action-level control-flow are present:
+When multiple sections and control-flow are present on a `Flow` or `Action`:
 
 ```flowspec
-Action: [Action name]
+Flow: [Flow name]
 Id: [stable identifier]
 
-Receives
-  [Required input]
+  Receives
+    [Required input]
 
-Rules
-  [Business constraints]
+  Rules
+    [Business constraints]
 
-Uses
-  [Services, models, tools, or runtime configuration]
+  Uses
+    [Services, models, tools, or runtime configuration]
 
-Steps
-  [Required functional work]
+  Steps
+    [Required functional work]
 
-If [action-level branch]
-  [Branch work]
+  If [branch]
+    [Branch work]
 
-Shows
-  [Visible user-facing effect]
+  Shows
+    [Visible user-facing effect]
 
-Outcome
-  [Observable or reusable result]
+  Outcome
+    [Observable or reusable result]
 ```
 
-Incorrect order produces **FS009** (structural warning). When `Outcome` is present but is not the final direct child, **FS017** warns. `Outcome` itself is never required.
+The same order applies inside an explicit `Action`. Incorrect order produces **FS009** (structural warning). When `Outcome` is present but is not the final direct behavioral child, **FS017** warns. `Outcome` itself is never required.
 
 ---
 
@@ -392,17 +532,19 @@ Incorrect order produces **FS009** (structural warning). When `Outcome` is prese
 ### Local Screen interactions
 
 ```flowspec
-Screen Choose focus
+Flow Start free meditation
 
-  Shows
-    Focus options
+  Screen Choose focus
 
-  Select focus
-    Rules
-      Focus must be one of Breathing, Visualization, Affirmation, Balanced
+    Shows
+      Focus options
 
-    Store selected focus
-    Go to Choose voice
+    Select focus
+      Rules
+        Focus must be one of Breathing, Visualization, Affirmation, Balanced
+
+      Store selected focus
+      Go to Choose voice
 ```
 
 instead of a verbose `When` + `Action` + redundant `Receives` / `Outcome` wrapper.
@@ -421,13 +563,17 @@ Screen Choose voice
       Go to Choose duration
 ```
 
-### Keep When for non-local triggers
+### Keep When for non-local / Flow-level triggers
 
 ```flowspec
-When the user becomes signed in
+Flow Enter app
 
-  Action Enter conversation
-    ...
+  Screen Splash
+
+  When the user becomes signed in
+
+    Action Enter conversation
+      ...
 ```
 
 ### Keep Outcome when later work depends on it
@@ -448,6 +594,8 @@ Canonical samples:
 - Coordinated `When` / `Once` flow: [`examples/answer-a-user-message.flowspec`](examples/answer-a-user-message.flowspec)
 - Lifecycle `When` + explicit Actions: [`examples/fixtures/enter-jack-hunt.flowspec`](examples/fixtures/enter-jack-hunt.flowspec)
 - AI `Uses` example: [`examples/fixtures/bootstrap-conversation.flowspec`](examples/fixtures/bootstrap-conversation.flowspec)
+- Flow-owned behavior (no redundant Action): [`examples/fixtures/flow-owned-behavior.flowspec`](examples/fixtures/flow-owned-behavior.flowspec)
+- Screen-local interactions (Home): [`examples/fixtures/home.flowspec`](examples/fixtures/home.flowspec)
 - Screen `Layout` / `Section`: [`examples/fixtures/today-layout.flowspec`](examples/fixtures/today-layout.flowspec)
 
 ---
@@ -470,7 +618,7 @@ Valid FlowSpec that is structurally discouraged (ordering, empty Actions, unreso
 
 #### Style warnings
 
-Valid FlowSpec that may be more verbose than necessary (FS101–FS105). Exit code `0` unless `--warnings-as-errors`. Never auto-fixed.
+Valid FlowSpec that may be more verbose than necessary (FS101–FS107). Exit code `0` unless `--warnings-as-errors`. Never auto-fixed.
 
 ### Run the linter
 
@@ -504,8 +652,8 @@ Exit codes:
 | FS004 | error | `Id` may only belong to the directly preceding `Flow`, `Screen`, or `Action` |
 | FS005 | error | `Id` must match `^[a-z0-9][a-z0-9._-]*$` |
 | FS006 | error | `Id` must be unique across all loaded FlowSpec files |
-| FS007 | error | `Receives` / `Uses` / `Steps` / `Outcome` only as direct children of an `Action`; `Rules` inside an `Action` or a `Layout`; `Shows` inside a `Screen`, `Section`, or `Action` (indent-based ownership — adjacency does not count) |
-| FS008 | error | Each action-section at most once per `Action`; `Shows` at most once per `Screen` or `Section`; `Rules` at most once per `Layout` |
+| FS007 | error | `Receives` / `Uses` / `Steps` / `Outcome` only as direct children of a `Flow` or `Action`; `Rules` inside a `Flow`, `Action`, or `Layout`; `Shows` inside a `Flow`, `Screen`, `Section`, or `Action` (indent-based ownership — adjacency never counts) |
+| FS008 | error | Each behavioral section at most once per `Flow` or `Action`; `Shows` at most once per `Screen` or `Section`; `Rules` at most once per `Layout` |
 | FS011 | error | `At the same time` only inside `Steps` |
 | FS012 | error | `Once` / `If` / `Otherwise` / `If … fails` may appear directly inside a `Flow`, `Screen`, or `Action`, or inside `Steps` — not inside `Receives`, `Rules`, `Uses`, `Shows`, or `Outcome` |
 | FS013 | error | `Otherwise` must match a preceding `If` at the same indent in the same parent |
@@ -514,28 +662,31 @@ Exit codes:
 
 | Code | Severity | Rule |
 | ---- | -------- | ---- |
-| FS009 | warning | Recommended section order: Receives → Rules → Uses → Steps → control-flow → Shows → Outcome |
+| FS009 | warning | Recommended section order on `Flow` or `Action`: Receives → Rules → Uses → Steps → control-flow → Shows → Outcome |
 | FS010 | warning | `Action` should not be empty (`Id` alone does not count) |
 | FS014 | warning | `Go to` target should resolve to a **top-level** `Flow`, `Screen`, or `Action` name or `Id` in any loaded file (not Actions nested under `When` / control-flow) |
 | FS015 | warning | `Go to` target should not match more than one name/Id (including across files) |
 | FS016 | warning | Unknown or incorrectly cased directive (with suggestion when possible) |
-| FS017 | warning | When present, `Outcome` should be the final direct child of an `Action` |
+| FS017 | warning | When present, `Outcome` should be the final direct behavioral child of a `Flow` or `Action` |
 | FS018 | error | At most one direct default `Layout` under a `Screen` or `Section` |
 | FS019 | error | `Id` is not allowed on `Section`, `Layout`, or implicit Actions |
 | FS020 | error | `Layout` only inside a `Screen` or `Section`, or inside a `When` owned by a `Layout` |
 | FS021 | warning | Layout statement references a name with no matching direct child `Section` |
 | FS022 | warning | Layout statement references an ambiguous sibling `Section` name |
 | FS023 | error | `Section` only inside a `Screen` or another `Section` |
+| FS024 | error | Only the `Flow` may appear at document root; `Screen`, `Action`, control-flow, and sections must be indented under the Flow |
 
 #### Style warnings
 
 | Code | Severity | Rule |
 | ---- | -------- | ---- |
-| FS101 | warning | `Outcome` may be redundant when it merely restates the `Action` name (obvious cases only) |
+| FS101 | warning | `Outcome` may be redundant when it merely restates the owning `Flow` or `Action` name (obvious cases only) |
 | FS102 | warning | `Receives` may be redundant when a `When` trigger already supplies the same singular input |
 | FS103 | warning | `When` trigger and nested `Action` appear to describe the same interaction |
 | FS104 | warning | Identical `Rules` lists repeated across sibling `Action`s in the same `Flow` or `Screen` |
 | FS105 | warning | `Action` only wraps a single simple `Steps` child (optional `Id` allowed); consider inlining |
+| FS106 | warning | Direct `Action` whose display name repeats its owning `Flow`, when the Flow has no other meaningful Screens/Actions/behavior |
+| FS107 | warning | Flow-level `When` looks like a screen-local UI interaction; consider nesting it under the nearby Screen |
 
 v1 does **not** support suppression comments or configuration files.
 
@@ -597,7 +748,7 @@ Id authentication.send-login-code
 ## 8. Meaning of the core sections
 
 ```text
-Receives  → What does this action need?
+Receives  → What does this Flow or Action need?
 Rules     → What must remain true?
 Uses      → What capability or runtime dependency is used?
 Steps     → What functionally happens?
@@ -605,6 +756,7 @@ Shows     → What does the user see?
 Outcome   → What is true or available afterwards?
 ```
 
+These questions apply equally to Flow-owned behavior and Action-owned behavior.
 ---
 
 ## 9. FlowSpec vs Gherkin
@@ -629,14 +781,43 @@ Gherkin or other test frameworks verify concrete examples of that model.
 | Path | Contents |
 | ---- | -------- |
 | [`examples/`](examples/) | Canonical FlowSpec samples |
-| [`lib/`](lib/) | Parser, linter (FS001–FS017, FS101–FS105), and CLI |
+| [`lib/`](lib/) | Parser, linter (FS001–FS024, FS101–FS107), and CLI |
+| [`docs/language-reference.md`](docs/language-reference.md) | Generated language requirements and directive reference |
 | [`bin/flowspec.js`](bin/flowspec.js) | `flowspec` CLI entry |
-| [`test/`](test/) | Parser, linter, and CLI tests |
+| [`test/`](test/) | Parser, linter, CLI, and syntax tests |
+| [`syntaxes/`](syntaxes/) | Portable `bat` / syntect FlowSpec syntax (`.sublime-syntax`) |
+| [`scripts/install-bat-syntax.sh`](scripts/install-bat-syntax.sh) | Install FlowSpec highlighting for `bat` |
 | [`vscode-extension/`](vscode-extension/) | Syntax highlighting + diagnostic integration |
 
 ---
 
-## 11. Current limitations
+## 11. Terminal syntax highlighting
+
+FlowSpec can be syntax-highlighted in terminals with [`bat`](https://github.com/sharkdp/bat) (syntect). This is separate from the VS Code extension: it works in Warp’s terminal, Terminal.app, iTerm, SSH sessions, and other terminals. It does **not** add FlowSpec highlighting to Warp’s built-in code editor.
+
+```bash
+brew install bat
+./scripts/install-bat-syntax.sh   # or: npm run install:bat
+bat path/to/file.flowspec
+```
+
+Example fixture: [`examples/fixtures/terminal-highlighting.flowspec`](examples/fixtures/terminal-highlighting.flowspec).
+
+### Manual install
+
+If you prefer not to use the helper script:
+
+```bash
+mkdir -p "$(bat --config-dir)/syntaxes"
+cp syntaxes/FlowSpec.sublime-syntax "$(bat --config-dir)/syntaxes/"
+bat cache --build
+```
+
+The Sublime/syntect definition reuses the same directive regexes as the VS Code TextMate grammar (`vscode-extension/syntaxes/flowspec.tmLanguage.json`). Keep both in sync when directives change.
+
+---
+
+## 12. Current limitations
 
 - FlowSpec v1 is a **descriptive** specification format only.
 - No language server, formatter, autocomplete, or auto-fix.
@@ -645,8 +826,9 @@ Gherkin or other test frameworks verify concrete examples of that model.
 - No rule suppression comments or configurable rule sets in v1.
 - No automatic combining of Actions or moving of shared Rules.
 - `If` / `Otherwise` are not supported inside `Layout` in v1 (use `When` for alternate layouts).
-- The VS Code TextMate grammar highlights explicit directives reliably. **Implicit Actions** (bare named interaction lines under a `Screen`) are not given special scopes, because TextMate cannot reliably distinguish them from ordinary prose without brittle indent look-ahead. They still parse and lint as Actions.
+- The VS Code TextMate grammar (and the portable `bat` syntax) highlight explicit directives reliably. **Implicit Actions** (bare named interaction lines under a `Screen`) are not given special scopes, because TextMate/syntect cannot reliably distinguish them from ordinary prose without brittle indent look-ahead. They still parse and lint as Actions.
 - The VS Code extension debounces project-wide lint (all workspace `.flowspec` files) so `Go to` and `Id` checks resolve across files while editing.
+- Terminal highlighting via `bat` does not enable FlowSpec in Warp’s native editor; use the VS Code extension (or compatible editors) for IDE highlighting.
 
 ---
 

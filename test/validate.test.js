@@ -18,56 +18,37 @@ describe("validate Ids and casing", () => {
   });
 
   it("rejects invalid uppercase Id values", () => {
-    const { diagnostics } = validate("Flow X\nAction: X\nId: Conversation.Create\n");
+    const { diagnostics } = validate("Flow X\n  Action: X\n  Id: Conversation.Create\n");
     assert.equal(diagnostics.some((d) => d.code === "FS005"), true);
     assert.equal(ID_PATTERN.test("Conversation.Create"), false);
   });
 
   it("rejects Ids containing spaces", () => {
-    const { diagnostics } = validate("Flow X\nAction: X\nId: create quick replies\n");
+    const { diagnostics } = validate("Flow X\n  Action: X\n  Id: create quick replies\n");
     assert.equal(diagnostics.some((d) => d.code === "FS005"), true);
   });
 
   it("rejects duplicate Ids", () => {
-    const source = [
-      "Flow Demo",
-      "Action: One",
-      "Id: shared.id",
-      "Action: Two",
-      "Id: shared.id",
-    ].join("\n");
+    const source = ["Flow Demo", "  Action: One", "  Id: shared.id", "  Action: Two", "  Id: shared.id"].join("\n");
     const { diagnostics } = validate(source);
     assert.equal(diagnostics.some((d) => d.code === "FS006"), true);
   });
 
   it("rejects orphaned Ids", () => {
-    const { diagnostics } = validate("Flow X\nId: orphan.id\nScreen Y\n");
+    const { diagnostics } = validate("Flow X\nId: orphan.id\n  Screen Y\n");
     // Id after Flow is valid actually! Need truly orphaned:
     const orphaned = validate("Id: orphan.id\n");
     assert.equal(orphaned.diagnostics.some((d) => d.code === "FS004"), true);
   });
 
   it("rejects multiple Ids on one structural element", () => {
-    const source = [
-      "Flow Demo",
-      "Action: Create quick replies",
-      "Id: conversation.create-quick-replies",
-      "Id: conversation.other",
-    ].join("\n");
+    const source = ["Flow Demo", "  Action: Create quick replies", "  Id: conversation.create-quick-replies", "  Id: conversation.other"].join("\n");
     const { diagnostics } = validate(source);
     assert.equal(diagnostics.some((d) => d.code === "FS004"), true);
   });
 
   it("warns on discouraged action-section ordering", () => {
-    const source = [
-      "Flow Demo",
-      "Action: Demo",
-      "Id: demo.action",
-      "  Outcome",
-      "    Done",
-      "  Receives",
-      "    Input",
-    ].join("\n");
+    const source = ["Flow Demo", "  Action: Demo", "  Id: demo.action", "    Outcome", "      Done", "    Receives", "      Input"].join("\n");
     const { diagnostics } = validate(source);
     const order = diagnostics.filter((d) => d.code === "FS009");
     assert.ok(order.length >= 1);
@@ -75,14 +56,7 @@ describe("validate Ids and casing", () => {
   });
 
   it("warns on deprecated uppercase FLOW/SCREEN/ACTION/ID", () => {
-    const source = [
-      "FLOW: Sign in",
-      "ID: authentication.sign-in",
-      "SCREEN: Login",
-      "ID: authentication.login",
-      "ACTION: Send login code",
-      "ID: authentication.send-login-code",
-    ].join("\n");
+    const source = ["FLOW: Sign in", "ID: authentication.sign-in", "  SCREEN: Login", "  ID: authentication.login", "  ACTION: Send login code", "  ID: authentication.send-login-code"].join("\n");
     const { document, diagnostics } = validate(source);
     const casing = diagnostics.filter((d) => d.code === "FS016");
     assert.ok(casing.length >= 6);
@@ -101,7 +75,7 @@ describe("validate Ids and casing", () => {
 
   it("warns on incorrectly cased section directives", () => {
     const { diagnostics } = validate(
-      "Flow Demo\nAction: Demo\nId: demo.action\nreceives\n  Input\n"
+      "Flow Demo\n  Action: Demo\n  Id: demo.action\n  receives\n    Input\n"
     );
     const unknown = diagnostics.find((d) => d.code === "FS016");
     assert.ok(unknown);
@@ -109,7 +83,7 @@ describe("validate Ids and casing", () => {
   });
 
   it("warns on near-miss forms such as ACTIONs", () => {
-    const { diagnostics } = validate("Flow Demo\nACTIONs: Send login code\n");
+    const { diagnostics } = validate("Flow Demo\n  ACTIONs: Send login code\n");
     const unknown = diagnostics.find((d) => d.code === "FS016");
     assert.ok(unknown);
     assert.match(unknown.message, /Did you mean "Action"/);

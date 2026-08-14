@@ -1,0 +1,26 @@
+Flow Home
+Id home.main
+
+  Screen Home
+  Id home.screen
+
+    Shows
+      Time-of-day greeting
+      Recommended meditation cards
+      Mood selector
+      Entry to create a meditation
+      Entry to Profile
+
+    Select mood
+      Rules
+        Mood must be one of Relaxed, At ease, Grounded, Energetic, Focused, Sleepy, Hopeful, Grateful, Just curious
+        The selected mood themes the experience
+        The selected mood is remembered for later visits
+
+      Store selected mood
+
+    Open create a meditation
+      Go to create.choose-focus
+
+    Open Profile
+      Go to profile.screen

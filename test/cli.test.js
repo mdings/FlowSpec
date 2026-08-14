@@ -22,17 +22,17 @@ describe("flowspec lint CLI", () => {
     tmp = fs.mkdtempSync(path.join(os.tmpdir(), "flowspec-cli-"));
     fs.writeFileSync(
       path.join(tmp, "ok.flowspec"),
-      "Flow Ok\nAction Do\n  Steps\n    Work\n"
+      "Flow Ok\n  Action Do\n    Steps\n      Work\n"
     );
     fs.writeFileSync(path.join(tmp, "bad.flowspec"), "Screen Only\n");
     fs.writeFileSync(
       path.join(tmp, "warn.flowspec"),
-      "Flow Warn\nAction Empty\n"
+      "Flow Warn\n  Action Empty\n"
     );
     fs.mkdirSync(path.join(tmp, "nested"));
     fs.writeFileSync(
       path.join(tmp, "nested", "child.flowspec"),
-      "Flow Child\nAction Do\n  Steps\n    Work\n"
+      "Flow Child\n  Action Do\n    Steps\n      Work\n"
     );
   });
 

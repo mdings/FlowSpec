@@ -1,0 +1,43 @@
+# FlowSpec Editor example
+Flow Home
+Id home.main
+
+  Screen Home
+  Id: home.screen
+
+    Layout:
+      Greeting
+      Recommendations
+
+    Section Greeting
+      Shows
+        Time-of-day greeting
+
+    Section Recommendations
+      Shows
+        Recommended cards
+
+    When the user opens a card
+      Go to: detail.screen
+
+  Screen Detail
+  Id detail.screen
+
+    Shows
+      Selected card
+
+  Action Load recommendations
+
+    Receives
+      User profile
+
+    Rules
+      Loading failure must not block the Home screen
+
+    Steps
+      At the same time
+        Load recent items
+        Load personal recommendations
+
+    Outcome
+      Recommendations are ready

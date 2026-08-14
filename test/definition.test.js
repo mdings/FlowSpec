@@ -4,6 +4,7 @@ const {
   resolveGoToDefinitions,
   getGoToTargetRange,
   findGoToAtPosition,
+  referencedGoToDestinations,
 } = require("../lib");
 const { parseTree, walkNodes } = require("../lib/parse");
 
@@ -37,15 +38,7 @@ function defs(result) {
 
 describe("Go to definition resolution", () => {
   it("resolves an Action in the same file", () => {
-    const source = [
-      "Flow Demo",
-      "Action Start",
-      "  Steps",
-      "    Go to Bootstrap conversation",
-      "Action Bootstrap conversation",
-      "  Steps",
-      "    Prepare",
-    ].join("\n");
+    const source = ["Flow Demo", "  Action Start", "    Steps", "      Go to Bootstrap conversation", "  Action Bootstrap conversation", "    Steps", "      Prepare"].join("\n");
 
     const result = resolveGoToDefinitions(
       [{ source, filePath: "demo.flowspec" }],
@@ -64,19 +57,14 @@ describe("Go to definition resolution", () => {
     assert.equal(matches[0].line, 5);
     assert.deepEqual(result.originRange, {
       line: 4,
-      startColumn: 11,
-      endColumn: 33,
+      startColumn: 13,
+      endColumn: 35,
     });
   });
 
   it("resolves a Screen in another file", () => {
-    const a = [
-      "Flow Sign in",
-      "Action Start",
-      "  Steps",
-      "    Go to Conversation",
-    ].join("\n");
-    const b = ["Flow Chat", "Screen Conversation"].join("\n");
+    const a = ["Flow Sign in", "  Action Start", "    Steps", "      Go to Conversation"].join("\n");
+    const b = ["Flow Chat", "  Screen Conversation"].join("\n");
 
     const matches = defs(
       resolveGoToDefinitions(
@@ -100,12 +88,7 @@ describe("Go to definition resolution", () => {
   });
 
   it("resolves a Flow in another file", () => {
-    const a = [
-      "Flow First",
-      "Action Start",
-      "  Steps",
-      "    Go to Second journey",
-    ].join("\n");
+    const a = ["Flow First", "  Action Start", "    Steps", "      Go to Second journey"].join("\n");
     const b = "Flow Second journey\n";
 
     const matches = defs(
@@ -130,16 +113,7 @@ describe("Go to definition resolution", () => {
   });
 
   it("resolves by Id", () => {
-    const source = [
-      "Flow Demo",
-      "Action Start",
-      "  Steps",
-      "    Go to conversation.bootstrap",
-      "Action Bootstrap conversation",
-      "Id conversation.bootstrap",
-      "  Steps",
-      "    Prepare",
-    ].join("\n");
+    const source = ["Flow Demo", "  Action Start", "    Steps", "      Go to conversation.bootstrap", "  Action Bootstrap conversation", "  Id conversation.bootstrap", "    Steps", "      Prepare"].join("\n");
 
     const matches = defs(
       resolveGoToDefinitions(
@@ -160,12 +134,7 @@ describe("Go to definition resolution", () => {
   });
 
   it("returns no definitions for unresolved targets", () => {
-    const source = [
-      "Flow Demo",
-      "Action Start",
-      "  Steps",
-      "    Go to Missing target",
-    ].join("\n");
+    const source = ["Flow Demo", "  Action Start", "    Steps", "      Go to Missing target"].join("\n");
 
     const result = resolveGoToDefinitions(
       [{ source, filePath: "demo.flowspec" }],
@@ -180,23 +149,13 @@ describe("Go to definition resolution", () => {
     assert.deepEqual(result.definitions, []);
     assert.deepEqual(result.originRange, {
       line: 4,
-      startColumn: 11,
-      endColumn: 25,
+      startColumn: 13,
+      endColumn: 27,
     });
   });
 
   it("does not resolve an Action nested under When", () => {
-    const source = [
-      "Flow Demo",
-      "When the Premium paywall opens",
-      "  Action Load subscription offerings",
-      "  Id premium.load-offerings",
-      "    Steps",
-      "      Load offerings",
-      "Action Continue",
-      "  Steps",
-      "    Go to Load subscription offerings",
-    ].join("\n");
+    const source = ["Flow Demo", "  When the Premium paywall opens", "    Action Load subscription offerings", "    Id premium.load-offerings", "      Steps", "        Load offerings", "  Action Continue", "    Steps", "      Go to Load subscription offerings"].join("\n");
 
     const result = resolveGoToDefinitions(
       [{ source, filePath: "demo.flowspec" }],
@@ -212,14 +171,8 @@ describe("Go to definition resolution", () => {
   });
 
   it("returns all matching targets when ambiguous", () => {
-    const a = [
-      "Flow A",
-      "Screen Conversation",
-      "Action Start",
-      "  Steps",
-      "    Go to Conversation",
-    ].join("\n");
-    const b = ["Flow B", "Screen Conversation"].join("\n");
+    const a = ["Flow A", "  Screen Conversation", "  Action Start", "    Steps", "      Go to Conversation"].join("\n");
+    const b = ["Flow B", "  Screen Conversation"].join("\n");
 
     const matches = defs(
       resolveGoToDefinitions(
@@ -242,15 +195,7 @@ describe("Go to definition resolution", () => {
   });
 
   it("does not resolve when the cursor is on the Go to keyword", () => {
-    const source = [
-      "Flow Demo",
-      "Action Start",
-      "  Steps",
-      "    Go to Bootstrap conversation",
-      "Action Bootstrap conversation",
-      "  Steps",
-      "    Prepare",
-    ].join("\n");
+    const source = ["Flow Demo", "  Action Start", "    Steps", "      Go to Bootstrap conversation", "  Action Bootstrap conversation", "    Steps", "      Prepare"].join("\n");
 
     // Column of the 'G' in "Go to" (1-based): indent 4 spaces + 1
     const result = resolveGoToDefinitions(
@@ -262,15 +207,7 @@ describe("Go to definition resolution", () => {
   });
 
   it("originRange spans the full multi-word target", () => {
-    const source = [
-      "Flow Demo",
-      "Action Start",
-      "  Steps",
-      "    Go to Bootstrap conversation",
-      "Action Bootstrap conversation",
-      "  Steps",
-      "    Prepare",
-    ].join("\n");
+    const source = ["Flow Demo", "  Action Start", "    Steps", "      Go to Bootstrap conversation", "  Action Bootstrap conversation", "    Steps", "      Prepare"].join("\n");
 
     // Click on the second word ("conversation")
     const result = resolveGoToDefinitions(
@@ -281,8 +218,8 @@ describe("Go to definition resolution", () => {
     assert.ok(result);
     assert.deepEqual(result.originRange, {
       line: 4,
-      startColumn: 11,
-      endColumn: 33,
+      startColumn: 13,
+      endColumn: 35,
     });
     assert.equal(result.definitions.length, 1);
   });
@@ -296,18 +233,90 @@ describe("Go to definition resolution", () => {
   });
 
   it("findGoToAtPosition ignores positions outside the target", () => {
-    const source = [
-      "Flow Demo",
-      "Action Start",
-      "  Steps",
-      "    Go to Conversation",
-      "Screen Conversation",
-    ].join("\n");
+    const source = ["Flow Demo", "  Action Start", "    Steps", "      Go to Conversation", "  Screen Conversation"].join("\n");
     const { root, lines } = parseTree(source, "demo.flowspec");
 
     assert.equal(findGoToAtPosition(root, lines, 4, 5), null);
-    const hit = findGoToAtPosition(root, lines, 4, 11);
+    const hit = findGoToAtPosition(root, lines, 4, 13);
     assert.ok(hit);
     assert.equal(hit.ref, "Conversation");
+  });
+});
+
+describe("referenced Go to destinations", () => {
+  it("marks Flow, Screen, and Action lines that a Go to resolves to", () => {
+    const source = [
+      "Flow Demo",
+      "  Screen Conversation",
+      "    Action Send",
+      "      Steps",
+      "        Go to Conversation",
+      "  Action Unused",
+      "    Steps",
+      "      Prepare",
+    ].join("\n");
+
+    const destinations = referencedGoToDestinations(
+      [{ source, filePath: "demo.flowspec" }],
+      "demo.flowspec"
+    );
+
+    assert.equal(destinations.length, 1);
+    assert.equal(destinations[0].line, 2);
+    assert.deepEqual(destinations[0].references, [
+      {
+        filePath: "demo.flowspec",
+        line: 5,
+        statement: "Go to Conversation",
+        ref: "Conversation",
+      },
+    ]);
+  });
+
+  it("includes destinations referenced from another file", () => {
+    const a = ["Flow Sign in", "  Action Start", "    Steps", "      Go to Conversation"].join("\n");
+    const b = ["Flow Chat", "  Screen Conversation"].join("\n");
+    const files = [
+      { source: a, filePath: "sign-in.flowspec" },
+      { source: b, filePath: "conversation.flowspec" },
+    ];
+
+    const destinations = referencedGoToDestinations(files, "conversation.flowspec");
+    assert.equal(destinations.length, 1);
+    assert.equal(destinations[0].line, 2);
+    assert.deepEqual(destinations[0].references, [
+      {
+        filePath: "sign-in.flowspec",
+        line: 4,
+        statement: "Go to Conversation",
+        ref: "Conversation",
+      },
+    ]);
+    assert.deepEqual(referencedGoToDestinations(files, "sign-in.flowspec"), []);
+  });
+
+  it("dedupes a destination targeted by multiple Go to statements", () => {
+    const source = [
+      "Flow Demo",
+      "  Screen Conversation",
+      "    Action Send",
+      "      Steps",
+      "        Go to Conversation",
+      "    Action Later",
+      "      Steps",
+      "        Go to Conversation",
+    ].join("\n");
+
+    const destinations = referencedGoToDestinations(
+      [{ source, filePath: "demo.flowspec" }],
+      "demo.flowspec"
+    );
+
+    assert.equal(destinations.length, 1);
+    assert.equal(destinations[0].line, 2);
+    assert.deepEqual(
+      destinations[0].references.map((reference) => reference.line),
+      [5, 8]
+    );
   });
 });

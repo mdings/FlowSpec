@@ -1,0 +1,104 @@
+{
+  "source": "/Users/maarten.dings/Documents/FlowSpec/editor/FlowSpecEditor/ContentView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "Improve",
+        "location": {
+          "startingColumn": 13,
+          "startingLine": 134
+        }
+      },
+      {
+        "comment": "",
+        "key": "Improved",
+        "location": {
+          "startingColumn": 13,
+          "startingLine": 145
+        }
+      },
+      {
+        "comment": "",
+        "key": "Improve",
+        "location": {
+          "startingColumn": 31,
+          "startingLine": 86
+        }
+      },
+      {
+        "comment": "",
+        "key": "Line Spacing",
+        "location": {
+          "startingColumn": 37,
+          "startingLine": 109
+        }
+      },
+      {
+        "comment": "",
+        "key": "Line Spacing: %@",
+        "location": {
+          "startingColumn": 23,
+          "startingLine": 110
+        }
+      },
+      {
+        "comment": "",
+        "key": "Line Spacing",
+        "location": {
+          "startingColumn": 27,
+          "startingLine": 107
+        }
+      },
+      {
+        "comment": "",
+        "key": "Text Size",
+        "location": {
+          "startingColumn": 37,
+          "startingLine": 129
+        }
+      },
+      {
+        "comment": "",
+        "key": "Text Size: %@",
+        "location": {
+          "startingColumn": 23,
+          "startingLine": 130
+        }
+      },
+      {
+        "comment": "",
+        "key": "Text Size",
+        "location": {
+          "startingColumn": 27,
+          "startingLine": 127
+        }
+      },
+      {
+        "comment": "",
+        "key": "OK",
+        "location": {
+          "startingColumn": 20,
+          "startingLine": 140
+        }
+      },
+      {
+        "comment": "",
+        "key": "OK",
+        "location": {
+          "startingColumn": 20,
+          "startingLine": 151
+        }
+      },
+      {
+        "comment": "",
+        "key": "Structure hints",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 215
+        }
+      }
+    ]
+  },
+  "version": 1
+}

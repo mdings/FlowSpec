@@ -8,13 +8,19 @@
   },
   "main": "./lib/index.js",
   "scripts": {
-    "test": "node --test test/*.test.js && npm --prefix vscode-extension test",
+    "generate": "node scripts/generate-language-surfaces.js",
+    "check:generated": "node scripts/generate-language-surfaces.js --check",
+    "test": "npm run check:generated && node --test test/*.test.js && npm --prefix vscode-extension test",
     "test:lib": "node --test test/*.test.js",
     "test:extension": "npm --prefix vscode-extension test",
     "lint:flowspec": "node bin/flowspec.js lint \"examples/**/*.flowspec\"",
-    "flowspec": "node bin/flowspec.js"
+    "flowspec": "node bin/flowspec.js",
+    "install:bat": "bash scripts/install-bat-syntax.sh"
   },
   "engines": {
     "node": ">=18"
+  },
+  "dependencies": {
+    "bat": "^0.0.0"
   }
 }

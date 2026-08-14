@@ -1,0 +1,56 @@
+{
+  "source": "/Users/maarten.dings/Documents/FlowSpec/editor/FlowSpecEditor/FlowSpecEditorApp.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "FlowSpec Folder",
+        "location": {
+          "startingColumn": 21,
+          "startingLine": 28
+        }
+      },
+      {
+        "comment": "",
+        "key": "Find…",
+        "location": {
+          "startingColumn": 24,
+          "startingLine": 16
+        }
+      },
+      {
+        "comment": "",
+        "key": "Find and Replace…",
+        "location": {
+          "startingColumn": 24,
+          "startingLine": 21
+        }
+      },
+      {
+        "comment": "",
+        "key": "Line Spacing",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 43
+        }
+      },
+      {
+        "comment": "",
+        "key": "Text Size",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 55
+        }
+      },
+      {
+        "comment": "",
+        "key": "Open Folder…",
+        "location": {
+          "startingColumn": 20,
+          "startingLine": 75
+        }
+      }
+    ]
+  },
+  "version": 1
+}

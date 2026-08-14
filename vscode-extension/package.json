@@ -49,9 +49,9 @@
     ]
   },
   "scripts": {
-    "test": "node scripts/smoke-test.js",
+    "test": "node ../scripts/generate-language-surfaces.js --check && node scripts/smoke-test.js",
     "sync-lib": "node scripts/sync-lib.js",
-    "prepackage": "npm run sync-lib",
+    "prepackage": "node ../scripts/generate-language-surfaces.js --check && npm run sync-lib",
     "package": "vsce package --no-dependencies",
     "vsix": "npm run package"
   },

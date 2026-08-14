@@ -89,7 +89,7 @@ describe("parse Title Case directives", () => {
     );
   });
 
-  it("does not attach same-indent Shows to a preceding Screen", () => {
+  it("does not attach document-level Shows to a preceding Screen", () => {
     const source = [
       "Flow Email login",
       "Screen Enter email",
@@ -98,18 +98,20 @@ describe("parse Title Case directives", () => {
     ].join("\n");
     const { root } = parseTree(source);
     const flow = root.children.find((c) => c.type === "flow");
-    const screen = flow.children.find((c) => c.type === "screen");
-    const shows = flow.children.find((c) => c.type === "shows");
+    const screen = root.children.find((c) => c.type === "screen");
+    const shows = root.children.find((c) => c.type === "shows");
+    assert.ok(flow);
     assert.ok(screen);
     assert.ok(shows);
-    assert.equal(shows.parent.type, "flow");
+    assert.equal(screen.parent.type, "document");
+    assert.equal(shows.parent.type, "document");
     assert.equal(
-      screen.children.some((c) => c.type === "shows"),
+      (flow.children || []).some((c) => c.type === "screen" || c.type === "shows"),
       false
     );
   });
 
-  it("does not attach same-indent Rules to a preceding Action", () => {
+  it("does not attach document-level Rules to a preceding Action", () => {
     const source = [
       "Flow Email login",
       "Action Send login code",
@@ -118,15 +120,36 @@ describe("parse Title Case directives", () => {
     ].join("\n");
     const { root } = parseTree(source);
     const flow = root.children.find((c) => c.type === "flow");
-    const action = flow.children.find((c) => c.type === "action");
-    const rules = flow.children.find((c) => c.type === "rules");
+    const action = root.children.find((c) => c.type === "action");
+    const rules = root.children.find((c) => c.type === "rules");
+    assert.ok(flow);
     assert.ok(action);
     assert.ok(rules);
-    assert.equal(rules.parent.type, "flow");
-    assert.equal(
-      action.children.some((c) => c.type === "rules"),
-      false
-    );
+    assert.equal(action.parent.type, "document");
+    assert.equal(rules.parent.type, "document");
+  });
+
+  it("owns indented Screen and When under Flow only via indentation", () => {
+    const source = [
+      "Flow Home",
+      "",
+      "  Screen Home",
+      "",
+      "    When the user changes mood",
+      "      Store selected mood",
+      "",
+      "  When connectivity returns",
+      "    Retry pending work",
+    ].join("\n");
+    const { root } = parseTree(source);
+    const flow = root.children.find((c) => c.type === "flow");
+    const screen = flow.children.find((c) => c.type === "screen");
+    const screenWhen = screen.children.find((c) => c.type === "when");
+    const flowWhen = flow.children.find((c) => c.type === "when");
+    assert.equal(screenWhen.value.trim(), "the user changes mood");
+    assert.equal(screenWhen.parent.type, "screen");
+    assert.equal(flowWhen.value.trim(), "connectivity returns");
+    assert.equal(flowWhen.parent.type, "flow");
   });
 });
 
@@ -151,13 +174,7 @@ describe("implicit Actions under Screen", () => {
   }
 
   it("promotes a valid implicit Action inside Screen", () => {
-    const source = [
-      "Flow Voice",
-      "Screen Choose voice",
-      "  Select voice",
-      "    If the voice requires Premium",
-      "      Go to Premium paywall",
-    ].join("\n");
+    const source = ["Flow Voice", "  Screen Choose voice", "    Select voice", "      If the voice requires Premium", "        Go to Premium paywall"].join("\n");
     const screen = screenOf(source);
     const action = screen.children.find((c) => c.type === "action");
     assert.ok(action);
@@ -169,16 +186,7 @@ describe("implicit Actions under Screen", () => {
   });
 
   it("promotes multiple implicit Actions inside one Screen", () => {
-    const source = [
-      "Flow Voice",
-      "Screen Choose voice",
-      "  Select voice",
-      "    Go to Choose duration",
-      "  Hold voice",
-      "    Shows",
-      "      Voice name",
-      "      Voice description",
-    ].join("\n");
+    const source = ["Flow Voice", "  Screen Choose voice", "    Select voice", "      Go to Choose duration", "    Hold voice", "      Shows", "        Voice name", "        Voice description"].join("\n");
     const screen = screenOf(source);
     const actions = screen.children.filter((c) => c.type === "action");
     assert.equal(actions.length, 2);
@@ -190,15 +198,7 @@ describe("implicit Actions under Screen", () => {
   });
 
   it("promotes an implicit Action with If / Otherwise", () => {
-    const source = [
-      "Flow Voice",
-      "Screen Choose voice",
-      "  Select voice",
-      "    If the voice requires Premium",
-      "      Go to Premium paywall",
-      "    Otherwise",
-      "      Store selected voice",
-    ].join("\n");
+    const source = ["Flow Voice", "  Screen Choose voice", "    Select voice", "      If the voice requires Premium", "        Go to Premium paywall", "      Otherwise", "        Store selected voice"].join("\n");
     const action = screenOf(source).children.find((c) => c.type === "action");
     assert.ok(action);
     assert.equal(action.children[0].type, "if");
@@ -206,13 +206,7 @@ describe("implicit Actions under Screen", () => {
   });
 
   it("promotes an implicit Action with Shows", () => {
-    const source = [
-      "Flow Voice",
-      "Screen Choose voice",
-      "  Hold voice",
-      "    Shows",
-      "      Voice name",
-    ].join("\n");
+    const source = ["Flow Voice", "  Screen Choose voice", "    Hold voice", "      Shows", "        Voice name"].join("\n");
     const action = screenOf(source).children.find((c) => c.type === "action");
     assert.ok(action);
     assert.equal(action.implicit, true);
@@ -220,12 +214,7 @@ describe("implicit Actions under Screen", () => {
   });
 
   it("keeps explicit Action working inside Screen", () => {
-    const source = [
-      "Flow Voice",
-      "Screen Choose voice",
-      "  Action Select voice",
-      "    Go to Choose duration",
-    ].join("\n");
+    const source = ["Flow Voice", "  Screen Choose voice", "    Action Select voice", "      Go to Choose duration"].join("\n");
     const action = screenOf(source).children.find((c) => c.type === "action");
     assert.ok(action);
     assert.equal(action.value, "Select voice");
@@ -234,20 +223,8 @@ describe("implicit Actions under Screen", () => {
   });
 
   it("is structurally equivalent to an explicit Action", () => {
-    const implicit = [
-      "Flow Voice",
-      "Screen Choose voice",
-      "  Select voice",
-      "    If the voice requires Premium",
-      "      Go to Premium paywall",
-    ].join("\n");
-    const explicit = [
-      "Flow Voice",
-      "Screen Choose voice",
-      "  Action Select voice",
-      "    If the voice requires Premium",
-      "      Go to Premium paywall",
-    ].join("\n");
+    const implicit = ["Flow Voice", "  Screen Choose voice", "    Select voice", "      If the voice requires Premium", "        Go to Premium paywall"].join("\n");
+    const explicit = ["Flow Voice", "  Screen Choose voice", "    Action Select voice", "      If the voice requires Premium", "        Go to Premium paywall"].join("\n");
     const implicitAction = screenOf(implicit).children.find((c) => c.type === "action");
     const explicitAction = screenOf(explicit).children.find((c) => c.type === "action");
     assert.deepEqual(actionShape(implicitAction), actionShape(explicitAction));
@@ -256,13 +233,7 @@ describe("implicit Actions under Screen", () => {
   });
 
   it("does not promote bare content without a nested body", () => {
-    const source = [
-      "Flow Voice",
-      "Screen Choose voice",
-      "  Voice picker copy",
-      "  Shows",
-      "    Voice list",
-    ].join("\n");
+    const source = ["Flow Voice", "  Screen Choose voice", "    Voice picker copy", "    Shows", "      Voice list"].join("\n");
     const screen = screenOf(source);
     assert.equal(screen.children.some((c) => c.type === "action" && c.implicit), false);
     assert.equal(screen.children[0].type, "content");
@@ -271,12 +242,7 @@ describe("implicit Actions under Screen", () => {
   });
 
   it("does not promote nested prose notes as an Action", () => {
-    const source = [
-      "Flow Voice",
-      "Screen Choose voice",
-      "  Introduction",
-      "    Welcome to the voice picker",
-    ].join("\n");
+    const source = ["Flow Voice", "  Screen Choose voice", "    Introduction", "      Welcome to the voice picker"].join("\n");
     const screen = screenOf(source);
     assert.equal(screen.children.some((c) => c.type === "action"), false);
     assert.equal(screen.children[0].type, "content");
@@ -284,13 +250,7 @@ describe("implicit Actions under Screen", () => {
   });
 
   it("does not promote plain content inside sections as an implicit Action", () => {
-    const source = [
-      "Flow Voice",
-      "Screen Choose voice",
-      "  Shows",
-      "    Select voice",
-      "    Hold voice",
-    ].join("\n");
+    const source = ["Flow Voice", "  Screen Choose voice", "    Shows", "      Select voice", "      Hold voice"].join("\n");
     const screen = screenOf(source);
     assert.equal(screen.children.some((c) => c.type === "action"), false);
     assert.equal(screen.children[0].type, "shows");
@@ -301,11 +261,7 @@ describe("implicit Actions under Screen", () => {
   });
 
   it("does not promote the same text at Flow level as an implicit Action", () => {
-    const source = [
-      "Flow Voice",
-      "Select voice",
-      "  Go to Choose duration",
-    ].join("\n");
+    const source = ["Flow Voice", "  Select voice", "    Go to Choose duration"].join("\n");
     const { root } = parseTree(source);
     const flow = root.children[0];
     assert.equal(flow.children.some((c) => c.type === "action"), false);
@@ -315,14 +271,7 @@ describe("implicit Actions under Screen", () => {
   });
 
   it("rejects Id on an implicit Action", () => {
-    const withIndentedId = [
-      "Flow Voice",
-      "Screen Choose voice",
-      "  Select voice",
-      "    Id voice.select",
-      "    Outcome",
-      "      Voice is selected",
-    ].join("\n");
+    const withIndentedId = ["Flow Voice", "  Screen Choose voice", "    Select voice", "      Id voice.select", "      Outcome", "        Voice is selected"].join("\n");
     const { root } = parseTree(withIndentedId);
     const action = screenOf(withIndentedId).children.find((c) => c.type === "action");
     assert.ok(action);

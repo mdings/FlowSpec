@@ -1,0 +1,38 @@
+# Flow-owned behavior: no redundant same-named Action required.
+Flow Bootstrap conversation
+Id samples.flow-owned.bootstrap
+
+  Screen Start conversation
+  Id samples.flow-owned.start
+
+  Screen Restore conversation
+  Id samples.flow-owned.restore
+
+  Receives
+    Session
+
+  Rules
+    Bootstrap the conversation only once per session
+    User profile failure must not block the conversation
+    Conversation history failure must block the conversation
+
+  Uses
+    Provider OpenAI
+
+  Steps
+    At the same time
+      Load the user profile
+      Load the conversation history for the session
+
+    Once the conversation history is loaded
+      If the conversation history is empty
+        Go to samples.flow-owned.start
+      Otherwise
+        Go to samples.flow-owned.restore
+
+  If bootstrap fails
+    Shows
+      Conversation error with retry
+
+  Outcome
+    Conversation is ready to start or continue

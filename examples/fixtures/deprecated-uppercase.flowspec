@@ -2,17 +2,17 @@
 FLOW: Answer a user message
 ID: deprecated.answer-message
 
-SCREEN: Deprecated conversation
-ID: deprecated.conversation
+  SCREEN: Deprecated conversation
+  ID: deprecated.conversation
 
-ACTION: Create quick replies
-ID: deprecated.create-quick-replies
+  ACTION: Create quick replies
+  ID: deprecated.create-quick-replies
 
-  Receives
-    User message
+    Receives
+      User message
 
-  Steps
-    Create relevant quick replies
+    Steps
+      Create relevant quick replies
 
-  Outcome
-    Quick replies are available
+    Outcome
+      Quick replies are available

@@ -1,40 +1,40 @@
 Flow Enter Jack Hunt
 Id jack-hunt.enter
 
-Screen Splash
-Id jack-hunt.splash
+  Screen Splash
+  Id jack-hunt.splash
 
-When the user becomes signed in
+  When the user becomes signed in
 
-  Action Enter conversation
-  Id conversation.enter
+    Action Enter conversation
+    Id conversation.enter
+
+      Steps
+        Go to jack-hunt.conversation
+        Hide the splash screen
+
+        At the same time
+          Load the cart
+          Register the device for notifications
+          Get or create a shopping session
+
+        Once the shopping session is ready
+          Go to conversation.bootstrap
+
+        If getting the shopping session fails
+          Show a conversation error with retry
+
+      Outcome
+        Conversation screen is open
+
+  Screen Conversation
+  Id jack-hunt.conversation
+
+  Action Bootstrap conversation
+  Id conversation.bootstrap
 
     Steps
-      Go to jack-hunt.conversation
-      Hide the splash screen
-
-      At the same time
-        Load the cart
-        Register the device for notifications
-        Get or create a shopping session
-
-      Once the shopping session is ready
-        Go to conversation.bootstrap
-
-      If getting the shopping session fails
-        Show a conversation error with retry
+      Prepare the initial conversation
 
     Outcome
-      Conversation screen is open
-
-Screen Conversation
-Id jack-hunt.conversation
-
-Action Bootstrap conversation
-Id conversation.bootstrap
-
-  Steps
-    Prepare the initial conversation
-
-  Outcome
-    Conversation is ready
+      Conversation is ready
