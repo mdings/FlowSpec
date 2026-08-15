@@ -8,7 +8,8 @@ struct ContentView: View {
         FlowSpecEditorSurface(
             text: $document.text,
             navigationTarget: navigationTarget,
-            onGoToLink: followGoTo
+            onGoToLink: followGoTo,
+            onFollowBacklink: followBacklink
         )
     }
 
@@ -22,12 +23,21 @@ struct ContentView: View {
         guard destinations.count == 1, let destination = destinations.first else { return }
         navigationTarget = FlowSpecNavigationTarget(range: destination.declarationRange)
     }
+
+    private func followBacklink(_ reference: FlowSpecGoToIncomingReference) {
+        guard let range = FlowSpecStructureValidator.navigationRange(
+            for: reference,
+            in: document.text
+        ) else { return }
+        navigationTarget = FlowSpecNavigationTarget(range: range)
+    }
 }
 
 struct FlowSpecEditorSurface: View {
     @Binding var text: String
     let navigationTarget: FlowSpecNavigationTarget?
     let onGoToLink: ((Int) -> Void)?
+    let onFollowBacklink: ((FlowSpecGoToIncomingReference) -> Void)?
     let onLinkedSourceChanges: (([FlowSpecLinkedSourceChange], UndoManager?) -> Void)?
     let validationContext: FlowSpecValidationContext?
     @State private var isStructureDrawerOpen = false
@@ -35,48 +45,115 @@ struct FlowSpecEditorSurface: View {
     @State private var isImproving = false
     @State private var improveError: String?
     @State private var improveSummary: String?
+    @State private var activeBacklink: FlowSpecGoToTargetMark?
+    @State private var railHiddenForLocation: Int?
+    @State private var editorWidth: CGFloat = 800
     @AppStorage("lineSpacing") private var storedLineSpacing = FlowSpecLineSpacing.normal.rawValue
     @AppStorage("fontSize") private var storedFontSize = FlowSpecFontSize.medium.rawValue
 
     private let drawerHeight: CGFloat = 136
     private let drawerHandleHeight: CGFloat = 30
     private let drawerAnimation = Animation.timingCurve(0.22, 0.8, 0.22, 1, duration: 0.22)
+    private let railWidth: CGFloat = 280
+    private let minEditorWidthForRail: CGFloat = 520
 
     init(
         text: Binding<String>,
         navigationTarget: FlowSpecNavigationTarget? = nil,
         onGoToLink: ((Int) -> Void)? = nil,
+        onFollowBacklink: ((FlowSpecGoToIncomingReference) -> Void)? = nil,
         onLinkedSourceChanges: (([FlowSpecLinkedSourceChange], UndoManager?) -> Void)? = nil,
         validationContext: FlowSpecValidationContext? = nil
     ) {
         _text = text
         self.navigationTarget = navigationTarget
         self.onGoToLink = onGoToLink
+        self.onFollowBacklink = onFollowBacklink
         self.onLinkedSourceChanges = onLinkedSourceChanges
         self.validationContext = validationContext
     }
 
-    var body: some View {
-        VStack(spacing: 0) {
-            FlowSpecTextEditor(
-                text: $text,
-                hoveredDiagnostic: $hoveredDiagnostic,
-                diagnosticsDrawerOpen: isStructureDrawerOpen,
-                lineSpacing: lineSpacing,
-                fontSize: fontSize,
-                navigationTarget: navigationTarget,
-                onGoToLink: onGoToLink,
-                onLinkedSourceChanges: onLinkedSourceChanges,
-                validationContext: validationContext
-            )
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(Color(nsColor: .textBackgroundColor))
-
-            structureDrawer
-                .frame(height: isStructureDrawerOpen ? drawerHeight : drawerHandleHeight)
-                .clipped()
-                .animation(drawerAnimation, value: isStructureDrawerOpen)
+    private var visibleBacklink: FlowSpecGoToTargetMark? {
+        guard let activeBacklink,
+              railHiddenForLocation != activeBacklink.range.location else {
+            return nil
         }
+        return activeBacklink
+    }
+
+    private var showsInlineRail: Bool {
+        visibleBacklink != nil && editorWidth >= railWidth + minEditorWidthForRail
+    }
+
+    private var showsBacklinkPopover: Bool {
+        visibleBacklink != nil && editorWidth < railWidth + minEditorWidthForRail
+    }
+
+    private var backlinkPopoverPresented: Binding<Bool> {
+        Binding(
+            get: { showsBacklinkPopover },
+            set: { presented in
+                if !presented, let location = activeBacklink?.range.location {
+                    railHiddenForLocation = location
+                }
+            }
+        )
+    }
+
+    var body: some View {
+        HStack(spacing: 0) {
+            VStack(spacing: 0) {
+                FlowSpecTextEditor(
+                    text: $text,
+                    hoveredDiagnostic: $hoveredDiagnostic,
+                    diagnosticsDrawerOpen: isStructureDrawerOpen,
+                    lineSpacing: lineSpacing,
+                    fontSize: fontSize,
+                    navigationTarget: navigationTarget,
+                    onGoToLink: onGoToLink,
+                    onActiveBacklinkChange: { mark in
+                        if mark?.range.location != activeBacklink?.range.location {
+                            railHiddenForLocation = nil
+                        }
+                        activeBacklink = mark
+                    },
+                    onLinkedSourceChanges: onLinkedSourceChanges,
+                    validationContext: validationContext
+                )
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .background(Color(nsColor: .textBackgroundColor))
+                .popover(isPresented: backlinkPopoverPresented, arrowEdge: .trailing) {
+                    if let visibleBacklink {
+                        FlowSpecBacklinkRail(
+                            mark: visibleBacklink,
+                            onFollow: followBacklink
+                        )
+                        .frame(width: railWidth, height: 360)
+                    }
+                }
+
+                structureDrawer
+                    .frame(height: isStructureDrawerOpen ? drawerHeight : drawerHandleHeight)
+                    .clipped()
+                    .animation(drawerAnimation, value: isStructureDrawerOpen)
+            }
+
+            if showsInlineRail, let visibleBacklink {
+                FlowSpecBacklinkRail(
+                    mark: visibleBacklink,
+                    onFollow: followBacklink
+                )
+                .frame(width: railWidth)
+                .transition(.move(edge: .trailing).combined(with: .opacity))
+            }
+        }
+        .animation(drawerAnimation, value: showsInlineRail)
+        .background(
+            GeometryReader { proxy in
+                Color.clear.preference(key: EditorWidthPreferenceKey.self, value: proxy.size.width)
+            }
+        )
+        .onPreferenceChange(EditorWidthPreferenceKey.self) { editorWidth = $0 }
         .frame(minWidth: 680, minHeight: 480)
         .toolbar {
             ToolbarItem(id: "improve") {
@@ -165,6 +242,10 @@ struct FlowSpecEditorSurface: View {
         return "Improve FlowSpec concepts and syntax with Apple Intelligence"
     }
 
+    private func followBacklink(_ reference: FlowSpecGoToIncomingReference) {
+        onFollowBacklink?(reference)
+    }
+
     private var lineSpacing: FlowSpecLineSpacing {
         FlowSpecLineSpacing(rawValue: storedLineSpacing) ?? .normal
     }
@@ -246,6 +327,92 @@ struct FlowSpecEditorSurface: View {
             .background(Color(nsColor: .windowBackgroundColor))
         }
         .background(Color(nsColor: .windowBackgroundColor))
+    }
+}
+
+private struct EditorWidthPreferenceKey: PreferenceKey {
+    static var defaultValue: CGFloat = 800
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        value = nextValue()
+    }
+}
+
+private struct FlowSpecBacklinkRail: View {
+    let mark: FlowSpecGoToTargetMark
+    let onFollow: (FlowSpecGoToIncomingReference) -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            Text("Referenced by")
+                .font(.system(size: 11, weight: .semibold))
+                .foregroundStyle(.secondary)
+                .textCase(.uppercase)
+                .padding(.horizontal, 14)
+                .padding(.top, 14)
+                .padding(.bottom, 8)
+
+            ScrollView {
+                LazyVStack(alignment: .leading, spacing: 4) {
+                    ForEach(Array(mark.sortedIncoming.enumerated()), id: \.offset) { _, reference in
+                        FlowSpecBacklinkRow(reference: reference, onFollow: onFollow)
+                    }
+                }
+                .padding(.horizontal, 8)
+                .padding(.bottom, 12)
+            }
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        .background(Color(nsColor: .controlBackgroundColor))
+        .overlay(alignment: .leading) {
+            Rectangle()
+                .fill(Color(nsColor: .separatorColor).opacity(0.45))
+                .frame(width: 1)
+        }
+    }
+}
+
+private struct FlowSpecBacklinkRow: View {
+    let reference: FlowSpecGoToIncomingReference
+    let onFollow: (FlowSpecGoToIncomingReference) -> Void
+    @State private var isHovered = false
+
+    var body: some View {
+        Button {
+            onFollow(reference)
+        } label: {
+            VStack(alignment: .leading, spacing: 2) {
+                if !reference.container.isEmpty {
+                    Text(reference.container)
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundStyle(.primary)
+                        .lineLimit(1)
+                        .truncationMode(.tail)
+                        .help(reference.container)
+                }
+                Text(reference.fileName)
+                    .font(.system(size: 11))
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+                    .truncationMode(.middle)
+                    .help(reference.fileName)
+                Text(reference.statement)
+                    .font(.system(size: 12))
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+                    .truncationMode(.tail)
+                    .help(reference.statement)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, 8)
+            .padding(.vertical, 7)
+            .background(
+                RoundedRectangle(cornerRadius: 6)
+                    .fill(isHovered ? Color.accentColor.opacity(0.12) : Color.clear)
+            )
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .onHover { isHovered = $0 }
     }
 }
 

@@ -271,6 +271,7 @@ describe("referenced Go to destinations", () => {
         line: 5,
         statement: "Go to Conversation",
         ref: "Conversation",
+        container: "Send",
       },
     ]);
   });
@@ -292,6 +293,7 @@ describe("referenced Go to destinations", () => {
         line: 4,
         statement: "Go to Conversation",
         ref: "Conversation",
+        container: "Start",
       },
     ]);
     assert.deepEqual(referencedGoToDestinations(files, "sign-in.flowspec"), []);

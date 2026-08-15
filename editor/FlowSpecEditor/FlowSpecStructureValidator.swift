@@ -22,14 +22,20 @@ struct FlowSpecGoToDestination {
     let declarationRange: NSRange
 }
 
-struct FlowSpecGoToIncomingReference {
+struct FlowSpecGoToIncomingReference: Equatable {
     let filePath: String
     let line: Int
     let statement: String
+    let ref: String
+    let container: String
 
     var fileName: String {
         let name = URL(fileURLWithPath: filePath).lastPathComponent
         return name.isEmpty ? filePath : name
+    }
+
+    var fileURL: URL {
+        URL(fileURLWithPath: filePath)
     }
 }
 
@@ -45,41 +51,39 @@ struct FlowSpecLinkedSourceChange {
     let newText: String
 }
 
-struct FlowSpecGoToTargetMark {
+struct FlowSpecGoToTargetMark: Equatable {
     let range: NSRange
     let incoming: [FlowSpecGoToIncomingReference]
 
-    var hoverText: NSAttributedString {
-        let grouped = Dictionary(grouping: incoming, by: \.filePath)
-        let filePaths = grouped.keys.sorted {
-            URL(fileURLWithPath: $0).lastPathComponent.localizedStandardCompare(
-                URL(fileURLWithPath: $1).lastPathComponent
-            ) == .orderedAscending
-        }
-        let result = NSMutableAttributedString()
-        let fileAttributes: [NSAttributedString.Key: Any] = [
-            .font: NSFont.systemFont(ofSize: 11, weight: .semibold),
-            .foregroundColor: NSColor.secondaryLabelColor
-        ]
-        let statementAttributes: [NSAttributedString.Key: Any] = [
-            .font: NSFont.systemFont(ofSize: 12, weight: .regular),
-            .foregroundColor: NSColor.labelColor
-        ]
-        for (index, filePath) in filePaths.enumerated() {
-            if index > 0 {
-                result.append(NSAttributedString(string: "\n\n"))
+    var hasIncomingReferences: Bool { !incoming.isEmpty }
+
+    var referenceCountLabel: String {
+        incoming.count == 1 ? "Referenced by 1" : "Referenced by \(incoming.count)"
+    }
+
+    var annotationText: String {
+        "← \(referenceCountLabel)"
+    }
+
+    var sortedIncoming: [FlowSpecGoToIncomingReference] {
+        incoming.sorted { lhs, rhs in
+            let fileOrder = lhs.fileName.localizedStandardCompare(rhs.fileName)
+            if fileOrder != .orderedSame {
+                return fileOrder == .orderedAscending
             }
-            let fileName = grouped[filePath]?.first?.fileName ?? filePath
-            result.append(NSAttributedString(string: fileName, attributes: fileAttributes))
-            let refs = (grouped[filePath] ?? []).sorted { $0.line < $1.line }
-            for ref in refs {
-                result.append(NSAttributedString(
-                    string: "\n\(ref.statement)  ·  line \(ref.line)",
-                    attributes: statementAttributes
-                ))
+            if lhs.line != rhs.line {
+                return lhs.line < rhs.line
             }
+            return lhs.statement.localizedStandardCompare(rhs.statement) == .orderedAscending
         }
-        return result
+    }
+}
+
+final class FlowSpecGoToTargetAttribute: NSObject {
+    let incoming: [FlowSpecGoToIncomingReference]
+
+    init(incoming: [FlowSpecGoToIncomingReference]) {
+        self.incoming = incoming
     }
 }
 
@@ -183,6 +187,64 @@ enum FlowSpecStructureValidator {
     }
 
     static var authoringGuide: String { runtime.authoringGuide }
+
+    static func navigationRange(
+        for reference: FlowSpecGoToIncomingReference,
+        in source: String
+    ) -> NSRange? {
+        let mapper = SourceLocationMapper(source: source)
+        guard let lineRange = mapper.lineRange(line: reference.line) else {
+            return mapper.displayRange(line: reference.line, column: 1)
+        }
+        let lineText = (source as NSString).substring(with: lineRange)
+        if !reference.statement.isEmpty,
+           let statementRange = lineText.range(of: reference.statement) {
+            let location = lineRange.location + statementRange.lowerBound.utf16Offset(in: lineText)
+            return NSRange(location: location, length: reference.statement.utf16.count)
+        }
+        return mapper.displayRange(line: reference.line, column: 1)
+            ?? NSRange(location: lineRange.location, length: max(1, lineRange.length))
+    }
+
+    static func structuralNodeRange(containing location: Int, in source: String) -> NSRange {
+        let ns = source as NSString
+        guard ns.length > 0 else { return NSRange(location: 0, length: 0) }
+        let index = min(max(0, location), ns.length - 1)
+        let declarationLine = ns.lineRange(for: NSRange(location: index, length: 0))
+        let declarationIndent = leadingIndentWidth(in: ns, lineRange: declarationLine)
+        var end = NSMaxRange(declarationLine)
+        var cursor = end
+        while cursor < ns.length {
+            let line = ns.lineRange(for: NSRange(location: cursor, length: 0))
+            let content = ns.substring(with: line).trimmingCharacters(in: .whitespacesAndNewlines)
+            if !content.isEmpty {
+                let indent = leadingIndentWidth(in: ns, lineRange: line)
+                if indent <= declarationIndent { break }
+            }
+            end = NSMaxRange(line)
+            if NSMaxRange(line) <= cursor { break }
+            cursor = NSMaxRange(line)
+        }
+        return NSRange(location: declarationLine.location, length: end - declarationLine.location)
+    }
+
+    private static func leadingIndentWidth(in source: NSString, lineRange: NSRange) -> Int {
+        var width = 0
+        var index = lineRange.location
+        let end = NSMaxRange(lineRange)
+        while index < end {
+            let character = source.character(at: index)
+            if character == 32 {
+                width += 1
+            } else if character == 9 {
+                width += 2
+            } else {
+                break
+            }
+            index += 1
+        }
+        return width
+    }
 }
 
 private final class FlowSpecLinterRuntime {
@@ -304,7 +366,31 @@ private final class FlowSpecLinterRuntime {
         self.referencedGoToDestinationsFunction = context.evaluateScript(
             #"""
             (function(files, filePath) {
-              return require("goto").referencedGoToDestinations(files, filePath);
+              const goto = require("goto");
+              const { parseTree } = require("parse");
+              const referenced = goto.referencedGoToDestinations(files, filePath);
+              const referencedKeys = new Set(
+                referenced.map((destination) => `${destination.line}:${destination.column}`)
+              );
+              const targets = [];
+              for (const file of files) {
+                const parsed = parseTree(file.source, file.filePath);
+                goto.collectStructuralTargets(parsed.root, file.filePath, targets);
+              }
+              const extras = [];
+              for (const target of targets) {
+                if (target.filePath !== filePath) continue;
+                const key = `${target.line}:${target.column}`;
+                if (referencedKeys.has(key)) continue;
+                extras.push({
+                  line: target.line,
+                  column: target.column,
+                  endLine: target.endLine ?? target.line,
+                  endColumn: target.endColumn ?? target.column,
+                  references: [],
+                });
+              }
+              return referenced.concat(extras);
             })
             """#
         )
@@ -517,10 +603,11 @@ private final class FlowSpecLinterRuntime {
                 return FlowSpecGoToIncomingReference(
                     filePath: filePath,
                     line: referenceLine,
-                    statement: statement
+                    statement: statement,
+                    ref: (reference["ref"] as? String) ?? "",
+                    container: (reference["container"] as? String) ?? ""
                 )
             }
-            guard !incoming.isEmpty else { return nil }
             return FlowSpecGoToTargetMark(range: range, incoming: incoming)
         }
     }
@@ -658,6 +745,13 @@ private struct SourceLocationMapper {
             starts.append(index + 1)
         }
         lineStarts = starts
+    }
+
+    func lineRange(line: Int) -> NSRange? {
+        guard line > 0, line <= lineStarts.count else { return nil }
+        let lineStart = lineStarts[line - 1]
+        let nextLineStart = line < lineStarts.count ? lineStarts[line] : source.length
+        return NSRange(location: lineStart, length: max(0, nextLineStart - lineStart))
     }
 
     func displayRange(line: Int, column: Int) -> NSRange? {

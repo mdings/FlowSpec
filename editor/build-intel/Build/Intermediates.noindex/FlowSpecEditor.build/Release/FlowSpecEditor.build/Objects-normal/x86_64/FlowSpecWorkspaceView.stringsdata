@@ -1,0 +1,120 @@
+{
+  "source": "/Users/maarten.dings/Documents/FlowSpec/editor/FlowSpecEditor/FlowSpecWorkspaceView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "FlowSpec Editor",
+        "location": {
+          "startingColumn": 13,
+          "startingLine": 355
+        }
+      },
+      {
+        "comment": "",
+        "key": "Add a .flowspec file to this folder, then refresh.",
+        "location": {
+          "startingColumn": 39,
+          "startingLine": 315
+        }
+      },
+      {
+        "comment": "",
+        "key": "No FlowSpec Files",
+        "location": {
+          "startingColumn": 21,
+          "startingLine": 313
+        }
+      },
+      {
+        "comment": "",
+        "key": "Back",
+        "location": {
+          "startingColumn": 23,
+          "startingLine": 328
+        }
+      },
+      {
+        "comment": "",
+        "key": "Forward",
+        "location": {
+          "startingColumn": 23,
+          "startingLine": 336
+        }
+      },
+      {
+        "comment": "",
+        "key": "Refresh Folder",
+        "location": {
+          "startingColumn": 23,
+          "startingLine": 343
+        }
+      },
+      {
+        "comment": "",
+        "key": "Save",
+        "location": {
+          "startingColumn": 23,
+          "startingLine": 351
+        }
+      },
+      {
+        "comment": "",
+        "key": "Back",
+        "location": {
+          "startingColumn": 27,
+          "startingLine": 325
+        }
+      },
+      {
+        "comment": "",
+        "key": "Forward",
+        "location": {
+          "startingColumn": 27,
+          "startingLine": 333
+        }
+      },
+      {
+        "comment": "",
+        "key": "Refresh Folder",
+        "location": {
+          "startingColumn": 27,
+          "startingLine": 341
+        }
+      },
+      {
+        "comment": "",
+        "key": "Save",
+        "location": {
+          "startingColumn": 27,
+          "startingLine": 348
+        }
+      },
+      {
+        "comment": "",
+        "key": "OK",
+        "location": {
+          "startingColumn": 20,
+          "startingLine": 361
+        }
+      },
+      {
+        "comment": "",
+        "key": ".%@",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 554
+        }
+      },
+      {
+        "comment": "",
+        "key": "Unsaved changes",
+        "location": {
+          "startingColumn": 57,
+          "startingLine": 618
+        }
+      }
+    ]
+  },
+  "version": 1
+}

@@ -6,7 +6,7 @@
 	<integer>12</integer>
 	<key>logs</key>
 	<dict>
-		<key>D1861C23-235F-455C-8313-E6FC97136C40</key>
+		<key>17B7FFCA-83AE-435A-B9CD-B92757E2133B</key>
 		<dict>
 			<key>className</key>
 			<string>IDECommandLineBuildLog</string>
@@ -15,7 +15,7 @@
 			<key>domainType</key>
 			<string>Xcode.IDEActivityLogDomainType.BuildLog</string>
 			<key>fileName</key>
-			<string>D1861C23-235F-455C-8313-E6FC97136C40.xcactivitylog</string>
+			<string>17B7FFCA-83AE-435A-B9CD-B92757E2133B.xcactivitylog</string>
 			<key>hasPrimaryLog</key>
 			<true/>
 			<key>primaryObservable</key>
@@ -40,15 +40,15 @@
 			<key>signature</key>
 			<string>Building project FlowSpecEditor with scheme FlowSpecEditor and configuration Debug</string>
 			<key>timeStartedRecording</key>
-			<real>808415396.47404897</real>
+			<real>808482415.30693805</real>
 			<key>timeStoppedRecording</key>
-			<real>808415410.58564305</real>
+			<real>808482424.42339802</real>
 			<key>title</key>
 			<string>Building project FlowSpecEditor with scheme FlowSpecEditor and configuration Debug</string>
 			<key>uniqueIdentifier</key>
-			<string>D1861C23-235F-455C-8313-E6FC97136C40</string>
+			<string>17B7FFCA-83AE-435A-B9CD-B92757E2133B</string>
 		</dict>
-		<key>DCD23B49-3FCF-4FEB-8DEA-B12A254E963E</key>
+		<key>48DB9CEB-C084-49AC-93CF-0016AAA6EEEC</key>
 		<dict>
 			<key>className</key>
 			<string>IDECommandLineBuildLog</string>
@@ -57,17 +57,17 @@
 			<key>domainType</key>
 			<string>Xcode.IDEActivityLogDomainType.BuildLog</string>
 			<key>fileName</key>
-			<string>DCD23B49-3FCF-4FEB-8DEA-B12A254E963E.xcactivitylog</string>
+			<string>48DB9CEB-C084-49AC-93CF-0016AAA6EEEC.xcactivitylog</string>
 			<key>hasPrimaryLog</key>
 			<true/>
 			<key>primaryObservable</key>
 			<dict>
 				<key>highLevelStatus</key>
-				<string>E</string>
+				<string>S</string>
 				<key>totalNumberOfAnalyzerIssues</key>
 				<integer>0</integer>
 				<key>totalNumberOfErrors</key>
-				<integer>1</integer>
+				<integer>0</integer>
 				<key>totalNumberOfTestFailures</key>
 				<integer>0</integer>
 				<key>totalNumberOfWarnings</key>
@@ -82,13 +82,13 @@
 			<key>signature</key>
 			<string>Building project FlowSpecEditor with scheme FlowSpecEditor and configuration Debug</string>
 			<key>timeStartedRecording</key>
-			<real>808415365.63837302</real>
+			<real>808483004.60655499</real>
 			<key>timeStoppedRecording</key>
-			<real>808415373.13185203</real>
+			<real>808483013.09043503</real>
 			<key>title</key>
 			<string>Building project FlowSpecEditor with scheme FlowSpecEditor and configuration Debug</string>
 			<key>uniqueIdentifier</key>
-			<string>DCD23B49-3FCF-4FEB-8DEA-B12A254E963E</string>
+			<string>48DB9CEB-C084-49AC-93CF-0016AAA6EEEC</string>
 		</dict>
 	</dict>
 </dict>

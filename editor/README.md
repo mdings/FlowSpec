@@ -8,6 +8,8 @@ Use **File → Open Folder…** to open a folder of FlowSpec files in a workspac
 
 `Go to` destinations are shown as links. Click the destination name to open its matching top-level Flow, Screen, or Action. Folder workspaces resolve names and `Id` values across all loaded FlowSpec files, using the same rules as the linter. Renaming a Flow, Screen, or Action name or `Id` also updates unique `Go to` references to that destination, including references in other workspace files.
 
+Referenced Flow, Screen, and Action declarations show a `← Referenced by N` annotation. Click it, or place the cursor in that node, to open a backlink rail of incoming references. Each item opens the source file and selects the referencing directive. Use Back and Forward to return.
+
 The editor bundles the canonical core directly from the repository's root `lib/` directory and uses it for linting, syntax highlighting, navigation, and the Improve authoring guide. A soft red dashed underline marks structure that needs attention; an amber dotted underline marks an authoring suggestion. Toggle the **Structure hints** drawer at the bottom, then hover underlined text to read its plain-language explanation in the drawer. The linter runs entirely on the Mac with no network service or AI involved.
 
 ## Open and run

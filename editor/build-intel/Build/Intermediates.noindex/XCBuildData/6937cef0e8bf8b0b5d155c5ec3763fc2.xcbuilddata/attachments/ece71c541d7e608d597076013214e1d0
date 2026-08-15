@@ -1,0 +1,61 @@
+{
+  "" : {
+    "const-values" : "/Users/maarten.dings/Documents/FlowSpec/editor/build-intel/Build/Intermediates.noindex/FlowSpecEditor.build/Release/FlowSpecEditor.build/Objects-normal/arm64/FlowSpecEditor-primary.swiftconstvalues",
+    "dependencies" : "/Users/maarten.dings/Documents/FlowSpec/editor/build-intel/Build/Intermediates.noindex/FlowSpecEditor.build/Release/FlowSpecEditor.build/Objects-normal/arm64/FlowSpecEditor-primary.d",
+    "diagnostics" : "/Users/maarten.dings/Documents/FlowSpec/editor/build-intel/Build/Intermediates.noindex/FlowSpecEditor.build/Release/FlowSpecEditor.build/Objects-normal/arm64/FlowSpecEditor-primary.dia",
+    "emit-module-dependencies" : "/Users/maarten.dings/Documents/FlowSpec/editor/build-intel/Build/Intermediates.noindex/FlowSpecEditor.build/Release/FlowSpecEditor.build/Objects-normal/arm64/FlowSpecEditor-primary-emit-module.d",
+    "emit-module-diagnostics" : "/Users/maarten.dings/Documents/FlowSpec/editor/build-intel/Build/Intermediates.noindex/FlowSpecEditor.build/Release/FlowSpecEditor.build/Objects-normal/arm64/FlowSpecEditor-primary-emit-module.dia",
+    "pch" : "/Users/maarten.dings/Documents/FlowSpec/editor/build-intel/Build/Intermediates.noindex/FlowSpecEditor.build/Release/FlowSpecEditor.build/Objects-normal/arm64/FlowSpecEditor-primary-Bridging-header.pch",
+    "swift-dependencies" : "/Users/maarten.dings/Documents/FlowSpec/editor/build-intel/Build/Intermediates.noindex/FlowSpecEditor.build/Release/FlowSpecEditor.build/Objects-normal/arm64/FlowSpecEditor-primary.swiftdeps"
+  },
+  "/Users/maarten.dings/Documents/FlowSpec/editor/FlowSpecEditor/ContentView.swift" : {
+    "index-unit-output-path" : "/FlowSpecEditor.build/Release/FlowSpecEditor.build/Objects-normal/arm64/ContentView.o",
+    "llvm-bc" : "/Users/maarten.dings/Documents/FlowSpec/editor/build-intel/Build/Intermediates.noindex/FlowSpecEditor.build/Release/FlowSpecEditor.build/Objects-normal/arm64/ContentView.bc",
+    "object" : "/Users/maarten.dings/Documents/FlowSpec/editor/build-intel/Build/Intermediates.noindex/FlowSpecEditor.build/Release/FlowSpecEditor.build/Objects-normal/arm64/ContentView.o"
+  },
+  "/Users/maarten.dings/Documents/FlowSpec/editor/FlowSpecEditor/FlowSpecCompletion.swift" : {
+    "index-unit-output-path" : "/FlowSpecEditor.build/Release/FlowSpecEditor.build/Objects-normal/arm64/FlowSpecCompletion.o",
+    "llvm-bc" : "/Users/maarten.dings/Documents/FlowSpec/editor/build-intel/Build/Intermediates.noindex/FlowSpecEditor.build/Release/FlowSpecEditor.build/Objects-normal/arm64/FlowSpecCompletion.bc",
+    "object" : "/Users/maarten.dings/Documents/FlowSpec/editor/build-intel/Build/Intermediates.noindex/FlowSpecEditor.build/Release/FlowSpecEditor.build/Objects-normal/arm64/FlowSpecCompletion.o"
+  },
+  "/Users/maarten.dings/Documents/FlowSpec/editor/FlowSpecEditor/FlowSpecDocument.swift" : {
+    "index-unit-output-path" : "/FlowSpecEditor.build/Release/FlowSpecEditor.build/Objects-normal/arm64/FlowSpecDocument.o",
+    "llvm-bc" : "/Users/maarten.dings/Documents/FlowSpec/editor/build-intel/Build/Intermediates.noindex/FlowSpecEditor.build/Release/FlowSpecEditor.build/Objects-normal/arm64/FlowSpecDocument.bc",
+    "object" : "/Users/maarten.dings/Documents/FlowSpec/editor/build-intel/Build/Intermediates.noindex/FlowSpecEditor.build/Release/FlowSpecEditor.build/Objects-normal/arm64/FlowSpecDocument.o"
+  },
+  "/Users/maarten.dings/Documents/FlowSpec/editor/FlowSpecEditor/FlowSpecEditorApp.swift" : {
+    "index-unit-output-path" : "/FlowSpecEditor.build/Release/FlowSpecEditor.build/Objects-normal/arm64/FlowSpecEditorApp.o",
+    "llvm-bc" : "/Users/maarten.dings/Documents/FlowSpec/editor/build-intel/Build/Intermediates.noindex/FlowSpecEditor.build/Release/FlowSpecEditor.build/Objects-normal/arm64/FlowSpecEditorApp.bc",
+    "object" : "/Users/maarten.dings/Documents/FlowSpec/editor/build-intel/Build/Intermediates.noindex/FlowSpecEditor.build/Release/FlowSpecEditor.build/Objects-normal/arm64/FlowSpecEditorApp.o"
+  },
+  "/Users/maarten.dings/Documents/FlowSpec/editor/FlowSpecEditor/FlowSpecImprove.swift" : {
+    "index-unit-output-path" : "/FlowSpecEditor.build/Release/FlowSpecEditor.build/Objects-normal/arm64/FlowSpecImprove.o",
+    "llvm-bc" : "/Users/maarten.dings/Documents/FlowSpec/editor/build-intel/Build/Intermediates.noindex/FlowSpecEditor.build/Release/FlowSpecEditor.build/Objects-normal/arm64/FlowSpecImprove.bc",
+    "object" : "/Users/maarten.dings/Documents/FlowSpec/editor/build-intel/Build/Intermediates.noindex/FlowSpecEditor.build/Release/FlowSpecEditor.build/Objects-normal/arm64/FlowSpecImprove.o"
+  },
+  "/Users/maarten.dings/Documents/FlowSpec/editor/FlowSpecEditor/FlowSpecStructureValidator.swift" : {
+    "index-unit-output-path" : "/FlowSpecEditor.build/Release/FlowSpecEditor.build/Objects-normal/arm64/FlowSpecStructureValidator.o",
+    "llvm-bc" : "/Users/maarten.dings/Documents/FlowSpec/editor/build-intel/Build/Intermediates.noindex/FlowSpecEditor.build/Release/FlowSpecEditor.build/Objects-normal/arm64/FlowSpecStructureValidator.bc",
+    "object" : "/Users/maarten.dings/Documents/FlowSpec/editor/build-intel/Build/Intermediates.noindex/FlowSpecEditor.build/Release/FlowSpecEditor.build/Objects-normal/arm64/FlowSpecStructureValidator.o"
+  },
+  "/Users/maarten.dings/Documents/FlowSpec/editor/FlowSpecEditor/FlowSpecSyntaxHighlighter.swift" : {
+    "index-unit-output-path" : "/FlowSpecEditor.build/Release/FlowSpecEditor.build/Objects-normal/arm64/FlowSpecSyntaxHighlighter.o",
+    "llvm-bc" : "/Users/maarten.dings/Documents/FlowSpec/editor/build-intel/Build/Intermediates.noindex/FlowSpecEditor.build/Release/FlowSpecEditor.build/Objects-normal/arm64/FlowSpecSyntaxHighlighter.bc",
+    "object" : "/Users/maarten.dings/Documents/FlowSpec/editor/build-intel/Build/Intermediates.noindex/FlowSpecEditor.build/Release/FlowSpecEditor.build/Objects-normal/arm64/FlowSpecSyntaxHighlighter.o"
+  },
+  "/Users/maarten.dings/Documents/FlowSpec/editor/FlowSpecEditor/FlowSpecTextEditor.swift" : {
+    "index-unit-output-path" : "/FlowSpecEditor.build/Release/FlowSpecEditor.build/Objects-normal/arm64/FlowSpecTextEditor.o",
+    "llvm-bc" : "/Users/maarten.dings/Documents/FlowSpec/editor/build-intel/Build/Intermediates.noindex/FlowSpecEditor.build/Release/FlowSpecEditor.build/Objects-normal/arm64/FlowSpecTextEditor.bc",
+    "object" : "/Users/maarten.dings/Documents/FlowSpec/editor/build-intel/Build/Intermediates.noindex/FlowSpecEditor.build/Release/FlowSpecEditor.build/Objects-normal/arm64/FlowSpecTextEditor.o"
+  },
+  "/Users/maarten.dings/Documents/FlowSpec/editor/FlowSpecEditor/FlowSpecWorkspaceView.swift" : {
+    "index-unit-output-path" : "/FlowSpecEditor.build/Release/FlowSpecEditor.build/Objects-normal/arm64/FlowSpecWorkspaceView.o",
+    "llvm-bc" : "/Users/maarten.dings/Documents/FlowSpec/editor/build-intel/Build/Intermediates.noindex/FlowSpecEditor.build/Release/FlowSpecEditor.build/Objects-normal/arm64/FlowSpecWorkspaceView.bc",
+    "object" : "/Users/maarten.dings/Documents/FlowSpec/editor/build-intel/Build/Intermediates.noindex/FlowSpecEditor.build/Release/FlowSpecEditor.build/Objects-normal/arm64/FlowSpecWorkspaceView.o"
+  },
+  "/Users/maarten.dings/Documents/FlowSpec/editor/build-intel/Build/Intermediates.noindex/FlowSpecEditor.build/Release/FlowSpecEditor.build/DerivedSources/GeneratedAssetSymbols.swift" : {
+    "index-unit-output-path" : "/FlowSpecEditor.build/Release/FlowSpecEditor.build/Objects-normal/arm64/GeneratedAssetSymbols.o",
+    "llvm-bc" : "/Users/maarten.dings/Documents/FlowSpec/editor/build-intel/Build/Intermediates.noindex/FlowSpecEditor.build/Release/FlowSpecEditor.build/Objects-normal/arm64/GeneratedAssetSymbols.bc",
+    "object" : "/Users/maarten.dings/Documents/FlowSpec/editor/build-intel/Build/Intermediates.noindex/FlowSpecEditor.build/Release/FlowSpecEditor.build/Objects-normal/arm64/GeneratedAssetSymbols.o"
+  }
+}

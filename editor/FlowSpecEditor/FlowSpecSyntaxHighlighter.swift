@@ -87,7 +87,7 @@ enum FlowSpecSyntaxHighlighter {
             guard let lastWord = lastWordRange(in: nsSource, containing: destination.range) else { continue }
             textStorage.addAttribute(
                 .flowSpecGoToTarget,
-                value: destination.hoverText,
+                value: FlowSpecGoToTargetAttribute(incoming: destination.incoming),
                 range: lastWord
             )
         }

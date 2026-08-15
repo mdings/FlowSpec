@@ -298,6 +298,7 @@ struct FlowSpecWorkspaceView: View {
                     ),
                     navigationTarget: navigationTarget,
                     onGoToLink: followGoTo,
+                    onFollowBacklink: followBacklink,
                     onLinkedSourceChanges: { changes, undoManager in
                         workspace.applyLinkedSourceChanges(changes, undoManager: undoManager)
                     },
@@ -397,6 +398,20 @@ struct FlowSpecWorkspaceView: View {
                 fileURL: destination.fileURL,
                 range: destination.declarationRange
             ),
+            recordingHistory: true
+        )
+    }
+
+    private func followBacklink(_ reference: FlowSpecGoToIncomingReference) {
+        let destinationURL = workspace.sourceFiles.first {
+            $0.url.path == reference.filePath
+        }?.url ?? reference.fileURL
+        let source = workspace.sourceFiles.first { $0.url == destinationURL }?.source
+            ?? (try? String(contentsOf: destinationURL, encoding: .utf8))
+            ?? ""
+        let range = FlowSpecStructureValidator.navigationRange(for: reference, in: source)
+        navigate(
+            to: NavigationEntry(fileURL: destinationURL, range: range),
             recordingHistory: true
         )
     }

@@ -73,6 +73,7 @@ struct FlowSpecTextEditor: NSViewRepresentable {
     let fontSize: FlowSpecFontSize
     let navigationTarget: FlowSpecNavigationTarget?
     let onGoToLink: ((Int) -> Void)?
+    let onActiveBacklinkChange: ((FlowSpecGoToTargetMark?) -> Void)?
     let onLinkedSourceChanges: (([FlowSpecLinkedSourceChange], UndoManager?) -> Void)?
     let validationContext: FlowSpecValidationContext?
 
@@ -81,6 +82,7 @@ struct FlowSpecTextEditor: NSViewRepresentable {
             text: $text,
             hoveredDiagnostic: $hoveredDiagnostic,
             onGoToLink: onGoToLink,
+            onActiveBacklinkChange: onActiveBacklinkChange,
             onLinkedSourceChanges: onLinkedSourceChanges,
             validationContext: validationContext,
             lineSpacing: lineSpacing.points,
@@ -149,6 +151,9 @@ struct FlowSpecTextEditor: NSViewRepresentable {
         textView.onGoToLink = { [weak coordinator = context.coordinator] characterIndex in
             coordinator?.onGoToLink?(characterIndex)
         }
+        textView.onActiveBacklinkChange = { [weak coordinator = context.coordinator] mark in
+            coordinator?.onActiveBacklinkChange?(mark)
+        }
         textView.highlightAnalysisProvider = { [weak coordinator = context.coordinator] source in
             coordinator?.analysis(for: source) ?? FlowSpecHighlightAnalysis(
                 diagnostics: [],
@@ -176,8 +181,14 @@ struct FlowSpecTextEditor: NSViewRepresentable {
     func updateNSView(_ scrollView: NSScrollView, context: Context) {
         guard let textView = scrollView.documentView as? NSTextView else { return }
         context.coordinator.onGoToLink = onGoToLink
+        context.coordinator.onActiveBacklinkChange = onActiveBacklinkChange
         context.coordinator.onLinkedSourceChanges = onLinkedSourceChanges
         context.coordinator.validationContext = validationContext
+        if let textView = textView as? IndentingTextView {
+            textView.onActiveBacklinkChange = { [weak coordinator = context.coordinator] mark in
+                coordinator?.onActiveBacklinkChange?(mark)
+            }
+        }
         let spacingChanged = context.coordinator.lineSpacing != lineSpacing.points
         let fontSizeChanged = context.coordinator.fontSize != fontSize.points
         context.coordinator.lineSpacing = lineSpacing.points
@@ -192,7 +203,7 @@ struct FlowSpecTextEditor: NSViewRepresentable {
         }
         if textView.string != text {
             (textView as? IndentingTextView)?.hideCompletions()
-            (textView as? IndentingTextView)?.hideGoToTargetHover()
+            (textView as? IndentingTextView)?.resetBacklinkPresentation()
             context.coordinator.pendingHighlight?.cancel()
             let selectedRanges = textView.selectedRanges
             textView.string = text
@@ -212,6 +223,7 @@ struct FlowSpecTextEditor: NSViewRepresentable {
             )
             textView.window?.invalidateCursorRects(for: textView)
             textView.needsDisplay = true
+            (textView as? IndentingTextView)?.refreshActiveBacklink()
         } else if spacingChanged || fontSizeChanged, let storage = textView.textStorage {
             let selectedRanges = textView.selectedRanges
             let analysis = context.coordinator.analysis(for: textView.string)
@@ -231,6 +243,7 @@ struct FlowSpecTextEditor: NSViewRepresentable {
             )
             textView.selectedRanges = selectedRanges
             textView.needsDisplay = true
+            (textView as? IndentingTextView)?.refreshActiveBacklink()
         }
 
         if let navigationTarget,
@@ -299,6 +312,7 @@ struct FlowSpecTextEditor: NSViewRepresentable {
         weak var textView: NSTextView?
         var pendingHighlight: DispatchWorkItem?
         var onGoToLink: ((Int) -> Void)?
+        var onActiveBacklinkChange: ((FlowSpecGoToTargetMark?) -> Void)?
         var onLinkedSourceChanges: (([FlowSpecLinkedSourceChange], UndoManager?) -> Void)?
         var lastNavigationID: UUID?
         var validationContext: FlowSpecValidationContext?
@@ -310,6 +324,7 @@ struct FlowSpecTextEditor: NSViewRepresentable {
             text: Binding<String>,
             hoveredDiagnostic: Binding<String?>,
             onGoToLink: ((Int) -> Void)?,
+            onActiveBacklinkChange: ((FlowSpecGoToTargetMark?) -> Void)?,
             onLinkedSourceChanges: (([FlowSpecLinkedSourceChange], UndoManager?) -> Void)?,
             validationContext: FlowSpecValidationContext?,
             lineSpacing: CGFloat,
@@ -318,6 +333,7 @@ struct FlowSpecTextEditor: NSViewRepresentable {
             _text = text
             _hoveredDiagnostic = hoveredDiagnostic
             self.onGoToLink = onGoToLink
+            self.onActiveBacklinkChange = onActiveBacklinkChange
             self.onLinkedSourceChanges = onLinkedSourceChanges
             self.validationContext = validationContext
             self.lineSpacing = lineSpacing
@@ -333,6 +349,7 @@ struct FlowSpecTextEditor: NSViewRepresentable {
 
         func textViewDidChangeSelection(_ notification: Notification) {
             (notification.object as? IndentingTextView)?.refreshCurrentLine()
+            (notification.object as? IndentingTextView)?.refreshActiveBacklink()
         }
 
         func textView(
@@ -467,6 +484,7 @@ struct FlowSpecTextEditor: NSViewRepresentable {
                 )
                 textView.window?.invalidateCursorRects(for: textView)
                 textView.needsDisplay = true
+                (textView as? IndentingTextView)?.refreshActiveBacklink()
             }
             pendingHighlight = work
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.04, execute: work)
@@ -520,7 +538,6 @@ final class EditorScrollView: NSScrollView {
 
     override func scrollWheel(with event: NSEvent) {
         (documentView as? IndentingTextView)?.hideCompletions()
-        (documentView as? IndentingTextView)?.hideGoToTargetHover()
         let horizontalOrigin = contentView.bounds.origin.x
         super.scrollWheel(with: event)
 
@@ -587,21 +604,21 @@ final class IndentingTextView: NSTextView {
     var editorFontSize = FlowSpecFontSize.medium.points
     var onStructureHintHover: ((String?) -> Void)?
     var onGoToLink: ((Int) -> Void)?
+    var onActiveBacklinkChange: ((FlowSpecGoToTargetMark?) -> Void)?
     var highlightAnalysisProvider: ((String) -> FlowSpecHighlightAnalysis)?
     private let indent = "  "
     private var hoverTrackingArea: NSTrackingArea?
     private var pendingHint: DispatchWorkItem?
     private var pendingHintRange = NSRange(location: NSNotFound, length: 0)
     private var displayedHintMessage: String?
-    private var pendingTargetHover: DispatchWorkItem?
-    private var pendingTargetHoverRange = NSRange(location: NSNotFound, length: 0)
+    private var hoveredBacklinkRange = NSRange(location: NSNotFound, length: 0)
+    private var dismissedBacklinkLocation: Int?
+    private var lastReportedBacklink: FlowSpecGoToTargetMark?
     private lazy var completionController = FlowSpecCompletionController { [weak self] item, range in
         self?.insertCompletion(item, replacing: range)
     }
-    private let targetHoverController = FlowSpecGoToTargetHoverController()
 
     override func keyDown(with event: NSEvent) {
-        hideGoToTargetHover()
         if completionController.isVisible {
             switch event.keyCode {
             case 125:
@@ -650,7 +667,7 @@ final class IndentingTextView: NSTextView {
 
     override func resignFirstResponder() -> Bool {
         completionController.hide()
-        hideGoToTargetHover()
+        clearBacklinkHover()
         return super.resignFirstResponder()
     }
 
@@ -671,6 +688,8 @@ final class IndentingTextView: NSTextView {
             )
         }
         needsDisplay = true
+        window?.invalidateCursorRects(for: self)
+        refreshActiveBacklink()
     }
 
     override func viewDidMoveToWindow() {
@@ -684,7 +703,7 @@ final class IndentingTextView: NSTextView {
         }
         let trackingArea = NSTrackingArea(
             rect: bounds,
-            options: [.activeInKeyWindow, .inVisibleRect, .mouseMoved, .mouseEnteredAndExited],
+            options: [.activeInKeyWindow, .inVisibleRect, .mouseMoved, .mouseEnteredAndExited, .cursorUpdate],
             owner: self,
             userInfo: nil
         )
@@ -694,14 +713,20 @@ final class IndentingTextView: NSTextView {
     }
 
     override func mouseMoved(with event: NSEvent) {
-        super.mouseMoved(with: event)
         let point = convert(event.locationInWindow, from: nil)
-        updateGoToTargetHover(at: point)
+        updateBacklinkHover(at: point)
+        if backlinkAnnotation(at: point) != nil {
+            NSCursor.arrow.set()
+            clearStructureHint()
+            return
+        }
+
+        super.mouseMoved(with: event)
         guard showsStructureHintDetails else {
             clearStructureHint()
             return
         }
-        guard let hint = structureHint(at: convert(event.locationInWindow, from: nil)) else {
+        guard let hint = structureHint(at: point) else {
             clearStructureHint()
             return
         }
@@ -723,20 +748,40 @@ final class IndentingTextView: NSTextView {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.15, execute: work)
     }
 
+    override func cursorUpdate(with event: NSEvent) {
+        let point = convert(event.locationInWindow, from: nil)
+        if backlinkAnnotation(at: point) != nil {
+            NSCursor.arrow.set()
+            return
+        }
+        super.cursorUpdate(with: event)
+    }
+
+    override func mouseEntered(with event: NSEvent) {
+        let point = convert(event.locationInWindow, from: nil)
+        if backlinkAnnotation(at: point) != nil {
+            NSCursor.arrow.set()
+            return
+        }
+        super.mouseEntered(with: event)
+    }
+
     override func mouseExited(with event: NSEvent) {
         super.mouseExited(with: event)
         clearStructureHint()
-        hideGoToTargetHover()
+        clearBacklinkHover()
     }
 
     override func mouseDown(with event: NSEvent) {
         completionController.hide()
         clearStructureHint()
-        hideGoToTargetHover()
+        let point = convert(event.locationInWindow, from: nil)
+        if event.clickCount == 1, let mark = backlinkAnnotation(at: point) {
+            handleBacklinkAnnotationClick(mark)
+            return
+        }
         if event.clickCount == 1,
-           let characterIndex = goToLinkCharacterIndex(
-            at: convert(event.locationInWindow, from: nil)
-           ) {
+           let characterIndex = goToLinkCharacterIndex(at: point) {
             onGoToLink?(characterIndex)
             return
         }
@@ -769,6 +814,10 @@ final class IndentingTextView: NSTextView {
                 self.addCursorRect(linkRect, cursor: .pointingHand)
             }
         }
+        enumerateBacklinkAnnotations { mark, pillRect in
+            guard mark.hasIncomingReferences else { return }
+            addCursorRect(pillRect, cursor: .arrow)
+        }
     }
 
     override func drawBackground(in rect: NSRect) {
@@ -777,7 +826,7 @@ final class IndentingTextView: NSTextView {
 
     override func draw(_ dirtyRect: NSRect) {
         super.draw(dirtyRect)
-        drawGoToTargetIcons(in: dirtyRect)
+        drawBacklinkAnnotations(in: dirtyRect)
         drawDiagnosticSquiggles(in: dirtyRect)
     }
 
@@ -789,11 +838,24 @@ final class IndentingTextView: NSTextView {
         completionController.hide()
     }
 
-    func hideGoToTargetHover() {
-        pendingTargetHover?.cancel()
-        pendingTargetHover = nil
-        pendingTargetHoverRange = NSRange(location: NSNotFound, length: 0)
-        targetHoverController.hide()
+    func resetBacklinkPresentation() {
+        dismissedBacklinkLocation = nil
+        hoveredBacklinkRange = NSRange(location: NSNotFound, length: 0)
+        reportActiveBacklink(nil)
+    }
+
+    func refreshActiveBacklink() {
+        let mark = innermostBacklinkMark(containing: selectedRange().location)
+        if let mark, mark.hasIncomingReferences {
+            if dismissedBacklinkLocation == mark.range.location {
+                reportActiveBacklink(nil)
+            } else {
+                reportActiveBacklink(mark)
+            }
+        } else {
+            dismissedBacklinkLocation = nil
+            reportActiveBacklink(nil)
+        }
     }
 
     private func shouldRefreshCompletions(after event: NSEvent) -> Bool {
@@ -820,66 +882,63 @@ final class IndentingTextView: NSTextView {
         completionController.show(result, in: self)
     }
 
-    private func drawGoToTargetIcons(in dirtyRect: NSRect) {
-        let color = NSColor.secondaryLabelColor
+    private let backlinkAnnotationPadding = NSSize(width: 7, height: 2)
+
+    private var backlinkAnnotationFont: NSFont {
+        NSFont.systemFont(ofSize: max(10, min(12, editorFontSize - 2)), weight: .regular)
+    }
+
+    private func backlinkAnnotationAttributes(highlighted: Bool) -> [NSAttributedString.Key: Any] {
+        [
+            .font: backlinkAnnotationFont,
+            .foregroundColor: highlighted ? NSColor.secondaryLabelColor : NSColor.tertiaryLabelColor
+        ]
+    }
+
+    private func snapBacklinkValue(_ value: CGFloat) -> CGFloat {
+        let scale = window?.backingScaleFactor ?? NSScreen.main?.backingScaleFactor ?? 2
+        return (value * scale).rounded() / scale
+    }
+
+    private func drawBacklinkAnnotations(in dirtyRect: NSRect) {
         effectiveAppearance.performAsCurrentDrawingAppearance {
-            enumerateGoToTargets { _, _, _, iconRect in
-                guard iconRect.insetBy(dx: -2, dy: -2).intersects(dirtyRect) else { return }
-                drawTargetSymbol(in: iconRect, color: color)
+            enumerateBacklinkAnnotations { mark, pillRect in
+                guard mark.hasIncomingReferences, pillRect.intersects(dirtyRect) else { return }
+
+                let highlighted = hoveredBacklinkRange == mark.range
+                    || lastReportedBacklink?.range.location == mark.range.location
+                if highlighted {
+                    NSColor.quaternaryLabelColor.setFill()
+                    let radius = snapBacklinkValue(min(4, pillRect.height / 2))
+                    NSBezierPath(roundedRect: pillRect, xRadius: radius, yRadius: radius).fill()
+                }
+
+                let label = mark.annotationText as NSString
+                label.draw(
+                    at: NSPoint(
+                        x: pillRect.minX + backlinkAnnotationPadding.width,
+                        y: pillRect.minY + backlinkAnnotationPadding.height
+                    ),
+                    withAttributes: backlinkAnnotationAttributes(highlighted: highlighted)
+                )
             }
         }
     }
 
-    private func drawTargetSymbol(in rect: NSRect, color: NSColor) {
-        let scale = window?.backingScaleFactor ?? NSScreen.main?.backingScaleFactor ?? 2
-        func snap(_ value: CGFloat) -> CGFloat { (value * scale).rounded() / scale }
-
-        let size = snap(min(rect.width, rect.height))
-        let bounds = NSRect(
-            x: snap(rect.midX - size / 2),
-            y: snap(rect.midY - size / 2),
-            width: size,
-            height: size
-        )
-        let lineWidth = max(1.25, snap(size * 0.11))
-        let hairline = lineWidth / 2
-
-        color.setStroke()
-        color.setFill()
-
-        let outer = NSBezierPath(ovalIn: bounds.insetBy(dx: hairline, dy: hairline))
-        outer.lineWidth = lineWidth
-        outer.stroke()
-
-        let innerInset = snap(size * 0.26)
-        let inner = NSBezierPath(ovalIn: bounds.insetBy(dx: innerInset, dy: innerInset))
-        inner.lineWidth = lineWidth
-        inner.stroke()
-
-        let dot = max(1.75, snap(size * 0.18))
-        NSBezierPath(ovalIn: NSRect(
-            x: snap(bounds.midX - dot / 2),
-            y: snap(bounds.midY - dot / 2),
-            width: dot,
-            height: dot
-        )).fill()
-    }
-
-    private var goToTargetIconSize: CGFloat { max(12, min(15, editorFontSize - 2)) }
-    private let goToTargetIconGap: CGFloat = 5
-
-    private func enumerateGoToTargets(
-        _ body: (NSRange, NSAttributedString, NSRect, NSRect) -> Void
+    private func enumerateBacklinkAnnotations(
+        _ body: (FlowSpecGoToTargetMark, NSRect) -> Void
     ) {
         guard let textStorage,
               textStorage.length > 0,
               let layoutManager,
               let textContainer else { return }
 
-        let iconSize = goToTargetIconSize
+        let attributes = backlinkAnnotationAttributes(highlighted: false)
+        let padding = backlinkAnnotationPadding
         let fullRange = NSRange(location: 0, length: textStorage.length)
         textStorage.enumerateAttribute(.flowSpecGoToTarget, in: fullRange) { value, characterRange, _ in
-            guard let message = value as? NSAttributedString, characterRange.length > 0 else { return }
+            guard let info = value as? FlowSpecGoToTargetAttribute, characterRange.length > 0 else { return }
+            let mark = FlowSpecGoToTargetMark(range: characterRange, incoming: info.incoming)
             let glyphRange = layoutManager.glyphRange(
                 forCharacterRange: characterRange,
                 actualCharacterRange: nil
@@ -891,50 +950,88 @@ final class IndentingTextView: NSTextView {
             wordRect.origin.y += self.textContainerOrigin.y
 
             let lastGlyph = NSMaxRange(glyphRange) - 1
-            var lineRect = layoutManager.lineFragmentUsedRect(forGlyphAt: lastGlyph, effectiveRange: nil)
+            var lineRect = layoutManager.lineFragmentRect(forGlyphAt: lastGlyph, effectiveRange: nil)
             lineRect.origin.x += self.textContainerOrigin.x
             lineRect.origin.y += self.textContainerOrigin.y
 
-            let iconRect = NSRect(
-                x: wordRect.maxX + self.goToTargetIconGap,
-                y: lineRect.midY - iconSize / 2,
-                width: iconSize,
-                height: iconSize
+            let labelSize = (mark.annotationText as NSString).size(withAttributes: attributes)
+            let pillSize = NSSize(
+                width: ceil(labelSize.width) + padding.width * 2,
+                height: ceil(labelSize.height) + padding.height * 2
             )
-            body(characterRange, message, wordRect, iconRect)
+            let minX = wordRect.maxX + 10
+            let maxX = self.bounds.maxX - 8 - pillSize.width
+            let preferredX = self.textContainerOrigin.x + textContainer.size.width - pillSize.width
+            let annotationX = self.snapBacklinkValue(min(max(minX, preferredX), max(minX, maxX)))
+            let annotationY = self.snapBacklinkValue(lineRect.midY - pillSize.height / 2)
+
+            body(mark, NSRect(
+                x: annotationX,
+                y: annotationY,
+                width: pillSize.width,
+                height: pillSize.height
+            ))
         }
     }
 
-    private func updateGoToTargetHover(at point: NSPoint) {
-        guard let hint = goToTargetHint(at: point) else {
-            hideGoToTargetHover()
-            return
-        }
-
-        if pendingTargetHoverRange == hint.range {
-            if pendingTargetHover != nil || targetHoverController.isVisible { return }
-        }
-
-        hideGoToTargetHover()
-        pendingTargetHoverRange = hint.range
-        let work = DispatchWorkItem { [weak self] in
-            guard let self, self.pendingTargetHoverRange == hint.range else { return }
-            self.pendingTargetHover = nil
-            self.targetHoverController.show(text: hint.message, relativeTo: hint.rect, in: self)
-        }
-        pendingTargetHover = work
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.18, execute: work)
+    private func updateBacklinkHover(at point: NSPoint) {
+        let range = backlinkAnnotation(at: point)?.range
+            ?? NSRange(location: NSNotFound, length: 0)
+        guard range != hoveredBacklinkRange else { return }
+        hoveredBacklinkRange = range
+        needsDisplay = true
     }
 
-    private func goToTargetHint(at point: NSPoint) -> (message: NSAttributedString, range: NSRange, rect: NSRect)? {
-        var found: (message: NSAttributedString, range: NSRange, rect: NSRect)?
-        enumerateGoToTargets { range, message, wordRect, iconRect in
-            let hitRect = wordRect.union(iconRect).insetBy(dx: -4, dy: -3)
-            if hitRect.contains(point) {
-                found = (message, range, iconRect)
+    private func clearBacklinkHover() {
+        guard hoveredBacklinkRange.location != NSNotFound else { return }
+        hoveredBacklinkRange = NSRange(location: NSNotFound, length: 0)
+        needsDisplay = true
+    }
+
+    private func backlinkAnnotation(at point: NSPoint) -> FlowSpecGoToTargetMark? {
+        var found: FlowSpecGoToTargetMark?
+        enumerateBacklinkAnnotations { mark, pillRect in
+            guard mark.hasIncomingReferences else { return }
+            if pillRect.contains(point) {
+                found = mark
             }
         }
         return found
+    }
+
+    private func handleBacklinkAnnotationClick(_ mark: FlowSpecGoToTargetMark) {
+        let isShowing = lastReportedBacklink?.range.location == mark.range.location
+            && dismissedBacklinkLocation != mark.range.location
+        if isShowing {
+            dismissedBacklinkLocation = mark.range.location
+            reportActiveBacklink(nil)
+        } else {
+            dismissedBacklinkLocation = nil
+            reportActiveBacklink(mark)
+        }
+        setSelectedRange(NSRange(location: mark.range.location, length: 0))
+    }
+
+    private func innermostBacklinkMark(containing location: Int) -> FlowSpecGoToTargetMark? {
+        var matches: [(mark: FlowSpecGoToTargetMark, nodeRange: NSRange)] = []
+        enumerateBacklinkAnnotations { mark, _ in
+            let nodeRange = FlowSpecStructureValidator.structuralNodeRange(
+                containing: mark.range.location,
+                in: self.string
+            )
+            if NSLocationInRange(location, nodeRange)
+                || (location == NSMaxRange(nodeRange) && nodeRange.length > 0) {
+                matches.append((mark, nodeRange))
+            }
+        }
+        return matches.min(by: { $0.nodeRange.length < $1.nodeRange.length })?.mark
+    }
+
+    private func reportActiveBacklink(_ mark: FlowSpecGoToTargetMark?) {
+        if lastReportedBacklink == mark { return }
+        lastReportedBacklink = mark
+        onActiveBacklinkChange?(mark)
+        needsDisplay = true
     }
 
     private func insertCompletion(_ item: FlowSpecCompletionItem, replacing range: NSRange) {
@@ -1193,89 +1290,5 @@ final class IndentingTextView: NSTextView {
             removedBefore += removal.count
         }
         return max(0, offset - removedBefore)
-    }
-}
-
-private final class FlowSpecGoToTargetHoverController {
-    private var panel: NSPanel?
-    private let label = NSTextField(wrappingLabelWithString: "")
-
-    var isVisible: Bool { panel?.isVisible == true }
-
-    func show(text: NSAttributedString, relativeTo rect: NSRect, in textView: NSTextView) {
-        guard let window = textView.window, text.length > 0 else { return }
-        let panel = ensurePanel()
-        label.attributedStringValue = text
-        label.preferredMaxLayoutWidth = 340
-        label.invalidateIntrinsicContentSize()
-        let fitting = label.intrinsicContentSize
-        let size = NSSize(
-            width: min(360, max(168, ceil(fitting.width) + 20)),
-            height: max(36, ceil(fitting.height) + 16)
-        )
-        panel.setContentSize(size)
-        label.frame = NSRect(
-            x: 10,
-            y: 8,
-            width: size.width - 20,
-            height: size.height - 16
-        )
-
-        let windowRect = textView.convert(rect, to: nil)
-        let screenRect = window.convertToScreen(windowRect)
-        let visible = window.screen?.visibleFrame ?? screenRect
-        var origin = NSPoint(x: screenRect.maxX + 8, y: screenRect.midY - size.height / 2)
-        if origin.x + size.width > visible.maxX - 4 {
-            origin.x = max(visible.minX + 4, screenRect.minX - size.width - 8)
-        }
-        origin.y = min(max(origin.y, visible.minY + 4), visible.maxY - size.height - 4)
-        panel.setFrame(NSRect(origin: origin, size: size), display: true)
-        if panel.parent == nil {
-            window.addChildWindow(panel, ordered: .above)
-        }
-        panel.orderFront(nil)
-    }
-
-    func hide() {
-        if let panel, let parent = panel.parent {
-            parent.removeChildWindow(panel)
-        }
-        panel?.orderOut(nil)
-    }
-
-    private func ensurePanel() -> NSPanel {
-        if let panel { return panel }
-        let panel = NSPanel(
-            contentRect: .zero,
-            styleMask: [.borderless, .nonactivatingPanel],
-            backing: .buffered,
-            defer: false
-        )
-        panel.isOpaque = false
-        panel.backgroundColor = .clear
-        panel.hasShadow = true
-        panel.hidesOnDeactivate = true
-        panel.ignoresMouseEvents = true
-        panel.level = .popUpMenu
-        panel.collectionBehavior = [.transient, .ignoresCycle]
-
-        let effect = NSVisualEffectView(frame: .zero)
-        effect.material = .popover
-        effect.blendingMode = .behindWindow
-        effect.state = .active
-        effect.wantsLayer = true
-        effect.layer?.cornerRadius = 8
-        effect.layer?.masksToBounds = true
-        panel.contentView = effect
-
-        label.isEditable = false
-        label.isSelectable = false
-        label.isBezeled = false
-        label.drawsBackground = false
-        label.backgroundColor = .clear
-        effect.addSubview(label)
-
-        self.panel = panel
-        return panel
     }
 }

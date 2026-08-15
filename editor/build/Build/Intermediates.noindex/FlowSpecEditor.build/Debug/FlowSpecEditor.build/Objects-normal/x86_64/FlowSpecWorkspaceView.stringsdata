@@ -7,7 +7,7 @@
         "key": "FlowSpec Editor",
         "location": {
           "startingColumn": 13,
-          "startingLine": 355
+          "startingLine": 356
         }
       },
       {
@@ -15,7 +15,7 @@
         "key": "Add a .flowspec file to this folder, then refresh.",
         "location": {
           "startingColumn": 39,
-          "startingLine": 315
+          "startingLine": 316
         }
       },
       {
@@ -23,7 +23,7 @@
         "key": "No FlowSpec Files",
         "location": {
           "startingColumn": 21,
-          "startingLine": 313
+          "startingLine": 314
         }
       },
       {
@@ -31,7 +31,7 @@
         "key": "Back",
         "location": {
           "startingColumn": 23,
-          "startingLine": 328
+          "startingLine": 329
         }
       },
       {
@@ -39,7 +39,7 @@
         "key": "Forward",
         "location": {
           "startingColumn": 23,
-          "startingLine": 336
+          "startingLine": 337
         }
       },
       {
@@ -47,7 +47,7 @@
         "key": "Refresh Folder",
         "location": {
           "startingColumn": 23,
-          "startingLine": 343
+          "startingLine": 344
         }
       },
       {
@@ -55,7 +55,7 @@
         "key": "Save",
         "location": {
           "startingColumn": 23,
-          "startingLine": 351
+          "startingLine": 352
         }
       },
       {
@@ -63,7 +63,7 @@
         "key": "Back",
         "location": {
           "startingColumn": 27,
-          "startingLine": 325
+          "startingLine": 326
         }
       },
       {
@@ -71,7 +71,7 @@
         "key": "Forward",
         "location": {
           "startingColumn": 27,
-          "startingLine": 333
+          "startingLine": 334
         }
       },
       {
@@ -79,7 +79,7 @@
         "key": "Refresh Folder",
         "location": {
           "startingColumn": 27,
-          "startingLine": 341
+          "startingLine": 342
         }
       },
       {
@@ -87,7 +87,7 @@
         "key": "Save",
         "location": {
           "startingColumn": 27,
-          "startingLine": 348
+          "startingLine": 349
         }
       },
       {
@@ -95,7 +95,15 @@
         "key": "OK",
         "location": {
           "startingColumn": 20,
-          "startingLine": 361
+          "startingLine": 362
+        }
+      },
+      {
+        "comment": "",
+        "key": ".%@",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 569
         }
       },
       {
@@ -103,7 +111,7 @@
         "key": "Unsaved changes",
         "location": {
           "startingColumn": 57,
-          "startingLine": 590
+          "startingLine": 633
         }
       }
     ]

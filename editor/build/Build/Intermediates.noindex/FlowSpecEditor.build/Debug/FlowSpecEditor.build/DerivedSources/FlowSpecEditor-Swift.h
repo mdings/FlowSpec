@@ -348,6 +348,7 @@ extern "C" {
 #endif
 @import AppKit;
 @import Foundation;
+@import ObjectiveC;
 #endif
 
 #endif // defined(__OBJC__)
@@ -380,6 +381,12 @@ SWIFT_CLASS("_TtC14FlowSpecEditor16EditorScrollView")
 - (nullable instancetype)initWithCoder:(NSCoder * _Nonnull)coder OBJC_DESIGNATED_INITIALIZER;
 @end
 
+SWIFT_CLASS("_TtC14FlowSpecEditor27FlowSpecGoToTargetAttribute")
+@interface FlowSpecGoToTargetAttribute : NSObject
+- (nonnull instancetype)init SWIFT_UNAVAILABLE;
++ (nonnull instancetype)new SWIFT_UNAVAILABLE_MSG("-init is unavailable");
+@end
+
 @class NSTextContainer;
 SWIFT_CLASS("_TtC14FlowSpecEditor17IndentingTextView")
 @interface IndentingTextView : NSTextView
@@ -389,6 +396,7 @@ SWIFT_CLASS("_TtC14FlowSpecEditor17IndentingTextView")
 - (void)viewDidMoveToWindow;
 - (void)updateTrackingAreas;
 - (void)mouseMoved:(NSEvent * _Nonnull)event;
+- (void)cursorUpdate:(NSEvent * _Nonnull)event;
 - (void)mouseExited:(NSEvent * _Nonnull)event;
 - (void)mouseDown:(NSEvent * _Nonnull)event;
 - (void)resetCursorRects;
@@ -757,6 +765,7 @@ extern "C" {
 #endif
 @import AppKit;
 @import Foundation;
+@import ObjectiveC;
 #endif
 
 #endif // defined(__OBJC__)
@@ -789,6 +798,12 @@ SWIFT_CLASS("_TtC14FlowSpecEditor16EditorScrollView")
 - (nullable instancetype)initWithCoder:(NSCoder * _Nonnull)coder OBJC_DESIGNATED_INITIALIZER;
 @end
 
+SWIFT_CLASS("_TtC14FlowSpecEditor27FlowSpecGoToTargetAttribute")
+@interface FlowSpecGoToTargetAttribute : NSObject
+- (nonnull instancetype)init SWIFT_UNAVAILABLE;
++ (nonnull instancetype)new SWIFT_UNAVAILABLE_MSG("-init is unavailable");
+@end
+
 @class NSTextContainer;
 SWIFT_CLASS("_TtC14FlowSpecEditor17IndentingTextView")
 @interface IndentingTextView : NSTextView
@@ -798,6 +813,7 @@ SWIFT_CLASS("_TtC14FlowSpecEditor17IndentingTextView")
 - (void)viewDidMoveToWindow;
 - (void)updateTrackingAreas;
 - (void)mouseMoved:(NSEvent * _Nonnull)event;
+- (void)cursorUpdate:(NSEvent * _Nonnull)event;
 - (void)mouseExited:(NSEvent * _Nonnull)event;
 - (void)mouseDown:(NSEvent * _Nonnull)event;
 - (void)resetCursorRects;
