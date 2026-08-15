@@ -186,6 +186,11 @@ enum FlowSpecStructureValidator {
         runtime.syntaxHighlights(in: source)
     }
 
+    /// Flow-owned and other parsed Entry trigger values in document order, de-duplicated.
+    static func flowEntries(in source: String) -> [String] {
+        runtime.flowEntries(in: source)
+    }
+
     static var authoringGuide: String { runtime.authoringGuide }
 
     static func navigationRange(
@@ -256,6 +261,7 @@ private final class FlowSpecLinterRuntime {
     private let referencedGoToDestinationsFunction: JSValue?
     private let renameGoToReferencesFunction: JSValue?
     private let syntaxHighlightsFunction: JSValue?
+    private let flowEntriesFunction: JSValue?
     private let authoringGuideFunction: JSValue?
 
     init() {
@@ -268,6 +274,7 @@ private final class FlowSpecLinterRuntime {
             self.referencedGoToDestinationsFunction = nil
             self.renameGoToReferencesFunction = nil
             self.syntaxHighlightsFunction = nil
+            self.flowEntriesFunction = nil
             self.authoringGuideFunction = nil
             return
         }
@@ -403,6 +410,24 @@ private final class FlowSpecLinterRuntime {
         )
         self.syntaxHighlightsFunction = context.evaluateScript(
             #"(function(source) { return require("language").syntaxHighlights(source); })"#
+        )
+        self.flowEntriesFunction = context.evaluateScript(
+            #"""
+            (function(source) {
+              const { parseTree, walkNodes } = require("parse");
+              const { root } = parseTree(String(source || ""), "document.flowspec");
+              const seen = new Set();
+              const entries = [];
+              walkNodes(root, (node) => {
+                if (node.type !== "entry") return;
+                const value = String(node.value || "").trim();
+                if (!value || seen.has(value)) return;
+                seen.add(value);
+                entries.push(value);
+              });
+              return entries;
+            })
+            """#
         )
         self.authoringGuideFunction = context.evaluateScript(
             #"(function() { return require("language").authoringGuide(); })"#
@@ -722,6 +747,19 @@ private final class FlowSpecLinterRuntime {
                 category: category
             )
         }
+    }
+
+    func flowEntries(in source: String) -> [String] {
+        guard let flowEntriesFunction,
+              let rawValue = flowEntriesFunction.call(withArguments: [source]),
+              !rawValue.isUndefined,
+              !rawValue.isNull,
+              let values = rawValue.toArray() else {
+            return []
+        }
+        return values.compactMap { value in
+            (value as? String)?.trimmingCharacters(in: .whitespacesAndNewlines)
+        }.filter { !$0.isEmpty }
     }
 
     var authoringGuide: String {

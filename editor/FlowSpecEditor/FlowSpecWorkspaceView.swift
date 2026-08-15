@@ -43,6 +43,7 @@ final class FlowSpecWorkspace: ObservableObject {
     let folderURL: URL
 
     @Published private(set) var files: [FlowSpecWorkspaceNode] = []
+    @Published private(set) var fileEntries: [URL: [String]] = [:]
     @Published private(set) var selectedURL: URL?
     @Published private(set) var text = ""
     @Published private(set) var dirtyURLs: Set<URL> = []
@@ -110,6 +111,7 @@ final class FlowSpecWorkspace: ObservableObject {
         do {
             let nodes = try Self.nodes(in: folderURL)
             files = nodes
+            refreshFileEntries()
 
             let availableFiles = Self.flattenedFiles(in: nodes)
             if let selectedURL, availableFiles.contains(selectedURL) {
@@ -180,6 +182,7 @@ final class FlowSpecWorkspace: ObservableObject {
             drafts[url] = newText
             dirtyURLs.insert(url)
         }
+        refreshFileEntries(for: [url])
     }
 
     func saveNow() {
@@ -238,6 +241,25 @@ final class FlowSpecWorkspace: ObservableObject {
         }
     }
 
+    private func refreshFileEntries(for urls: [URL]? = nil) {
+        let files = sourceFiles
+        let available = Set(files.map(\.url))
+        var next = urls == nil ? [URL: [String]]() : fileEntries
+        let targets = Set(urls ?? Array(available))
+        for file in files where targets.contains(file.url) {
+            let entries = FlowSpecStructureValidator.flowEntries(in: file.source)
+            if entries.isEmpty {
+                next.removeValue(forKey: file.url)
+            } else {
+                next[file.url] = entries
+            }
+        }
+        for url in next.keys where !available.contains(url) {
+            next.removeValue(forKey: url)
+        }
+        fileEntries = next
+    }
+
     private static func flattenedFiles(in nodes: [FlowSpecWorkspaceNode]) -> [URL] {
         nodes.flatMap { node in
             if let children = node.children {
@@ -281,6 +303,7 @@ struct FlowSpecWorkspaceView: View {
                     nodes: workspace.files,
                     selectedURL: workspace.selectedURL,
                     dirtyURLs: workspace.dirtyURLs,
+                    fileEntries: workspace.fileEntries,
                     expandedFolders: $expandedFolders,
                     select: selectFromSidebar
                 )
@@ -581,6 +604,7 @@ private struct FlowSpecWorkspaceTree: View {
     let nodes: [FlowSpecWorkspaceNode]
     let selectedURL: URL?
     let dirtyURLs: Set<URL>
+    let fileEntries: [URL: [String]]
     @Binding var expandedFolders: Set<URL>
     let select: (URL?) -> Void
 
@@ -604,6 +628,7 @@ private struct FlowSpecWorkspaceTree: View {
                             nodes: children,
                             selectedURL: selectedURL,
                             dirtyURLs: dirtyURLs,
+                            fileEntries: fileEntries,
                             expandedFolders: $expandedFolders,
                             select: select
                         )
@@ -619,18 +644,24 @@ private struct FlowSpecWorkspaceTree: View {
                     Button {
                         select(node.url)
                     } label: {
-                        HStack(spacing: 7) {
-                            Label {
+                        HStack(alignment: .top, spacing: 7) {
+                            Image(systemName: "doc.plaintext")
+                            VStack(alignment: .leading, spacing: 1) {
                                 FlowSpecSidebarFileName(url: node.url)
-                            } icon: {
-                                Image(systemName: "doc.plaintext")
+                                if let caption = entryCaption(for: node.url) {
+                                    Text(caption)
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                        .lineLimit(2)
+                                        .truncationMode(.tail)
+                                }
                             }
                             Spacer(minLength: 5)
                             if dirtyURLs.contains(node.url) {
                                 Circle()
                                     .fill(Color.accentColor)
                                     .frame(width: 6, height: 6)
-                                    .accessibilityLabel("Unsaved changes")
+                                    .accessibilityHidden(true)
                             }
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
@@ -644,8 +675,24 @@ private struct FlowSpecWorkspaceTree: View {
                         RoundedRectangle(cornerRadius: 6)
                             .fill(selectedURL == node.url ? Color.accentColor.opacity(0.14) : Color.clear)
                     )
+                    .accessibilityElement(children: .ignore)
+                    .accessibilityLabel(sidebarAccessibilityLabel(for: node.url))
+                    .accessibilityAddTraits(.isButton)
+                    .accessibilityValue(dirtyURLs.contains(node.url) ? "Unsaved changes" : "")
                 }
             }
         }
+    }
+
+    private func entryCaption(for url: URL) -> String? {
+        guard let entries = fileEntries[url], !entries.isEmpty else { return nil }
+        return "Entry  " + entries.joined(separator: " · ")
+    }
+
+    private func sidebarAccessibilityLabel(for url: URL) -> String {
+        guard let caption = entryCaption(for: url) else {
+            return url.lastPathComponent
+        }
+        return "\(url.lastPathComponent), \(caption)"
     }
 }
