@@ -1,7 +1,26 @@
 node_modules/
 *.vsix
-.DS_Store
 *.log
 vscode-extension/vendor/
 obsidian-plugin/main.js
 obsidian-plugin/main.js.map
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editors / IDEs
+.idea/
+*.iml
+*.ipr
+*.iws
+**/.vscode/*
+!**/.vscode/extensions.json
+!**/.vscode/launch.json
+!**/.vscode/tasks.json
+*.code-workspace
+*.swp
+*.swo
+*~
+*.sublime-workspace
+.history/
