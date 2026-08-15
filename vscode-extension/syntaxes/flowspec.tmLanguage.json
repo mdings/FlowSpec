@@ -14,6 +14,9 @@
       "include": "#id-directive"
     },
     {
+      "include": "#entry-directive"
+    },
+    {
       "include": "#if-fails"
     },
     {
@@ -88,6 +91,31 @@
         },
         {
           "include": "#comments"
+        }
+      ]
+    },
+    "entry-directive": {
+      "name": "meta.directive.entry.flowspec",
+      "begin": "^(\\s*)(Entry)\\b\\s*:?",
+      "beginCaptures": {
+        "2": {
+          "name": "keyword.other.metadata.flowspec"
+        }
+      },
+      "end": "$",
+      "contentName": "entity.name.flowspec",
+      "patterns": [
+        {
+          "include": "#comments"
+        },
+        {
+          "include": "#strings"
+        },
+        {
+          "include": "#durations"
+        },
+        {
+          "include": "#numbers"
         }
       ]
     },

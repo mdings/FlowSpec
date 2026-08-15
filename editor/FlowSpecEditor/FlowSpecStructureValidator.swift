@@ -772,7 +772,7 @@ private struct SourceLocationMapper {
         }
 
         let remaining = source.substring(with: NSRange(location: location, length: lineEnd - location))
-        let directivePattern = #"^(At the same time|Otherwise|Receives|Outcome|Section|Screen|Layout|Action|Rules|Steps|Shows|Uses|Flow|Once|When|Go to|If|Id)(?=\s|:|$)"#
+        let directivePattern = #"^(At the same time|Otherwise|Receives|Outcome|Section|Screen|Layout|Action|Rules|Steps|Shows|Uses|Flow|Once|When|Go to|If|Id|Entry)(?=\s|:|$)"#
         if let directiveRange = remaining.range(of: directivePattern, options: .regularExpression) {
             return NSRange(
                 location: location + directiveRange.lowerBound.utf16Offset(in: remaining),

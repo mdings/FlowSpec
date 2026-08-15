@@ -9,14 +9,14 @@ This extension provides TextMate-based highlighting for `.flowspec` files and pu
 - Language ID: `flowspec`
 - File extension: `.flowspec`
 - Line comments with `#`
-- Highlighting for Title Case directives, `Id`, sections, flow-control phrases, numbers, durations, and quoted strings
+- Highlighting for Title Case directives, `Id`, `Entry`, sections, flow-control phrases, numbers, durations, and quoted strings
 - Lint on open and change (debounced)
 - Project-wide duplicate `Id` / `Go to` checks across all workspace `.flowspec` files while editing
 - Deprecated uppercase `FLOW` / `SCREEN` / `ACTION` / `ID` still highlight for older files
 
 ## Linting
 
-Diagnostics use the shared core in [`../lib`](../lib) (structural rules FS001–FS024 and style warnings FS101–FS107). See the root [README](../README.md#6-linting-behavior) for categories, the restriction table, and CLI usage.
+Diagnostics use the shared core in [`../lib`](../lib) (structural rules FS001–FS027 and style warnings FS101–FS108). See the root [README](../README.md#6-linting-behavior) for categories, the restriction table, and CLI usage.
 
 On package, `npm run sync-lib` copies the core into `vendor/flowspec` so the VSIX is self-contained.
 
@@ -31,6 +31,7 @@ Action
 Section
 Layout
 Id
+Entry
 Receives
 Rules
 Uses
@@ -56,6 +57,7 @@ Go to
 | `Section` | `Section: Sidebar` (region inside a Screen; not a Go to target) |
 | `Layout` | `Layout` / `  Sidebar \| Content` |
 | `Id` | `Id: conversation.create-quick-replies` |
+| `Entry` | `Entry App launch` |
 
 ### Sections
 
@@ -168,6 +170,7 @@ Then run **Developer: Reload Window**. Reinstalling the same version often leave
 | ---- | -------------- |
 | Structural directives | `keyword.control.directive.flowspec` |
 | `Id` | `keyword.other.metadata.flowspec` |
+| `Entry` | `keyword.other.metadata.flowspec` |
 | Id values | `entity.name.identifier.flowspec` |
 | Id-shaped `Go to` targets | `entity.name.identifier.flowspec` (e.g. `Go to conversation.bootstrap`) |
 | Section directives | `keyword.control.section.flowspec` |

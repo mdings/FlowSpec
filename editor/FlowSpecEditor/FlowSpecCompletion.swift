@@ -13,7 +13,7 @@ struct FlowSpecCompletionResult {
 
 enum FlowSpecCompletionProvider {
     private enum Kind {
-        case document, flow, screen, section, layout, action, id
+        case document, flow, screen, section, layout, action, id, entry
         case receives, rules, uses, steps, shows, outcome
         case when, once, `if`, otherwise, parallel, goTo, content
 
@@ -23,7 +23,7 @@ enum FlowSpecCompletionProvider {
                  .receives, .rules, .uses, .steps, .shows, .outcome,
                  .when, .once, .if, .otherwise, .parallel:
                 true
-            case .document, .id, .goTo, .content:
+            case .document, .id, .entry, .goTo, .content:
                 false
             }
         }
@@ -49,6 +49,7 @@ enum FlowSpecCompletionProvider {
         .init(directive: "Layout", detail: "Arrange sections", addsTrailingSpace: false),
         .init(directive: "Action", detail: "Describe an interaction", addsTrailingSpace: true),
         .init(directive: "Id", detail: "Give this destination an identifier", addsTrailingSpace: true),
+        .init(directive: "Entry", detail: "Mark an external trigger that can begin this Flow", addsTrailingSpace: true),
         .init(directive: "Receives", detail: "List the input", addsTrailingSpace: false),
         .init(directive: "Rules", detail: "List behavioral rules", addsTrailingSpace: false),
         .init(directive: "Uses", detail: "List required information", addsTrailingSpace: false),
@@ -168,7 +169,7 @@ enum FlowSpecCompletionProvider {
         case .document:
             ["Flow"]
         case .flow:
-            ["Screen", "Action", "Receives", "Rules", "Uses", "Steps",
+            ["Screen", "Action", "Entry", "Receives", "Rules", "Uses", "Steps",
              "Outcome", "When", "Once", "If", "Go to"]
         case .screen:
             ["Section", "Layout", "Action", "Shows", "When", "Once", "If", "Go to"]
@@ -185,7 +186,7 @@ enum FlowSpecCompletionProvider {
             controlDirectives(insideSteps: insideSteps).union(["Layout"])
         case .once, .if, .otherwise:
             controlDirectives(insideSteps: insideSteps)
-        case .receives, .rules, .uses, .shows, .outcome, .id, .goTo, .content:
+        case .receives, .rules, .uses, .shows, .outcome, .id, .entry, .goTo, .content:
             []
         }
     }
@@ -292,7 +293,7 @@ enum FlowSpecCompletionProvider {
             ("Screen", .screen), ("Layout", .layout), ("Action", .action),
             ("Rules", .rules), ("Steps", .steps), ("Shows", .shows),
             ("Uses", .uses), ("Flow", .flow), ("Once", .once),
-            ("When", .when), ("Go to", .goTo), ("If", .if), ("Id", .id)
+            ("When", .when), ("Go to", .goTo), ("If", .if), ("Id", .id), ("Entry", .entry)
         ]
         for (directive, kind) in patterns where line.hasPrefix(directive) {
             let suffix = line.dropFirst(directive.count)
@@ -311,6 +312,7 @@ enum FlowSpecCompletionProvider {
         case .layout: "Layout"
         case .action: "Action"
         case .id: "Id"
+        case .entry: "Entry"
         case .receives: "Receives"
         case .rules: "Rules"
         case .uses: "Uses"

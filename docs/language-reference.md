@@ -8,8 +8,9 @@ This page is generated from the same definition used by the parser, linter, VS C
 - A file must start with a single top-level Flow; blank lines and # comments may precede it.
 - Hierarchy and ownership are indentation-based. Adjacency never implies ownership, and tabs and spaces must not be mixed.
 - Directives are recognized only at the beginning of a line after optional indentation; trailing colons are optional.
-- Flow, Screen, Action, Section, Layout, Id, behavioral sections, and control flow use the canonical casing shown in the directive reference.
+- Flow, Screen, Action, Section, Layout, Id, Entry, behavioral sections, and control flow use the canonical casing shown in the directive reference.
 - Id is optional on Flow, Screen, and explicit Action only. Section, Layout, and implicit Actions cannot own an Id.
+- Entry is optional Flow metadata naming an external trigger through which the Flow can begin. A Flow may declare multiple Entries. Entry is not a navigation destination and cannot own children.
 - Receives, Rules, Uses, Steps, and Outcome are optional behavioral sections on a Flow or Action.
 - Steps is a flat behavioral section and cannot contain another Steps section.
 - Shows is optional and may only appear as a direct child of Screen.
@@ -17,7 +18,7 @@ This page is generated from the same definition used by the parser, linter, VS C
 - Section is a non-navigable region inside a Screen or Section; Layout describes direct child Sections.
 - A named interaction directly under a Screen or Section becomes an implicit Action when it has nested behavior.
 - Once, If, Otherwise, and If ... fails may appear in Flow, Screen, Action, or Steps; At the same time belongs only inside Steps.
-- Go to resolves only to top-level Flow, Screen, or Action names and Ids, never Section or Layout.
+- Go to resolves only to top-level Flow, Screen, or Action names and Ids, never Section, Layout, or Entry.
 - Indented lines beneath Go to are argument clauses for the destination: With supplies context or input, while Without explicitly omits it.
 
 ## Structural directives
@@ -35,6 +36,7 @@ This page is generated from the same definition used by the parser, linter, VS C
 | Directive | Description | Example |
 | --- | --- | --- |
 | `Id` | Optional stable machine-readable reference for a Flow, Screen, or explicit Action. | `Id: conversation.create-quick-replies` |
+| `Entry` | An external trigger through which the owning Flow can begin. | `Entry App launch` |
 | `Receives` | Information the Flow or Action needs before it can run. | `Receives` |
 | `Rules` | Constraints that must remain true within the owning Flow, Action, or Layout. | `Rules` |
 | `Uses` | Services, models, tools, or runtime configuration used by a Flow or Action. | `Uses` |

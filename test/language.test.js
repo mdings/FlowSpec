@@ -17,13 +17,14 @@ describe("canonical language definition", () => {
       language.directives("section").map((directive) => directive.name)
     );
     assert.deepEqual(constants.RECOMMENDED_SECTION_ORDER, language.RECOMMENDED_SECTION_ORDER);
+    assert.equal(constants.ENTRY_DIRECTIVE, "Entry");
   });
 
   it("provides presentation-neutral UTF-16 highlight ranges", () => {
-    const source = "Flow Emoji 😀\n  Screen Result\n    Shows\n      # note\n  If search fails\n";
+    const source = "Flow Emoji 😀\n  Entry App launch\n  Screen Result\n    Shows\n      # note\n  If search fails\n";
     const highlights = language.syntaxHighlights(source);
     assert.deepEqual(highlights.map(({ category }) => category), [
-      "structural", "structural", "section", "comment", "control",
+      "structural", "section", "structural", "section", "comment", "control",
     ]);
     for (const highlight of highlights) {
       assert.ok(highlight.location >= 0);

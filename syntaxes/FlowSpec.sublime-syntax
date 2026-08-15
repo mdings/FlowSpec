@@ -10,6 +10,7 @@ contexts:
     - include: comments
     - include: top-level-directives
     - include: id-directive
+    - include: entry-directive
     - include: if-fails
     - include: at-the-same-time
     - include: go-to
@@ -45,6 +46,18 @@ contexts:
         - match: '[a-z0-9][a-z0-9._-]*'
           scope: entity.name.identifier.flowspec
         - include: comments
+  entry-directive:
+    - match: '^(\s*)(Entry)\b\s*:?'
+      captures: { 2: keyword.other.metadata.flowspec }
+      push:
+        - meta_scope: meta.directive.entry.flowspec
+        - meta_content_scope: entity.name.flowspec
+        - match: $
+          pop: true
+        - include: comments
+        - include: strings
+        - include: durations
+        - include: numbers
   section-directives:
     - match: '^(\s*)(Receives|Rules|Uses|Steps|Shows|Outcome)\b\s*:?'
       scope: meta.directive.section.flowspec

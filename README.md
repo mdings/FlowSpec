@@ -40,6 +40,7 @@ FlowSpec uses Title Case for all directives to keep the language visually consis
 - `Screen`, top-level `Action`, control-flow, and behavioral sections that belong to a Flow must be **indented under** that Flow. An unindented `Screen` after a `Flow` is not owned by the Flow (FS024).
 - Sections must be indented beneath their owning `Flow`, `Screen`, `Action`, `Section`, or `Layout` (as allowed for each section type).
 - `Id` is optional on `Flow`, `Screen`, and explicit `Action` only. `Section`, `Layout`, and implicit Actions cannot have an `Id`. When present, place `Id` immediately after the structural directive; `Id` may share the owner's indentation (special association rule) so following indented children still belong to the owner.
+- `Entry` is optional Flow metadata naming an external trigger through which the Flow can begin. A Flow may declare multiple distinct Entries. `Entry` is not a navigation destination, does not receive an `Id`, and cannot own indented children. Place it after the Flow's optional `Id` and before Screens, Actions, behavioral sections, and control flow.
 - `Receives`, `Rules`, `Uses`, `Steps`, and `Outcome` are optional on a `Flow` or `Action`. `Shows` is optional and may only be a direct child of `Screen`.
 - A `Flow` may own behavioral sections directly. An explicit `Action` is only needed when behavior deserves an independent name or identity.
 - Behavior that is only meaningful while a Screen is active should normally be a child of that Screen. Flow-level `When` remains valid for overall/system events.
@@ -51,6 +52,7 @@ FlowSpec uses Title Case for all directives to keep the language visually consis
 ```text
 Flow
 ├── Id (optional; may share Flow indent)
+├── Entry (optional, repeatable; external trigger)
 ├── direct Flow behavior (Receives / Rules / Uses / Steps / Outcome)
 ├── Flow-level When / Once / If / … (overall / system events)
 ├── Screen
@@ -80,6 +82,7 @@ Action
 Section
 Layout
 Id
+Entry
 Receives
 Rules
 Uses
@@ -105,6 +108,7 @@ Go to
 | `Section` | A meaningful region within a `Screen` (or nested `Section`). Not navigable; no `Id`; not a `Go to` target. | `Section: Sidebar` |
 | `Layout` | Describes spatial relationships between direct child `Section`s of a `Screen` or `Section`. | `Layout` / `  Sidebar \| Content` |
 | `Id` | Optional stable machine-readable reference for a `Flow`, `Screen`, or `Action`. | `Id: conversation.create-quick-replies` |
+| `Entry` | Optional external trigger through which the owning `Flow` can begin. | `Entry App launch` |
 
 ### Behavioral sections
 
@@ -694,6 +698,9 @@ Exit codes:
 | FS022 | warning | Layout statement references an ambiguous sibling `Section` name |
 | FS023 | error | `Section` only inside a `Screen` or another `Section` |
 | FS024 | error | Only the `Flow` may appear at document root; `Screen`, `Action`, control-flow, and sections must be indented under the Flow |
+| FS025 | error | `Entry` must be a direct child of a `Flow` |
+| FS026 | error | `Entry` must contain a non-empty, human-readable trigger |
+| FS027 | error | `Entry` cannot own indented children |
 
 #### Style warnings
 
@@ -706,6 +713,7 @@ Exit codes:
 | FS105 | warning | `Action` only wraps a single simple `Steps` child (optional `Id` allowed); consider inlining |
 | FS106 | warning | Direct `Action` whose display name repeats its owning `Flow`, when the Flow has no other meaningful Screens/Actions/behavior |
 | FS107 | warning | Flow-level `When` looks like a screen-local UI interaction; consider nesting it under the nearby Screen |
+| FS108 | warning | Exact duplicate `Entry` values within the same `Flow` |
 
 v1 does **not** support suppression comments or configuration files.
 
@@ -717,7 +725,7 @@ v1 does **not** support suppression comments or configuration files.
 - a `Screen` that is a direct child of a `Flow`
 - an `Action` that is a direct child of a `Flow` or `Screen` (including implicit Actions under a Screen)
 
-Actions nested under `When`, `Once`, `If`, `Section`, or other containers are **not** valid `Go to` destinations. `Section` and `Layout` are never `Go to` destinations. Prefer lifting reusable destinations to Flow or Screen scope, or navigate to a Screen / top-level Action instead.
+Actions nested under `When`, `Once`, `If`, `Section`, or other containers are **not** valid `Go to` destinations. `Section`, `Layout`, and `Entry` are never `Go to` destinations. Prefer lifting reusable destinations to Flow or Screen scope, or navigate to a Screen / top-level Action instead.
 
 The target may be defined in the **same file or any other loaded `.flowspec` file**. Project-level linting (`lintFlowSpecProject`, the CLI with a multi-file glob, and the VS Code extension in a workspace) resolves targets across files, detects duplicate Ids (FS006), unresolved references (FS014), and ambiguous names (FS015). Use an `Id` when display names collide across files.
 

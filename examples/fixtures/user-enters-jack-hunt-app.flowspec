@@ -1,0 +1,38 @@
+Flow User enters Jack Hunt app
+
+  Entry App launch
+
+  Screen Login options
+
+    Shows
+      Welcome video as background
+      Welcome message
+      Continue with Google button
+      Continue with Apple button
+      Continue with email link
+
+  Once authentication state is known
+    If User is not logged in
+      Go to Login options
+    Otherwise
+      Go to Load signed-in experience
+
+  Action Load signed-in experience
+
+    Receives
+      userId from onAuthStateChange data
+
+    Rules
+      Session owns the conversation
+
+    Uses
+      Firestore for conversation and session history
+      @capacitor-firebase/messaging for push notifications
+
+    Steps
+      Hide the splash screen
+
+      At the same time
+        Load the cart
+        Register the device for push notifications
+        Go to Get or create a session

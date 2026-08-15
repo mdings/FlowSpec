@@ -41,6 +41,7 @@ const idValue = compilePattern(
 
 assert("grammar includes Title Case Flow|Screen|Action|Section|Layout", /Section\|SECTION\|Layout\|LAYOUT/.test(grammar.repository["top-level-directives"].begin));
 assert("grammar includes Title Case Id", /\(Id\|ID\)/.test(grammar.repository["id-directive"].begin));
+assert("grammar includes Title Case Entry", /Entry/.test(grammar.repository["entry-directive"].begin));
 
 const topMatches = sample.match(topLevel) || [];
 assert("matches Flow/Screen/Action at line start", topMatches.length >= 8);
@@ -102,6 +103,16 @@ assert(
   "does not match mid-line 'Id'",
   !compilePattern(grammar.repository["id-directive"].begin).test(
     "  reference the Id conversation.find-products later"
+  )
+);
+assert(
+  "matches Entry at line start after indentation",
+  compilePattern(grammar.repository["entry-directive"].begin).test("  Entry App launch")
+);
+assert(
+  "does not match mid-line 'entry'",
+  !compilePattern(grammar.repository["entry-directive"].begin).test(
+    "  Record the catalog entry for the user"
   )
 );
 assert("Go to begin pattern is line-anchored", goTo.source.startsWith("^"));

@@ -4,6 +4,8 @@
 Flow Premium onboarding
 Id premium.onboarding
 
+  Entry App launch
+
 # Structural Screen with nested Layout and Section
   Screen Premium paywall
   Id premium.paywall
@@ -71,5 +73,6 @@ Id premium.onboarding
       Only show this when product results are available
       Do not run if the user is anonymous
       Follow the rules in the brand guide
+      Record the catalog entry for the user
       Wait no longer than 10 minutes
       Greeting with "welcome" and the user's name

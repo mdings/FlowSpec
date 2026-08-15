@@ -40,6 +40,8 @@ struct FlowSpecDocument: FileDocument {
     Flow Home
     Id home.main
 
+      Entry App launch
+
       Screen Home
       Id home.screen
 
