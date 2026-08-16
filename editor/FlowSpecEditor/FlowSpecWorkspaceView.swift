@@ -646,14 +646,15 @@ private struct FlowSpecWorkspaceTree: View {
                     } label: {
                         HStack(alignment: .top, spacing: 7) {
                             Image(systemName: "doc.plaintext")
-                            VStack(alignment: .leading, spacing: 1) {
+                                .foregroundStyle(selectedURL == node.url ? Color.accentColor : Color.primary)
+                            VStack(alignment: .leading, spacing: 4) {
                                 FlowSpecSidebarFileName(url: node.url)
-                                if let caption = entryCaption(for: node.url) {
-                                    Text(caption)
-                                        .font(.caption)
-                                        .foregroundStyle(.secondary)
-                                        .lineLimit(2)
-                                        .truncationMode(.tail)
+                                    .foregroundStyle(selectedURL == node.url ? Color.accentColor : Color.primary)
+                                if let triggers = fileEntries[node.url], !triggers.isEmpty {
+                                    FlowSpecSidebarEntryMark(
+                                        triggers: triggers,
+                                        isSelected: selectedURL == node.url
+                                    )
                                 }
                             }
                             Spacer(minLength: 5)
@@ -668,7 +669,6 @@ private struct FlowSpecWorkspaceTree: View {
                         .contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
-                    .foregroundStyle(selectedURL == node.url ? Color.accentColor : Color.primary)
                     .padding(.horizontal, 7)
                     .padding(.vertical, 5)
                     .background(
@@ -684,15 +684,57 @@ private struct FlowSpecWorkspaceTree: View {
         }
     }
 
-    private func entryCaption(for url: URL) -> String? {
-        guard let entries = fileEntries[url], !entries.isEmpty else { return nil }
-        return "Entry  " + entries.joined(separator: " · ")
-    }
-
     private func sidebarAccessibilityLabel(for url: URL) -> String {
-        guard let caption = entryCaption(for: url) else {
+        guard let triggers = fileEntries[url], !triggers.isEmpty else {
             return url.lastPathComponent
         }
-        return "\(url.lastPathComponent), \(caption)"
+        return "\(url.lastPathComponent), Entry \(triggers.joined(separator: ", "))"
+    }
+}
+
+private struct FlowSpecSidebarEntryMark: View {
+    let triggers: [String]
+    let isSelected: Bool
+
+    private var visibleTriggers: [String] {
+        Array(triggers.prefix(3))
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 3) {
+            ForEach(visibleTriggers, id: \.self) { trigger in
+                chip(for: trigger)
+            }
+            if triggers.count > 3 {
+                Text("+\(triggers.count - 3) more")
+                    .font(.system(size: 10, weight: .medium))
+                    .foregroundStyle(.tertiary)
+                    .padding(.leading, 2)
+            }
+        }
+        .help(triggers.map { "Entry \($0)" }.joined(separator: "\n"))
+    }
+
+    private func chip(for trigger: String) -> some View {
+        HStack(spacing: 4) {
+            Image(systemName: "arrow.right.to.line")
+                .font(.system(size: 8, weight: .bold))
+            Text(trigger)
+                .font(.system(size: 10, weight: .semibold))
+                .lineLimit(1)
+                .truncationMode(.tail)
+        }
+        .padding(.horizontal, 6)
+        .padding(.vertical, 2)
+        .foregroundStyle(tint)
+        .background(Capsule(style: .continuous).fill(tint.opacity(isSelected ? 0.16 : 0.12)))
+        .overlay(
+            Capsule(style: .continuous)
+                .strokeBorder(tint.opacity(isSelected ? 0.42 : 0.28), lineWidth: 0.8)
+        )
+    }
+
+    private var tint: Color {
+        isSelected ? Color.accentColor : Color.teal
     }
 }
