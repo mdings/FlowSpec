@@ -85,6 +85,76 @@ resolve_private_key() {
   fi
 }
 
+write_export_options() {
+  local dest="$1"
+  cat > "$dest" <<EOF
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>method</key>
+	<string>developer-id</string>
+	<key>teamID</key>
+	<string>${APPLE_TEAM_ID}</string>
+	<key>signingStyle</key>
+	<string>manual</string>
+	<key>signingCertificate</key>
+	<string>Developer ID Application</string>
+</dict>
+</plist>
+EOF
+}
+
+# Sparkle's XPC/helpers are not re-signed by "Code Sign on Copy". Notarization
+# rejects the zip unless they are Developer ID + hardened runtime + timestamp.
+resign_sparkle() {
+  local app="$1"
+  local identity="$2"
+  local sparkle="$app/Contents/Frameworks/Sparkle.framework"
+  local version_dir="$sparkle/Versions/B"
+
+  if [[ ! -d "$version_dir" ]]; then
+    echo "error: Sparkle.framework not found in $app" >&2
+    exit 1
+  fi
+
+  echo "Re-signing Sparkle helpers with $identity..."
+  codesign --force --sign "$identity" --options runtime --timestamp "$version_dir/XPCServices/Installer.xpc"
+  codesign --force --sign "$identity" --options runtime --timestamp --preserve-metadata=entitlements "$version_dir/XPCServices/Downloader.xpc"
+  codesign --force --sign "$identity" --options runtime --timestamp "$version_dir/Autoupdate"
+  codesign --force --sign "$identity" --options runtime --timestamp "$version_dir/Updater.app"
+  codesign --force --sign "$identity" --options runtime --timestamp "$sparkle"
+  codesign --force --sign "$identity" --options runtime --timestamp --preserve-metadata=entitlements,identifier,flags "$app"
+}
+
+submit_for_notarization() {
+  local zip_path="$1"
+  local submit_json status submission_id
+
+  echo "Submitting for notarization..."
+  submit_json="$(
+    xcrun notarytool submit "$zip_path" \
+      --apple-id "$APPLE_ID" \
+      --password "$APPLE_PASSWORD" \
+      --team-id "$APPLE_TEAM_ID" \
+      --wait \
+      --output-format json
+  )"
+  echo "$submit_json"
+
+  status="$(python3 -c 'import json,sys; print(json.load(sys.stdin)["status"])' <<<"$submit_json")"
+  submission_id="$(python3 -c 'import json,sys; print(json.load(sys.stdin)["id"])' <<<"$submit_json")"
+
+  if [[ "$status" != "Accepted" ]]; then
+    echo "error: notarization $status (id $submission_id). Apple log:" >&2
+    xcrun notarytool log "$submission_id" \
+      --apple-id "$APPLE_ID" \
+      --password "$APPLE_PASSWORD" \
+      --team-id "$APPLE_TEAM_ID" || true
+    exit 1
+  fi
+}
+
 package_app() {
   require_cmd xcodebuild
   require_cmd ditto
@@ -103,11 +173,14 @@ package_app() {
 
   local identity="${CODE_SIGN_IDENTITY:-Developer ID Application}"
   local archive_path="$DIST/FlowSpecEditor.xcarchive"
-  local app_path="$archive_path/Products/Applications/FlowSpecEditor.app"
+  local export_dir="$DIST/export"
+  local export_options="$DIST/ExportOptions.plist"
+  local app_path="$export_dir/FlowSpecEditor.app"
   local zip_path="$DIST/archives/FlowSpecEditor.zip"
 
   rm -rf "$DIST"
-  mkdir -p "$DIST/archives"
+  mkdir -p "$DIST/archives" "$export_dir"
+  write_export_options "$export_options"
 
   echo "Archiving $SCHEME (Release, universal)..."
   xcodebuild \
@@ -121,12 +194,22 @@ package_app() {
     CODE_SIGN_STYLE=Manual \
     CODE_SIGN_IDENTITY="$identity" \
     DEVELOPMENT_TEAM="$APPLE_TEAM_ID" \
+    OTHER_CODE_SIGN_FLAGS="--timestamp" \
     archive
+
+  echo "Exporting Developer ID app..."
+  xcodebuild \
+    -exportArchive \
+    -archivePath "$archive_path" \
+    -exportPath "$export_dir" \
+    -exportOptionsPlist "$export_options"
 
   if [[ ! -d "$app_path" ]]; then
     echo "error: expected app at $app_path" >&2
     exit 1
   fi
+
+  resign_sparkle "$app_path" "$identity"
 
   echo "Zipping app bundle..."
   ditto -c -k --sequesterRsrc --keepParent "$app_path" "$zip_path"
@@ -135,12 +218,7 @@ package_app() {
     : "${APPLE_ID:?Set APPLE_ID}"
     : "${APPLE_PASSWORD:?Set APPLE_PASSWORD}"
 
-    echo "Submitting for notarization..."
-    xcrun notarytool submit "$zip_path" \
-      --apple-id "$APPLE_ID" \
-      --password "$APPLE_PASSWORD" \
-      --team-id "$APPLE_TEAM_ID" \
-      --wait
+    submit_for_notarization "$zip_path"
 
     echo "Stapling ticket..."
     xcrun stapler staple "$app_path"
