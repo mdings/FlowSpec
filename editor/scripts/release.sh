@@ -128,8 +128,16 @@ resign_sparkle() {
   codesign --force --sign "$identity" --options runtime --timestamp "$version_dir/Sparkle"
   codesign --force --sign "$identity" --options runtime --timestamp "$sparkle"
 
-  codesign --display --entitlements "$entitlements" "$app"
-  codesign --force --sign "$identity" --options runtime --timestamp --entitlements "$entitlements" "$app"
+  # `codesign --display --entitlements FILE` writes a DER blob, which
+  # `--entitlements` will not accept. Dump XML instead; fall back to preserving
+  # the existing entitlements if that fails.
+  if codesign --display --entitlements :- --xml "$app" > "$entitlements" 2>/dev/null \
+    && grep -q '<plist' "$entitlements"; then
+    codesign --force --sign "$identity" --options runtime --timestamp --entitlements "$entitlements" "$app"
+  else
+    echo "Could not dump XML entitlements; preserving existing entitlements."
+    codesign --force --sign "$identity" --options runtime --timestamp --preserve-metadata=entitlements "$app"
+  fi
   rm -f "$entitlements"
 
   echo "Verifying signature..."
