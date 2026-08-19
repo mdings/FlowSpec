@@ -15,7 +15,6 @@ enum MoveToApplications {
         guard shouldRelocate(from: bundleURL) else { return false }
 
         let name = bundleURL.lastPathComponent
-        let source = sourceURLForCopy(from: bundleURL)
         let destinations = [
             URL(fileURLWithPath: "/Applications").appendingPathComponent(name),
             FileManager.default.homeDirectoryForCurrentUser
@@ -29,7 +28,7 @@ enum MoveToApplications {
                 if parent.path.hasPrefix(FileManager.default.homeDirectoryForCurrentUser.path) {
                     try FileManager.default.createDirectory(at: parent, withIntermediateDirectories: true)
                 }
-                try install(from: source, to: destination)
+                try install(from: bundleURL, to: destination)
                 relaunch(from: destination, trashing: originalURLIfAccessible(from: bundleURL))
                 return true
             } catch {
@@ -64,51 +63,8 @@ enum MoveToApplications {
         if fm.fileExists(atPath: destination.path) {
             try fm.removeItem(at: destination)
         }
-        let ditto = Process()
-        ditto.executableURL = URL(fileURLWithPath: "/usr/bin/ditto")
-        ditto.arguments = [source.path, destination.path]
-        try ditto.run()
-        ditto.waitUntilExit()
-        guard ditto.terminationStatus == 0 else {
-            throw CocoaError(.fileWriteUnknown)
-        }
+        try fm.copyItem(at: source, to: destination)
         clearQuarantine(at: destination)
-    }
-
-    private static func sourceURLForCopy(from runningBundle: URL) -> URL {
-        translocatedOriginal(from: runningBundle)
-            ?? originalURLIfAccessible(from: runningBundle)
-            ?? runningBundle
-    }
-
-    private static func translocatedOriginal(from url: URL) -> URL? {
-        typealias IsTranslocatedFn = @convention(c) (
-            CFURL,
-            UnsafeMutablePointer<DarwinBoolean>?,
-            UnsafeMutablePointer<Unmanaged<CFError>?>?
-        ) -> DarwinBoolean
-        typealias CreateOriginalFn = @convention(c) (
-            CFURL,
-            UnsafeMutablePointer<Unmanaged<CFError>?>?
-        ) -> Unmanaged<CFURL>?
-
-        let rtldDefault = UnsafeMutableRawPointer(bitPattern: -2)
-        guard let isSymbol = dlsym(rtldDefault, "SecTranslocateIsTranslocatedURL"),
-              let originalSymbol = dlsym(rtldDefault, "SecTranslocateCreateOriginalPathForURL")
-        else {
-            return nil
-        }
-
-        let isTranslocated = unsafeBitCast(isSymbol, to: IsTranslocatedFn.self)
-        let createOriginal = unsafeBitCast(originalSymbol, to: CreateOriginalFn.self)
-        var flag = DarwinBoolean(false)
-        guard isTranslocated(url as CFURL, &flag, nil).boolValue, flag.boolValue else {
-            return nil
-        }
-        guard let original = createOriginal(url as CFURL, nil) else {
-            return nil
-        }
-        return original.takeRetainedValue() as URL
     }
 
     private static func originalURLIfAccessible(from runningBundle: URL) -> URL? {
@@ -136,13 +92,20 @@ enum MoveToApplications {
     }
 
     private static func relaunch(from destination: URL, trashing original: URL?) {
-        let configuration = NSWorkspace.OpenConfiguration()
-        configuration.createsNewApplicationInstance = true
-        NSWorkspace.shared.openApplication(at: destination, configuration: configuration) { _, _ in
-            if let original, original.standardizedFileURL != destination.standardizedFileURL {
-                NSWorkspace.shared.recycle([original], completionHandler: nil)
-            }
-            NSApp.terminate(nil)
+        let open = Process()
+        open.executableURL = URL(fileURLWithPath: "/usr/bin/open")
+        open.arguments = ["-n", destination.path]
+        do {
+            try open.run()
+            open.waitUntilExit()
+        } catch {
+            NSLog("MoveToApplications: relaunch failed: \(error.localizedDescription)")
+            return
         }
+
+        if let original, original.standardizedFileURL != destination.standardizedFileURL {
+            NSWorkspace.shared.recycle([original], completionHandler: nil)
+        }
+        NSApp.terminate(nil)
     }
 }
