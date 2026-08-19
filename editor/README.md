@@ -18,7 +18,48 @@ The editor bundles the canonical core directly from the repository's root `lib/`
 2. Select the `FlowSpecEditor` scheme and `My Mac` destination.
 3. Press **Run** (`⌘R`).
 
-The app targets macOS 14 or newer and uses no external dependencies.
+The app targets macOS 14 or newer. Sparkle 2 provides in-app updates for Developer ID builds.
+
+## Releasing
+
+Updates are published as GitHub Releases on `mdings/FlowSpec`. Installed copies check `https://github.com/mdings/FlowSpec/releases/latest/download/appcast.xml`.
+
+### One-time setup
+
+1. Generate an EdDSA key pair (stored in your login keychain):
+
+   ```bash
+   ./scripts/release.sh keys
+   ```
+
+2. Paste the printed `SUPublicEDKey` into `FlowSpecEditor/Info.plist`, replacing `REPLACE_WITH_SPARKLE_PUBLIC_ED_KEY`.
+3. Export the private key and add it as the GitHub secret `SPARKLE_PRIVATE_KEY`:
+
+   ```bash
+   ./.sparkle-tools/bin/generate_keys -x sparkle_private.key
+   ```
+
+   Then delete `sparkle_private.key`. Also add the same Apple signing/notarization secrets used by Cogent/Anything: `APPLE_CERTIFICATE`, `APPLE_CERTIFICATE_PASSWORD`, `APPLE_ID`, `APPLE_PASSWORD`, `APPLE_TEAM_ID`.
+
+### Ship a build
+
+From a clean `main` branch:
+
+```bash
+npm run release:patch   # or release:minor / release:major
+```
+
+That bumps `MARKETING_VERSION` and `CURRENT_PROJECT_VERSION` in the Xcode project, commits, tags `editor-vX.Y.Z`, and pushes. Sparkle compares `CURRENT_PROJECT_VERSION` (`CFBundleVersion`), so the script increments it on every release.
+
+The [Release Editor](../.github/workflows/release-editor.yml) workflow then archives a universal Release build, notarizes it, writes `appcast.xml`, and uploads both files to the GitHub Release.
+
+Users install `FlowSpecEditor.zip` once. Later versions appear under **FlowSpec Editor → Check for Updates…**. Debug runs from Xcode do not check the feed.
+
+To package locally instead of CI:
+
+```bash
+./scripts/release.sh package
+```
 
 ## Editor shortcuts
 

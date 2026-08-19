@@ -1,13 +1,33 @@
 import AppKit
+import Sparkle
 import SwiftUI
+
+final class AppDelegate: NSObject, NSApplicationDelegate {
+    let updaterController = SPUStandardUpdaterController(
+        startingUpdater: true,
+        updaterDelegate: nil,
+        userDriverDelegate: nil
+    )
+
+    func applicationDidFinishLaunching(_ notification: Notification) {
+        #if DEBUG
+        updaterController.updater.automaticallyChecksForUpdates = false
+        #endif
+    }
+}
 
 @main
 struct FlowSpecEditorApp: App {
+    @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
+
     var body: some Scene {
         DocumentGroup(newDocument: FlowSpecDocument()) { file in
             ContentView(document: file.$document)
         }
         .commands {
+            CommandGroup(after: .appInfo) {
+                CheckForUpdatesView(updater: appDelegate.updaterController.updater)
+            }
             FlowSpecFolderCommands()
             FlowSpecViewCommands()
 

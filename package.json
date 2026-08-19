@@ -15,7 +15,10 @@
     "test:extension": "npm --prefix vscode-extension test",
     "lint:flowspec": "node bin/flowspec.js lint \"examples/**/*.flowspec\"",
     "flowspec": "node bin/flowspec.js",
-    "install:bat": "bash scripts/install-bat-syntax.sh"
+    "install:bat": "bash scripts/install-bat-syntax.sh",
+    "release:major": "bash editor/scripts/version.sh major",
+    "release:minor": "bash editor/scripts/version.sh minor",
+    "release:patch": "bash editor/scripts/version.sh patch"
   },
   "engines": {
     "node": ">=18"

@@ -1,0 +1,11 @@
+{
+  "name": "flowspec-editor",
+  "private": true,
+  "description": "Native macOS FlowSpec editor.",
+  "scripts": {
+    "release:major": "./scripts/version.sh major",
+    "release:minor": "./scripts/version.sh minor",
+    "release:patch": "./scripts/version.sh patch",
+    "version": "./scripts/version.sh current"
+  }
+}

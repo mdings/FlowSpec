@@ -5,6 +5,20 @@ vscode-extension/vendor/
 obsidian-plugin/main.js
 obsidian-plugin/main.js.map
 
+# Editor release artifacts and Sparkle keys
+editor/dist/
+editor/.sparkle-tools/
+editor/.sparkle_private_key
+editor/.apple_certificate.b64
+sparkle_private.key
+
+# Xcode derived data / local archives (do not commit)
+editor/build/
+editor/build-apple/
+editor/build-intel/
+**/*.xcuserstate
+**/xcuserdata/
+
 # OS
 .DS_Store
 Thumbs.db

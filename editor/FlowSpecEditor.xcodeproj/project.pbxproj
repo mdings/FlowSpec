@@ -24,6 +24,8 @@
 		A10000000000000000000011 /* FlowSpecImprove.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000014 /* FlowSpecImprove.swift */; };
 		A10000000000000000000012 /* FoundationModels.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A20000000000000000000015 /* FoundationModels.framework */; };
 		A10000000000000000000013 /* language.js in Resources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000016 /* language.js */; };
+		A10000000000000000000014 /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = A20000000000000000000021 /* Sparkle */; };
+		A10000000000000000000015 /* CheckForUpdatesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000017 /* CheckForUpdatesView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -48,10 +50,11 @@
 		A20000000000000000000014 /* FlowSpecImprove.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlowSpecImprove.swift; sourceTree = "<group>"; };
 		A20000000000000000000015 /* FoundationModels.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = FoundationModels.framework; path = System/Library/Frameworks/FoundationModels.framework; sourceTree = SDKROOT; };
 		A20000000000000000000016 /* language.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = language.js; sourceTree = "<group>"; };
+		A20000000000000000000017 /* CheckForUpdatesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckForUpdatesView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		A30000000000000000000001 /* Frameworks */ = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (A1000000000000000000000D /* JavaScriptCore.framework in Frameworks */, A10000000000000000000012 /* FoundationModels.framework in Frameworks */); runOnlyForDeploymentPostprocessing = 0; };
+		A30000000000000000000001 /* Frameworks */ = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (A1000000000000000000000D /* JavaScriptCore.framework in Frameworks */, A10000000000000000000012 /* FoundationModels.framework in Frameworks */, A10000000000000000000014 /* Sparkle in Frameworks */); runOnlyForDeploymentPostprocessing = 0; };
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -72,6 +75,7 @@
 				A20000000000000000000014 /* FlowSpecImprove.swift */,
 				A20000000000000000000005 /* FlowSpecSyntaxHighlighter.swift */,
 				A2000000000000000000000A /* FlowSpecStructureValidator.swift */,
+				A20000000000000000000017 /* CheckForUpdatesView.swift */,
 				A20000000000000000000008 /* FlowSpecEditor.entitlements */,
 				A20000000000000000000009 /* Info.plist */,
 				A20000000000000000000013 /* Assets.xcassets */,
@@ -93,6 +97,9 @@
 			buildRules = ();
 			dependencies = ();
 			name = FlowSpecEditor;
+			packageProductDependencies = (
+				A20000000000000000000021 /* Sparkle */,
+			);
 			productName = FlowSpecEditor;
 			productReference = A20000000000000000000007 /* FlowSpecEditor.app */;
 			productType = "com.apple.product-type.application";
@@ -108,6 +115,9 @@
 			hasScannedForEncodings = 0;
 			knownRegions = (en, Base);
 			mainGroup = A40000000000000000000001;
+			packageReferences = (
+				A20000000000000000000020 /* XCRemoteSwiftPackageReference "Sparkle" */,
+			);
 			productRefGroup = A40000000000000000000003 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -120,7 +130,7 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
-		A60000000000000000000001 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (A10000000000000000000001, A10000000000000000000002, A10000000000000000000003, A10000000000000000000004, A10000000000000000000005, A10000000000000000000007, A1000000000000000000000E, A1000000000000000000000F, A10000000000000000000011); runOnlyForDeploymentPostprocessing = 0; };
+		A60000000000000000000001 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (A10000000000000000000001, A10000000000000000000002, A10000000000000000000003, A10000000000000000000004, A10000000000000000000005, A10000000000000000000007, A1000000000000000000000E, A1000000000000000000000F, A10000000000000000000011, A10000000000000000000015); runOnlyForDeploymentPostprocessing = 0; };
 /* End PBXSourcesBuildPhase section */
 
 /* Begin XCBuildConfiguration section */
@@ -138,6 +148,7 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = FlowSpecEditor/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.maartendings.FlowSpecEditor;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -156,6 +167,7 @@
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = FlowSpecEditor/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.maartendings.FlowSpecEditor;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -169,6 +181,25 @@
 		A90000000000000000000001 = {isa = XCConfigurationList; buildConfigurations = (AA0000000000000000000001, AA0000000000000000000002); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
 		A90000000000000000000002 = {isa = XCConfigurationList; buildConfigurations = (AA0000000000000000000003, AA0000000000000000000004); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		A20000000000000000000020 /* XCRemoteSwiftPackageReference "Sparkle" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/sparkle-project/Sparkle";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.9.1;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		A20000000000000000000021 /* Sparkle */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A20000000000000000000020 /* XCRemoteSwiftPackageReference "Sparkle" */;
+			productName = Sparkle;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = A80000000000000000000001 /* Project object */;
 }
