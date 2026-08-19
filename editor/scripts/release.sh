@@ -106,12 +106,14 @@ EOF
 }
 
 # Sparkle's XPC/helpers are not re-signed by "Code Sign on Copy". Notarization
-# rejects the zip unless they are Developer ID + hardened runtime + timestamp.
+# and Gatekeeper reject the zip unless they are Developer ID + hardened runtime.
 resign_sparkle() {
   local app="$1"
   local identity="$2"
   local sparkle="$app/Contents/Frameworks/Sparkle.framework"
   local version_dir="$sparkle/Versions/B"
+  local entitlements
+  entitlements="$(mktemp -t flowspec-entitlements).plist"
 
   if [[ ! -d "$version_dir" ]]; then
     echo "error: Sparkle.framework not found in $app" >&2
@@ -123,8 +125,15 @@ resign_sparkle() {
   codesign --force --sign "$identity" --options runtime --timestamp --preserve-metadata=entitlements "$version_dir/XPCServices/Downloader.xpc"
   codesign --force --sign "$identity" --options runtime --timestamp "$version_dir/Autoupdate"
   codesign --force --sign "$identity" --options runtime --timestamp "$version_dir/Updater.app"
+  codesign --force --sign "$identity" --options runtime --timestamp "$version_dir/Sparkle"
   codesign --force --sign "$identity" --options runtime --timestamp "$sparkle"
-  codesign --force --sign "$identity" --options runtime --timestamp --preserve-metadata=entitlements,identifier,flags "$app"
+
+  codesign --display --entitlements "$entitlements" "$app"
+  codesign --force --sign "$identity" --options runtime --timestamp --entitlements "$entitlements" "$app"
+  rm -f "$entitlements"
+
+  echo "Verifying signature..."
+  codesign --verify --deep --strict --verbose=2 "$app"
 }
 
 submit_for_notarization() {

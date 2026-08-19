@@ -15,6 +15,7 @@ enum MoveToApplications {
         guard shouldRelocate(from: bundleURL) else { return false }
 
         let name = bundleURL.lastPathComponent
+        let source = sourceURLForCopy(from: bundleURL)
         let destinations = [
             URL(fileURLWithPath: "/Applications").appendingPathComponent(name),
             FileManager.default.homeDirectoryForCurrentUser
@@ -28,7 +29,7 @@ enum MoveToApplications {
                 if parent.path.hasPrefix(FileManager.default.homeDirectoryForCurrentUser.path) {
                     try FileManager.default.createDirectory(at: parent, withIntermediateDirectories: true)
                 }
-                try install(from: bundleURL, to: destination)
+                try install(from: source, to: destination)
                 relaunch(from: destination, trashing: originalURLIfAccessible(from: bundleURL))
                 return true
             } catch {
@@ -63,8 +64,51 @@ enum MoveToApplications {
         if fm.fileExists(atPath: destination.path) {
             try fm.removeItem(at: destination)
         }
-        try fm.copyItem(at: source, to: destination)
+        let ditto = Process()
+        ditto.executableURL = URL(fileURLWithPath: "/usr/bin/ditto")
+        ditto.arguments = [source.path, destination.path]
+        try ditto.run()
+        ditto.waitUntilExit()
+        guard ditto.terminationStatus == 0 else {
+            throw CocoaError(.fileWriteUnknown)
+        }
         clearQuarantine(at: destination)
+    }
+
+    private static func sourceURLForCopy(from runningBundle: URL) -> URL {
+        translocatedOriginal(from: runningBundle)
+            ?? originalURLIfAccessible(from: runningBundle)
+            ?? runningBundle
+    }
+
+    private static func translocatedOriginal(from url: URL) -> URL? {
+        typealias IsTranslocatedFn = @convention(c) (
+            CFURL,
+            UnsafeMutablePointer<DarwinBoolean>?,
+            UnsafeMutablePointer<Unmanaged<CFError>?>?
+        ) -> DarwinBoolean
+        typealias CreateOriginalFn = @convention(c) (
+            CFURL,
+            UnsafeMutablePointer<Unmanaged<CFError>?>?
+        ) -> Unmanaged<CFURL>?
+
+        let rtldDefault = UnsafeMutableRawPointer(bitPattern: -2)
+        guard let isSymbol = dlsym(rtldDefault, "SecTranslocateIsTranslocatedURL"),
+              let originalSymbol = dlsym(rtldDefault, "SecTranslocateCreateOriginalPathForURL")
+        else {
+            return nil
+        }
+
+        let isTranslocated = unsafeBitCast(isSymbol, to: IsTranslocatedFn.self)
+        let createOriginal = unsafeBitCast(originalSymbol, to: CreateOriginalFn.self)
+        var flag = DarwinBoolean(false)
+        guard isTranslocated(url as CFURL, &flag, nil).boolValue, flag.boolValue else {
+            return nil
+        }
+        guard let original = createOriginal(url as CFURL, nil) else {
+            return nil
+        }
+        return original.takeRetainedValue() as URL
     }
 
     private static func originalURLIfAccessible(from runningBundle: URL) -> URL? {
