@@ -342,6 +342,10 @@ struct FlowSpecWorkspaceView: View {
         }
         .navigationTitle(workspace.title)
         .toolbar {
+            ToolbarItem(id: "install-update", placement: .primaryAction) {
+                InstallUpdateToolbarButton()
+            }
+
             ToolbarItemGroup {
                 Button {
                     goBack()

@@ -156,6 +156,10 @@ struct FlowSpecEditorSurface: View {
         .onPreferenceChange(EditorWidthPreferenceKey.self) { editorWidth = $0 }
         .frame(minWidth: 680, minHeight: 480)
         .toolbar {
+            ToolbarItem(id: "install-update", placement: .primaryAction) {
+                InstallUpdateToolbarButton()
+            }
+
             ToolbarItem(id: "improve") {
                 Button {
                     Task { await improveFlowSpec() }

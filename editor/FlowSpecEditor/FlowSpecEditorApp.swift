@@ -2,12 +2,21 @@ import AppKit
 import Sparkle
 import SwiftUI
 
-final class AppDelegate: NSObject, NSApplicationDelegate {
-    let updaterController = SPUStandardUpdaterController(
-        startingUpdater: false,
-        updaterDelegate: nil,
-        userDriverDelegate: nil
-    )
+final class AppDelegate: NSObject, NSApplicationDelegate, SPUStandardUserDriverDelegate {
+    let updateOffer = UpdateOffer()
+    private(set) var updaterController: SPUStandardUpdaterController!
+
+    override init() {
+        super.init()
+        updaterController = SPUStandardUpdaterController(
+            startingUpdater: false,
+            updaterDelegate: nil,
+            userDriverDelegate: self
+        )
+        updateOffer.install = { [weak self] in
+            self?.updaterController.checkForUpdates(nil)
+        }
+    }
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         if MoveToApplications.relocateIfNeeded() {
@@ -19,6 +28,28 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         #endif
         updaterController.startUpdater()
     }
+
+    var supportsGentleScheduledUpdateReminders: Bool { true }
+
+    func standardUserDriverShouldHandleShowingScheduledUpdate(
+        _ update: SUAppcastItem,
+        andInImmediateFocus immediateFocus: Bool
+    ) -> Bool {
+        false
+    }
+
+    func standardUserDriverWillHandleShowingUpdate(
+        _ handleShowingUpdate: Bool,
+        forUpdate update: SUAppcastItem,
+        state: SPUUserUpdateState
+    ) {
+        guard !handleShowingUpdate else { return }
+        updateOffer.show(version: update.displayVersionString)
+    }
+
+    func standardUserDriverWillFinishUpdateSession() {
+        updateOffer.clear()
+    }
 }
 
 @main
@@ -28,6 +59,7 @@ struct FlowSpecEditorApp: App {
     var body: some Scene {
         DocumentGroup(newDocument: FlowSpecDocument()) { file in
             ContentView(document: file.$document)
+                .environmentObject(appDelegate.updateOffer)
         }
         .commands {
             CommandGroup(after: .appInfo) {
@@ -53,6 +85,7 @@ struct FlowSpecEditorApp: App {
         WindowGroup("FlowSpec Folder", id: "flowspec-folder", for: FlowSpecFolderReference.self) { $folderReference in
             if let folderReference = Binding($folderReference) {
                 FlowSpecWorkspaceView(folderReference: folderReference)
+                    .environmentObject(appDelegate.updateOffer)
             }
         }
         .defaultSize(width: 1040, height: 700)

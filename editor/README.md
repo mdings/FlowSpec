@@ -53,7 +53,7 @@ That bumps `MARKETING_VERSION` and `CURRENT_PROJECT_VERSION` in the Xcode projec
 
 The [Release Editor](../.github/workflows/release-editor.yml) workflow then archives a universal Release build, notarizes it, writes `appcast.xml`, and uploads both files to the GitHub Release.
 
-Users install `FlowSpecEditor.zip` once. Later versions appear under **FlowSpec Editor → Check for Updates…**. Debug runs from Xcode do not check the feed.
+Users install `FlowSpecEditor.zip` once. Later versions are checked automatically; an **Update to …** toolbar button appears when a release is ready. **FlowSpec Editor → Check for Updates…** still works. Debug runs from Xcode do not check the feed.
 
 To package locally instead of CI:
 
