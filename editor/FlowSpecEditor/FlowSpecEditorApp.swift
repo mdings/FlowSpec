@@ -4,15 +4,20 @@ import SwiftUI
 
 final class AppDelegate: NSObject, NSApplicationDelegate {
     let updaterController = SPUStandardUpdaterController(
-        startingUpdater: true,
+        startingUpdater: false,
         updaterDelegate: nil,
         userDriverDelegate: nil
     )
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        if MoveToApplications.relocateIfNeeded() {
+            return
+        }
+
         #if DEBUG
         updaterController.updater.automaticallyChecksForUpdates = false
         #endif
+        updaterController.startUpdater()
     }
 }
 

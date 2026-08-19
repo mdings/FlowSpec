@@ -26,6 +26,7 @@
 		A10000000000000000000013 /* language.js in Resources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000016 /* language.js */; };
 		A10000000000000000000014 /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = A20000000000000000000021 /* Sparkle */; };
 		A10000000000000000000015 /* CheckForUpdatesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000017 /* CheckForUpdatesView.swift */; };
+		A10000000000000000000016 /* MoveToApplications.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000018 /* MoveToApplications.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -51,6 +52,7 @@
 		A20000000000000000000015 /* FoundationModels.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = FoundationModels.framework; path = System/Library/Frameworks/FoundationModels.framework; sourceTree = SDKROOT; };
 		A20000000000000000000016 /* language.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = language.js; sourceTree = "<group>"; };
 		A20000000000000000000017 /* CheckForUpdatesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckForUpdatesView.swift; sourceTree = "<group>"; };
+		A20000000000000000000018 /* MoveToApplications.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoveToApplications.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -76,6 +78,7 @@
 				A20000000000000000000005 /* FlowSpecSyntaxHighlighter.swift */,
 				A2000000000000000000000A /* FlowSpecStructureValidator.swift */,
 				A20000000000000000000017 /* CheckForUpdatesView.swift */,
+				A20000000000000000000018 /* MoveToApplications.swift */,
 				A20000000000000000000008 /* FlowSpecEditor.entitlements */,
 				A20000000000000000000009 /* Info.plist */,
 				A20000000000000000000013 /* Assets.xcassets */,
@@ -130,7 +133,7 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
-		A60000000000000000000001 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (A10000000000000000000001, A10000000000000000000002, A10000000000000000000003, A10000000000000000000004, A10000000000000000000005, A10000000000000000000007, A1000000000000000000000E, A1000000000000000000000F, A10000000000000000000011, A10000000000000000000015); runOnlyForDeploymentPostprocessing = 0; };
+		A60000000000000000000001 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (A10000000000000000000001, A10000000000000000000002, A10000000000000000000003, A10000000000000000000004, A10000000000000000000005, A10000000000000000000007, A1000000000000000000000E, A1000000000000000000000F, A10000000000000000000011, A10000000000000000000015, A10000000000000000000016); runOnlyForDeploymentPostprocessing = 0; };
 /* End PBXSourcesBuildPhase section */
 
 /* Begin XCBuildConfiguration section */
